@@ -23,10 +23,38 @@ const elegibilidadRoutes = require('./routes/elegibilidad');
 const previasRoutes = require('./routes/previas');
 
 // Importar middleware de autenticación
-const { authenticateToken, checkSession } = require('./middleware/auth');
+const { checkSession, requireAuth } = require('./middleware/auth');
 
-// Configuración de middleware
-app.use(helmet());
+// Configuración de middleware con CSP personalizado
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://unpkg.com"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://unpkg.com",
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com",
+        "https://cdnjs.cloudflare.com"
+      ],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      frameSrc: ["'self'"]
+    }
+  }
+}));
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
@@ -83,9 +111,9 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 
 // Middleware para verificar sesión solo en rutas protegidas
-app.use('/materias', checkSession, authenticateToken, materiaRoutes);
-app.use('/elegibilidad', checkSession, authenticateToken, elegibilidadRoutes);
-app.use('/previas', checkSession, authenticateToken, previasRoutes);
+app.use('/materias', checkSession, requireAuth, materiaRoutes);
+app.use('/elegibilidad', checkSession, requireAuth, elegibilidadRoutes);
+app.use('/previas', checkSession, requireAuth, previasRoutes);
 
 // Ruta principal con verificación de sesión
 app.get('/', checkSession, (req, res) => {

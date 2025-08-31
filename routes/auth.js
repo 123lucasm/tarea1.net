@@ -335,24 +335,35 @@ router.post('/refresh', async (req, res) => {
 // GET /auth/logout - Cerrar sesión
 router.get('/logout', (req, res) => {
   try {
-    // Notificar por WebSocket si está disponible
-    if (req.io && req.session.userId) {
-      req.io.emit('usuario_desconectado', {
-        mensaje: 'Usuario desconectado',
-        usuario: req.session.userId
-      });
-    }
-
-    // Destruir la sesión
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Error al cerrar sesión:', err);
+    console.log('🚪 Usuario intentando cerrar sesión...');
+    
+    if (req.session && req.session.userId) {
+      console.log('👤 Usuario cerrando sesión:', req.session.userName);
+      
+      // Notificar por WebSocket si está disponible
+      if (req.io) {
+        req.io.emit('usuario_desconectado', {
+          mensaje: 'Usuario desconectado',
+          usuario: req.session.userId
+        });
       }
-      // Redirigir al inicio
+
+      // Destruir la sesión
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('❌ Error al cerrar sesión:', err);
+        } else {
+          console.log('✅ Sesión destruida exitosamente');
+        }
+        // Redirigir al inicio
+        res.redirect('/?logout=success');
+      });
+    } else {
+      console.log('⚠️ No hay sesión activa para cerrar');
       res.redirect('/');
-    });
+    }
   } catch (error) {
-    console.error('Error en logout:', error);
+    console.error('❌ Error en logout:', error);
     res.redirect('/');
   }
 });
