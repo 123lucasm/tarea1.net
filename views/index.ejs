@@ -304,12 +304,45 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#como-funciona">Cómo Funciona</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/auth/login">Iniciar Sesión</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-light px-3" href="/auth/registro">Registrarse</a>
-                    </li>
+                                            <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/dashboard">
+                                    <i class="fas fa-home me-1"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/materias">
+                                    <i class="fas fa-book me-1"></i>
+                                    Materias
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/elegibilidad">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Elegibilidad
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user me-1"></i>
+                                    <%= usuario.nombre %>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/dashboard">Mi Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="/auth/perfil">Mi Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/auth/logout">Cerrar Sesión</a></li>
+                                </ul>
+                            </li>
+                        <% } else { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/auth/login">Iniciar Sesión</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-outline-light px-3" href="/auth/registro">Registrarse</a>
+                            </li>
+                        <% } %>
                 </ul>
             </div>
         </div>
@@ -327,10 +360,17 @@
                         y optimiza tu trayectoria en la Universidad Tecnológica del Uruguay.
                     </p>
                     <div class="d-flex gap-3 flex-wrap">
-                        <a href="/auth/registro" class="btn btn-hero">
-                            <i class="fas fa-user-plus me-2"></i>
-                            Comenzar Ahora
-                        </a>
+                        <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                            <a href="/dashboard" class="btn btn-hero">
+                                <i class="fas fa-home me-2"></i>
+                                Ir al Dashboard
+                            </a>
+                        <% } else { %>
+                            <a href="/auth/registro" class="btn btn-hero">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Comenzar Ahora
+                            </a>
+                        <% } %>
                         <a href="#como-funciona" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-play me-2"></i>
                             Ver Demo

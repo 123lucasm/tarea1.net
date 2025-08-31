@@ -7,7 +7,14 @@ const router = express.Router();
 
 // GET /auth/login - Mostrar página de login
 router.get('/login', (req, res) => {
-  res.render('auth/login', { title: 'Iniciar Sesión' });
+  const success = req.query.success;
+  const error = req.query.error;
+  
+  res.render('auth/login', { 
+    title: 'Iniciar Sesión',
+    success: success,
+    error: error
+  });
 });
 
 // GET /auth/registro - Mostrar página de registro
@@ -64,13 +71,25 @@ const validacionesCambioPassword = [
     .withMessage('La nueva contraseña debe tener al menos 6 caracteres')
 ];
 
-// Middleware para manejar errores de validación
+// Middleware para manejar errores de validación (JSON)
 const manejarErroresValidacion = (req, res, next) => {
   const errores = validationResult(req);
   if (!errores.isEmpty()) {
     return res.status(400).json({
       error: 'Datos de entrada inválidos',
       detalles: errores.array()
+    });
+  }
+  next();
+};
+
+// Middleware para manejar errores de validación (render)
+const manejarErroresValidacionRender = (req, res, next) => {
+  const errores = validationResult(req);
+  if (!errores.isEmpty()) {
+    return res.render('auth/login', { 
+      title: 'Iniciar Sesión',
+      error: 'Datos de entrada inválidos: ' + errores.array()[0].msg
     });
   }
   next();
@@ -92,36 +111,124 @@ router.post('/registro',
         });
       }
 
-      res.status(201).json({
-        mensaje: 'Usuario registrado exitosamente',
-        ...resultado
-      });
+      // Redirigir al login con mensaje de éxito
+      res.redirect('/auth/login?success=Usuario registrado exitosamente. Ya puedes iniciar sesión.');
     } catch (error) {
       console.error('Error en registro:', error);
       
       if (error.message.includes('ya está registrado')) {
-        return res.status(409).json({
-          error: error.message,
-          code: 'USER_ALREADY_EXISTS'
-        });
+        return res.redirect('/auth/login?error=El email ya está registrado. Intenta con otro email o inicia sesión.');
       }
       
-      res.status(500).json({
-        error: 'Error interno del servidor',
-        code: 'INTERNAL_ERROR'
+      // Redirigir al login con mensaje de error genérico
+      res.redirect('/auth/login?error=Error en el registro. Intenta nuevamente.');
+    }
+  }
+);
+
+// POST /auth/login - Iniciar sesión (con validación)
+router.post('/login', 
+  validacionesLogin, 
+  manejarErroresValidacionRender,
+  async (req, res) => {
+    try {
+      console.log('🔐 Iniciando proceso de login...');
+      const { email, password } = req.body;
+      console.log('📧 Email recibido:', email);
+      
+      const resultado = await AuthService.iniciarSesion(email, password, false); // Sin tokens, solo sesión
+      console.log('✅ Login exitoso, resultado:', resultado);
+      console.log('🔍 Verificando que req.session existe:', !!req.session);
+      console.log('🔍 Tipo de req.session:', typeof req.session);
+      
+      // Crear sesión del usuario
+      req.session.userId = resultado.usuario.id;
+      req.session.userEmail = resultado.usuario.email;
+      req.session.userName = `${resultado.usuario.nombre} ${resultado.usuario.apellido}`;
+      req.session.userRole = resultado.usuario.rol;
+      
+      console.log('📝 Datos de sesión configurados:', {
+        userId: req.session.userId,
+        userEmail: req.session.userEmail,
+        userName: req.session.userName,
+        userRole: req.session.userRole
+      });
+      
+      // Guardar la sesión explícitamente
+      req.session.save((err) => {
+        if (err) {
+          console.error('❌ Error al guardar sesión:', err);
+          return res.render('auth/login', { 
+            title: 'Iniciar Sesión',
+            error: 'Error al crear sesión'
+          });
+        }
+        
+        console.log('💾 Sesión guardada exitosamente:', req.session);
+        
+        // Notificar por WebSocket si está disponible
+        if (req.io) {
+          req.io.emit('usuario_conectado', {
+            mensaje: 'Usuario conectado',
+            usuario: resultado.usuario
+          });
+        }
+
+        console.log('🔄 Redirigiendo al index principal...');
+        // Redirigir al index principal con sesión iniciada
+        res.redirect('/');
+      });
+    } catch (error) {
+      console.error('❌ Error en login:', error);
+      
+      let errorMessage = 'Error interno del servidor';
+      
+      if (error.message.includes('Credenciales inválidas')) {
+        errorMessage = 'Credenciales inválidas';
+      } else if (error.message.includes('Usuario inactivo')) {
+        errorMessage = 'Usuario inactivo';
+      }
+      
+      // Renderizar la página de login con el error
+      res.render('auth/login', { 
+        title: 'Iniciar Sesión',
+        error: errorMessage
       });
     }
   }
 );
 
-// POST /auth/login - Iniciar sesión
-router.post('/login', 
-  validacionesLogin, 
-  manejarErroresValidacion,
-  async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      const resultado = await AuthService.iniciarSesion(email, password);
+// POST /auth/login-test - Ruta de prueba sin validación
+router.post('/login-test', async (req, res) => {
+  try {
+    console.log('🧪 Ruta de prueba de login...');
+    const { email, password } = req.body;
+    console.log('📧 Email recibido:', email);
+    
+    const resultado = await AuthService.iniciarSesion(email, password, false); // Sin tokens, solo sesión
+    console.log('✅ Login exitoso, resultado:', resultado);
+    
+    // Crear sesión del usuario
+    req.session.userId = resultado.usuario.id;
+    req.session.userEmail = resultado.usuario.email;
+    req.session.userName = `${resultado.usuario.nombre} ${resultado.usuario.apellido}`;
+    req.session.userRole = resultado.usuario.rol;
+    
+    console.log('📝 Datos de sesión configurados:', {
+      userId: req.session.userId,
+      userEmail: req.session.userEmail,
+      userName: req.session.userName,
+      userRole: req.session.userRole
+    });
+    
+    // Guardar la sesión explícitamente
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Error al guardar sesión:', err);
+        return res.json({ error: 'Error al crear sesión' });
+      }
+      
+      console.log('💾 Sesión guardada exitosamente:', req.session);
       
       // Notificar por WebSocket si está disponible
       if (req.io) {
@@ -131,34 +238,64 @@ router.post('/login',
         });
       }
 
-      res.json({
-        mensaje: 'Inicio de sesión exitoso',
-        ...resultado
-      });
-    } catch (error) {
-      console.error('Error en login:', error);
-      
-      if (error.message.includes('Credenciales inválidas')) {
-        return res.status(401).json({
-          error: 'Credenciales inválidas',
-          code: 'INVALID_CREDENTIALS'
-        });
-      }
-      
-      if (error.message.includes('Usuario inactivo')) {
-        return res.status(403).json({
-          error: 'Usuario inactivo',
-          code: 'USER_INACTIVE'
-        });
-      }
-      
-      res.status(500).json({
-        error: 'Error interno del servidor',
-        code: 'INTERNAL_ERROR'
+      console.log('🔄 Redirigiendo al index principal...');
+      // Redirigir al index principal con sesión iniciada
+      res.redirect('/');
+    });
+  } catch (error) {
+    console.error('❌ Error en login de prueba:', error);
+    res.json({ error: error.message });
+  }
+});
+
+// POST /auth/login-simple - Ruta completamente simple
+router.post('/login-simple', async (req, res) => {
+  try {
+    console.log('🚀 Login simple iniciando...');
+    const { email, password } = req.body;
+    
+    // Buscar usuario directamente
+    const Usuario = require('../models/Usuario');
+    const usuario = await Usuario.findOne({ email });
+    
+    if (!usuario) {
+      return res.render('auth/login', { 
+        title: 'Iniciar Sesión',
+        error: 'Credenciales inválidas'
       });
     }
+    
+    // Verificar contraseña
+    const passwordValida = await usuario.compararPassword(password);
+    if (!passwordValida) {
+      return res.render('auth/login', { 
+        title: 'Iniciar Sesión',
+        error: 'Credenciales inválidas'
+      });
+    }
+    
+    console.log('✅ Usuario autenticado:', usuario.nombre);
+    
+    // Crear sesión
+    req.session.userId = usuario._id;
+    req.session.userEmail = usuario.email;
+    req.session.userName = `${usuario.nombre} ${usuario.apellido}`;
+    req.session.userRole = usuario.rol;
+    
+    console.log('📝 Sesión creada:', req.session);
+    
+    // Redirigir inmediatamente
+    console.log('🔄 Redirigiendo...');
+    res.redirect('/');
+    
+  } catch (error) {
+    console.error('❌ Error en login simple:', error);
+    res.render('auth/login', { 
+      title: 'Iniciar Sesión',
+      error: 'Error interno del servidor'
+    });
   }
-);
+});
 
 // POST /auth/refresh - Renovar access token
 router.post('/refresh', async (req, res) => {
@@ -195,28 +332,28 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
-// POST /auth/logout - Cerrar sesión
-router.post('/logout', authenticateToken, async (req, res) => {
+// GET /auth/logout - Cerrar sesión
+router.get('/logout', (req, res) => {
   try {
-    await AuthService.cerrarSesion(req.usuario._id);
-    
     // Notificar por WebSocket si está disponible
-    if (req.io) {
+    if (req.io && req.session.userId) {
       req.io.emit('usuario_desconectado', {
         mensaje: 'Usuario desconectado',
-        usuario: req.usuario._id
+        usuario: req.session.userId
       });
     }
 
-    res.json({
-      mensaje: 'Sesión cerrada exitosamente'
+    // Destruir la sesión
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error al cerrar sesión:', err);
+      }
+      // Redirigir al inicio
+      res.redirect('/');
     });
   } catch (error) {
     console.error('Error en logout:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      code: 'INTERNAL_ERROR'
-    });
+    res.redirect('/');
   }
 });
 
@@ -279,6 +416,55 @@ router.get('/verificar', authenticateToken, (req, res) => {
     mensaje: 'Token válido',
     usuario: req.usuario
   });
+});
+
+// POST /auth/login-simple - Ruta completamente simple
+router.post('/login-simple', async (req, res) => {
+  try {
+    console.log('🚀 Login simple iniciando...');
+    const { email, password } = req.body;
+    
+    // Buscar usuario directamente
+    const Usuario = require('../models/Usuario');
+    const usuario = await Usuario.findOne({ email });
+    
+    if (!usuario) {
+      return res.render('auth/login', { 
+        title: 'Iniciar Sesión',
+        error: 'Credenciales inválidas'
+      });
+    }
+    
+    // Verificar contraseña
+    const passwordValida = await usuario.compararPassword(password);
+    if (!passwordValida) {
+      return res.render('auth/login', { 
+        title: 'Iniciar Sesión',
+        error: 'Credenciales inválidas'
+      });
+    }
+    
+    console.log('✅ Usuario autenticado:', usuario.nombre);
+    
+    // Crear sesión
+    req.session.userId = usuario._id;
+    req.session.userEmail = usuario.email;
+    req.session.userName = `${usuario.nombre} ${usuario.apellido}`;
+    req.session.userRole = usuario.rol;
+    
+    console.log('📝 Sesión creada:', req.session);
+    
+    // Redirigir inmediatamente
+    console.log('🔄 Redirigiendo...');
+    res.redirect('/');
+    
+  } catch (error) {
+    console.error('❌ Error en login simple:', error);
+    res.render('auth/login', { 
+      title: 'Iniciar Sesión',
+      error: 'Error interno del servidor'
+    });
+  }
 });
 
 module.exports = router;

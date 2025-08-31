@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
@@ -22,7 +23,7 @@ const elegibilidadRoutes = require('./routes/elegibilidad');
 const previasRoutes = require('./routes/previas');
 
 // Importar middleware de autenticación
-const { authenticateToken } = require('./middleware/auth');
+const { authenticateToken, checkSession } = require('./middleware/auth');
 
 // Configuración de middleware
 app.use(helmet());
@@ -31,6 +32,18 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Configuración de sesiones
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'matriculatec-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 horas
+  }
+}));
 
 // Configurar EJS
 app.set('view engine', 'ejs');
@@ -66,17 +79,43 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rutas públicas
+// Rutas públicas (sin verificación de sesión)
 app.use('/auth', authRoutes);
 
-// Rutas protegidas
-app.use('/materias', authenticateToken, materiaRoutes);
-app.use('/elegibilidad', authenticateToken, elegibilidadRoutes);
-app.use('/previas', authenticateToken, previasRoutes);
+// Middleware para verificar sesión solo en rutas protegidas
+app.use('/materias', checkSession, authenticateToken, materiaRoutes);
+app.use('/elegibilidad', checkSession, authenticateToken, elegibilidadRoutes);
+app.use('/previas', checkSession, authenticateToken, previasRoutes);
 
-// Ruta principal
-app.get('/', (req, res) => {
-  res.render('index', { title: 'Sistema de Elegibilidad de Materias' });
+// Ruta principal con verificación de sesión
+app.get('/', checkSession, (req, res) => {
+  console.log('🏠 Accediendo a página principal...');
+  console.log('Estado de autenticación:', req.isAuthenticated);
+  console.log('Usuario en request:', req.usuario);
+  
+  res.render('index', { 
+    title: 'Sistema de Elegibilidad de Materias',
+    isAuthenticated: req.isAuthenticated,
+    usuario: req.usuario
+  });
+});
+
+// Ruta del dashboard con verificación de sesión
+app.get('/dashboard', checkSession, (req, res) => {
+  console.log('Accediendo a dashboard, isAuthenticated:', req.isAuthenticated);
+  console.log('Usuario en request:', req.usuario);
+  
+  if (!req.isAuthenticated) {
+    console.log('Usuario no autenticado, redirigiendo a login');
+    return res.redirect('/auth/login');
+  }
+  
+  console.log('Usuario autenticado, renderizando dashboard');
+  res.render('dashboard', { 
+    title: 'Dashboard - MATRICULATEC',
+    usuario: req.usuario,
+    isAuthenticated: true
+  });
 });
 
 // Manejo de errores 404

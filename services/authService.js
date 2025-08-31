@@ -70,7 +70,7 @@ class AuthService {
   }
 
   // Iniciar sesión
-  static async iniciarSesion(email, password) {
+  static async iniciarSesion(email, password, conTokens = true) {
     try {
       // Buscar usuario por email
       const usuario = await Usuario.findOne({ email });
@@ -89,30 +89,48 @@ class AuthService {
         throw new Error('Usuario inactivo');
       }
 
-      // Generar tokens
-      const { accessToken, refreshToken } = this.generateTokens(
-        usuario._id,
-        usuario.email,
-        usuario.rol
-      );
+      // Si se requieren tokens (para API)
+      if (conTokens) {
+        // Generar tokens
+        const { accessToken, refreshToken } = this.generateTokens(
+          usuario._id,
+          usuario.email,
+          usuario.rol
+        );
 
-      // Actualizar refresh token y último acceso
-      usuario.refreshToken = refreshToken;
-      usuario.ultimoAcceso = new Date();
-      await usuario.save();
+        // Actualizar refresh token y último acceso
+        usuario.refreshToken = refreshToken;
+        usuario.ultimoAcceso = new Date();
+        await usuario.save();
 
-      return {
-        usuario: {
-          id: usuario._id,
-          email: usuario.email,
-          nombre: usuario.nombre,
-          apellido: usuario.apellido,
-          rol: usuario.rol,
-          legajo: usuario.legajo
-        },
-        accessToken,
-        refreshToken
-      };
+        return {
+          usuario: {
+            id: usuario._id,
+            email: usuario.email,
+            nombre: usuario.nombre,
+            apellido: usuario.apellido,
+            rol: usuario.rol,
+            legajo: usuario.legajo
+          },
+          accessToken,
+          refreshToken
+        };
+      } else {
+        // Solo para sesiones (sin tokens)
+        usuario.ultimoAcceso = new Date();
+        await usuario.save();
+
+        return {
+          usuario: {
+            id: usuario._id,
+            email: usuario.email,
+            nombre: usuario.nombre,
+            apellido: usuario.apellido,
+            rol: usuario.rol,
+            legajo: usuario.legajo
+          }
+        };
+      }
     } catch (error) {
       throw error;
     }
