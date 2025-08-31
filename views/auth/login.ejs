@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - UTEC</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --utec-primary: #1e3a8a;
+            --utec-secondary: #3b82f6;
+            --utec-accent: #06b6d4;
+            --utec-success: #10b981;
+            --utec-warning: #f59e0b;
+            --utec-danger: #ef4444;
+            --utec-dark: #1f2937;
+            --utec-light: #f8fafc;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px;
+            min-height: 600px;
+        }
+        
+        .login-left {
+            background: linear-gradient(135deg, var(--utec-primary) 0%, var(--utec-secondary) 100%);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
+            background-size: cover;
+        }
+        
+        .login-left-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .login-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .login-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .login-features {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .login-features li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .login-features i {
+            margin-right: 1rem;
+            color: var(--utec-accent);
+            font-size: 1.2rem;
+        }
+        
+        .login-right {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .form-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--utec-dark);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .form-subtitle {
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--utec-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        
+        .form-control:focus {
+            border-color: var(--utec-primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            background: white;
+        }
+        
+        .input-group-text {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-right: none;
+            color: #6b7280;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--utec-primary), var(--utec-secondary));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+            color: white;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-social {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            color: var(--utec-dark);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-social:hover {
+            border-color: var(--utec-primary);
+            color: var(--utec-primary);
+            transform: translateY(-2px);
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .forgot-password a {
+            color: var(--utec-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .register-link a {
+            color: var(--utec-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .alert-success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border-left: 4px solid #16a34a;
+        }
+        
+        @media (max-width: 768px) {
+            .login-left {
+                display: none;
+            }
+            
+            .login-right {
+                padding: 2rem;
+            }
+            
+            .login-container {
+                max-width: 500px;
+                margin: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="row g-0 h-100">
+            <!-- Left Side - Branding -->
+            <div class="col-lg-6 login-left">
+                <div class="login-left-content">
+                                                    <div class="login-logo">
+                                    <i class="fas fa-graduation-cap me-2"></i>
+                                    <strong>MATRICULATEC</strong>
+                                </div>
+                    <h1 class="login-title">Bienvenido de Vuelta</h1>
+                    <p class="login-subtitle">
+                        Accede a tu cuenta para continuar gestionando tu progreso académico de manera inteligente.
+                    </p>
+                    <ul class="login-features">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            Verifica elegibilidad de materias
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            Planifica tu semestre
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            Monitorea tu progreso
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            Acceso desde cualquier dispositivo
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Right Side - Login Form -->
+            <div class="col-lg-6 login-right">
+                <div class="text-center mb-4">
+                    <h2 class="form-title">Iniciar Sesión</h2>
+                    <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
+                </div>
+                
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <%= error %>
+                    </div>
+                <% } %>
+                
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <%= success %>
+                    </div>
+                <% } %>
+                
+                <form action="/auth/login" method="POST">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="tu@email.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Tu contraseña" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Iniciar Sesión
+                    </button>
+                </form>
+                
+                <div class="forgot-password">
+                    <a href="/auth/recuperar-password">¿Olvidaste tu contraseña?</a>
+                </div>
+                
+                <div class="divider">
+                    <span>o continúa con</span>
+                </div>
+                
+                <div class="social-login">
+                    <a href="#" class="btn-social">
+                        <i class="fab fa-google"></i>
+                        Google
+                    </a>
+                    <a href="#" class="btn-social">
+                        <i class="fab fa-microsoft"></i>
+                        Microsoft
+                    </a>
+                </div>
+                
+                <div class="register-link">
+                    <p class="mb-0">
+                        ¿No tienes una cuenta? 
+                        <a href="/auth/registro">Regístrate aquí</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
