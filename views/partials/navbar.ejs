@@ -2,7 +2,7 @@
     <div class="container">
         <a class="navbar-brand" href="/">
             <i class="fas fa-graduation-cap me-2"></i>
-            Sistema de Elegibilidad
+            Matriculatec
         </a>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -37,20 +37,29 @@
                     <% } %>
                     
                     <% if (usuario.rol === 'administrador') { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/dashboard">
-                                <i class="fas fa-cogs me-1"></i>Panel Admin
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-shield me-1"></i>Administración
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/materias">
-                                <i class="fas fa-book me-1"></i>Gestionar Materias
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/usuarios">
-                                <i class="fas fa-users me-1"></i>Gestionar Usuarios
-                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/admin">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Panel Principal
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/admin/usuarios">
+                                    <i class="fas fa-users me-2"></i>Gestionar Usuarios
+                                </a></li>
+                                <li><a class="dropdown-item" href="/admin/materias">
+                                    <i class="fas fa-book me-2"></i>Gestionar Materias
+                                </a></li>
+                                <li><a class="dropdown-item" href="/admin/previas">
+                                    <i class="fas fa-link me-2"></i>Gestionar Previa
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/admin/estadisticas">
+                                    <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                                </a></li>
+                            </ul>
                         </li>
                     <% } %>
                 <% } %>

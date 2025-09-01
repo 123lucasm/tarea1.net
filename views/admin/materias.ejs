@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Materias - MATRICULATEC</title>
+    
+    <!-- Tailwind CSS Local -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <!-- Admin CSS Personalizado -->
+    <link rel="stylesheet" href="/css/admin.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="bg-utec-light font-inter">
+    <!-- Navigation -->
+    <nav class="admin-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="nav-brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Panel Admin</h1>
+                        <p>MATRICULATEC</p>
+                    </div>
+                </div>
+                <div class="nav-user">
+                    <div class="user-info">
+                        <p class="user-name"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                        <p class="user-role">Administrador</p>
+                    </div>
+                    <div class="nav-actions">
+                        <div class="connection-status" id="connection-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="status-text">Conectando...</span>
+                        </div>
+                        <a href="/admin">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="/admin/usuarios">
+                            <i class="fas fa-users"></i>
+                            <span>Usuarios</span>
+                        </a>
+                        <a href="/auth/logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Salir</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <h1 class="welcome-title">
+                        <i class="fas fa-book mr-4"></i>
+                        Gestión de Materias
+                    </h1>
+                    <p class="welcome-subtitle">
+                        Administra el catálogo académico y configura las materias del sistema
+                    </p>
+                    <div class="welcome-info">
+                        <div class="welcome-info-item">
+                            <i class="fas fa-book"></i>
+                            <span id="total-materias">0 materias</span>
+                        </div>
+                        <div class="welcome-info-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Crear nueva materia</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Materias -->
+            <div class="stat-card emerald">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon emerald">
+                        <i class="fas fa-book text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="total-materias-count">0</p>
+                        <p class="stat-label">materias</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Total Materias</h3>
+                <p class="stat-description">En el catálogo</p>
+            </div>
+
+            <!-- Materias Activas -->
+            <div class="stat-card indigo">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon indigo">
+                        <i class="fas fa-check-circle text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="materias-activas-count">0</p>
+                        <p class="stat-label">activas</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Materias Activas</h3>
+                <p class="stat-description">Disponibles</p>
+            </div>
+
+            <!-- Total Créditos -->
+            <div class="stat-card amber">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon amber">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="total-creditos-count">0</p>
+                        <p class="stat-label">créditos</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Total Créditos</h3>
+                <p class="stat-description">Acumulados</p>
+            </div>
+
+            <!-- Semestres -->
+            <div class="stat-card violet">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon violet">
+                        <i class="fas fa-calendar-alt text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="semestres-count">0</p>
+                        <p class="stat-label">semestres</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Semestres</h3>
+                <p class="stat-description">Diferentes</p>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="card-utec mb-8">
+            <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                    <!-- Search -->
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400"></i>
+                        </div>
+                        <input type="text" id="search-input" placeholder="Buscar por nombre, código o semestre..." 
+                               class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                    
+                    <!-- Filter by Status -->
+                    <select id="status-filter" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">Todas las materias</option>
+                        <option value="activa">Solo activas</option>
+                        <option value="inactiva">Solo inactivas</option>
+                    </select>
+                    
+                    <!-- Filter by Semester -->
+                    <select id="semester-filter" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">Todos los semestres</option>
+                    </select>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button onclick="cargarMaterias()" class="btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualizar
+                    </button>
+                    <button onclick="mostrarFormularioCrear()" class="btn-success">
+                        <i class="fas fa-plus"></i>
+                        Nueva Materia
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Materias Table -->
+        <div class="card-utec">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-book mr-2"></i>
+                                    <span>Materia</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-hashtag mr-2"></i>
+                                    <span>Código</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-graduation-cap mr-2"></i>
+                                    <span>Créditos</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2"></i>
+                                    <span>Semestre</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-users mr-2"></i>
+                                    <span>Cupo</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-toggle-on mr-2"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    <span>Acciones</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="materias-table-body" class="bg-white divide-y divide-slate-200">
+                        <!-- Loading state -->
+                        <tr id="loading-row">
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-spinner fa-spin text-4xl text-slate-400 mb-4"></i>
+                                    <p class="text-slate-500">Cargando materias...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div id="pagination-container" class="px-6 py-4 border-t border-slate-200 bg-slate-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center text-sm text-slate-700">
+                        <span id="pagination-info">Mostrando 0 de 0 materias</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="prev-page" onclick="cambiarPagina(-1)" 
+                                class="px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        
+                        <div id="page-numbers" class="flex space-x-1">
+                            <!-- Page numbers will be generated here -->
+                        </div>
+                        
+                        <button id="next-page" onclick="cambiarPagina(1)" 
+                                class="px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar materia -->
+    <div id="materia-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800" id="modal-title">Nueva Materia</h3>
+                        <button onclick="cerrarModal()" class="text-slate-400 hover:text-slate-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <form id="materia-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre</label>
+                                <input type="text" id="materia-nombre" name="nombre" required
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Código</label>
+                                <input type="text" id="materia-codigo" name="codigo" required
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Créditos</label>
+                                <input type="number" id="materia-creditos" name="creditos" min="1" max="20" required
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Semestre</label>
+                                <select id="materia-semestre" name="semestre" required
+                                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                                    <option value="">Seleccionar semestre</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Descripción</label>
+                            <textarea id="materia-descripcion" name="descripcion" rows="3"
+                                      class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Cupo Máximo</label>
+                                <input type="number" id="materia-cupo-maximo" name="cupoMaximo" min="1" value="50"
+                                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Estado</label>
+                                <select id="materia-activa" name="activa"
+                                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                                    <option value="true">Activa</option>
+                                    <option value="false">Inactiva</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="cerrarModal()" class="btn-secondary">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-success">
+                                <i class="fas fa-save"></i>
+                                Guardar Materia
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Inicializar Socket.IO
+        const socket = io();
+        
+        // Variables globales para paginación
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalMaterias = 0;
+        let currentFilters = {
+            search: '',
+            status: '',
+            semester: ''
+        };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar materias
+            cargarMaterias();
+            
+            // Cargar semestres para filtros
+            cargarSemestres();
+            
+            // Configurar eventos de Socket.IO
+            configurarSocketEvents();
+            
+            // Configurar filtros
+            configurarFiltros();
+            
+            // Configurar formulario
+            configurarFormulario();
+        });
+        
+        function configurarSocketEvents() {
+            // Escuchar nuevas materias
+            socket.on('nueva-materia', function(materia) {
+                console.log('Nueva materia creada:', materia);
+                mostrarNotificacion('Nueva materia creada', `${materia.nombre} (${materia.codigo}) fue agregada`);
+                cargarMaterias();
+            });
+            
+            // Verificar conexión
+            socket.on('connect', function() {
+                console.log('Conectado a Socket.IO');
+                actualizarEstadoConexion('connected', 'Conectado');
+            });
+            
+            socket.on('disconnect', function() {
+                console.log('Desconectado de Socket.IO');
+                actualizarEstadoConexion('disconnected', 'Desconectado');
+            });
+        }
+        
+        function actualizarEstadoConexion(estado, texto) {
+            const indicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            if (indicator && statusText) {
+                indicator.className = `status-indicator ${estado}`;
+                statusText.textContent = texto;
+            }
+        }
+        
+        function mostrarNotificacion(titulo, mensaje) {
+            console.log('Mostrando notificación:', titulo, mensaje);
+            
+            const notificacion = document.createElement('div');
+            notificacion.className = 'fixed top-4 right-4 bg-white border-l-4 border-emerald-500 shadow-lg rounded-lg p-4 z-50 max-w-sm transform transition-all duration-300 ease-in-out';
+            notificacion.style.transform = 'translateX(100%)';
+            notificacion.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-bell text-emerald-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-slate-900">${titulo}</p>
+                        <p class="text-sm text-slate-500">${mensaje}</p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notificacion);
+            
+            setTimeout(() => {
+                notificacion.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                if (notificacion.parentElement) {
+                    notificacion.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notificacion.parentElement) {
+                            notificacion.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+        
+        async function cargarMaterias(page = 1) {
+            try {
+                // Construir URL con parámetros de paginación y filtros
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 10,
+                    ...currentFilters
+                });
+                
+                const url = `/admin/api/materias?${params}`;
+                console.log('Cargando materias desde:', url);
+                
+                const response = await fetch(url, {
+                    credentials: 'same-origin'
+                });
+                
+                console.log('Respuesta recibida:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error del servidor:', errorText);
+                    throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Datos cargados:', data);
+                
+                // Verificar si la respuesta tiene la estructura esperada
+                if (!data.pagination) {
+                    console.error('Respuesta de API no tiene paginación:', data);
+                    
+                    // Fallback: si es un array directo (API antigua)
+                    if (Array.isArray(data)) {
+                        console.log('Usando fallback para array directo con', data.length, 'materias');
+                        currentPage = 1;
+                        totalPages = 1;
+                        totalMaterias = data.length;
+                        
+                        actualizarEstadisticas(data);
+                        mostrarMaterias(data);
+                        actualizarPaginacion();
+                        return;
+                    }
+                    
+                    throw new Error('Formato de respuesta inválido');
+                }
+                
+                // Actualizar variables globales
+                currentPage = data.pagination.currentPage;
+                totalPages = data.pagination.totalPages;
+                totalMaterias = data.pagination.totalMaterias;
+                
+                // Actualizar estadísticas
+                actualizarEstadisticas(data.materias);
+                
+                // Mostrar materias en la tabla
+                mostrarMaterias(data.materias);
+                
+                // Actualizar controles de paginación
+                actualizarPaginacion();
+                
+            } catch (error) {
+                console.error('Error cargando materias:', error);
+                
+                // Mostrar error más detallado
+                const errorMessage = error.message || 'Error desconocido';
+                mostrarError('Error cargando materias', errorMessage);
+                
+                // Resetear variables de paginación en caso de error
+                currentPage = 1;
+                totalPages = 1;
+                totalMaterias = 0;
+                actualizarPaginacion();
+            }
+        }
+        
+        function actualizarEstadisticas(materias) {
+            const materiasActivas = materias.filter(m => m.activa).length;
+            const totalCreditos = materias.reduce((sum, m) => sum + (m.creditos || 0), 0);
+            const semestresUnicos = new Set(materias.map(m => m.semestre?.nombre).filter(Boolean)).size;
+            
+            // Usar el total de materias de la paginación
+            document.getElementById('total-materias-count').textContent = totalMaterias;
+            document.getElementById('materias-activas-count').textContent = materiasActivas;
+            document.getElementById('total-creditos-count').textContent = totalCreditos;
+            document.getElementById('semestres-count').textContent = semestresUnicos;
+            document.getElementById('total-materias').textContent = `${totalMaterias} materias`;
+        }
+        
+        function mostrarMaterias(materias) {
+            const tbody = document.getElementById('materias-table-body');
+            const loadingRow = document.getElementById('loading-row');
+            
+            if (loadingRow) {
+                loadingRow.remove();
+            }
+            
+            if (materias.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-book text-4xl text-slate-400 mb-4"></i>
+                                <p class="text-slate-500">No hay materias registradas</p>
+                                <button onclick="mostrarFormularioCrear()" class="btn-success mt-4">
+                                    <i class="fas fa-plus"></i>
+                                    Crear Primera Materia
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = materias.map(materia => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">${materia.nombre}</div>
+                            <div class="text-xs text-slate-500">${materia.descripcion || 'Sin descripción'}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                            ${materia.codigo}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                        ${materia.creditos || 0}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                        ${materia.semestre?.nombre || 'Sin semestre'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                        <div class="flex items-center">
+                            <span class="text-slate-600">${materia.cupoDisponible || 0}/${materia.cupoMaximo || 50}</span>
+                            <div class="ml-2 w-16 bg-slate-200 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: ${((materia.cupoDisponible || 0) / (materia.cupoMaximo || 50)) * 100}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${materia.activa ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                            <i class="fas fa-${materia.activa ? 'check' : 'times'} mr-1"></i>
+                            ${materia.activa ? 'Activa' : 'Inactiva'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="editarMateria('${materia._id}')" class="text-indigo-600 hover:text-indigo-900">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="eliminarMateria('${materia._id}')" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function cargarSemestres() {
+            try {
+                const response = await fetch('/admin/api/semestres', {
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
+                
+                const semestres = await response.json();
+                console.log('Semestres cargados:', semestres);
+                
+                const semesterFilter = document.getElementById('semester-filter');
+                const materiaSemestre = document.getElementById('materia-semestre');
+                
+                // Llenar filtro de semestres
+                semesterFilter.innerHTML = '<option value="">Todos los semestres</option>' +
+                    semestres.map(s => `<option value="${s._id}">${s.nombre}</option>`).join('');
+                
+                // Llenar select del formulario
+                materiaSemestre.innerHTML = '<option value="">Seleccionar semestre</option>' +
+                    semestres.map(s => `<option value="${s._id}">${s.nombre}</option>`).join('');
+                    
+            } catch (error) {
+                console.error('Error cargando semestres:', error);
+                // Fallback a semestres hardcodeados si falla la API
+                const semestres = [
+                    { _id: '1', nombre: 'Primer Semestre' },
+                    { _id: '2', nombre: 'Segundo Semestre' },
+                    { _id: '3', nombre: 'Tercer Semestre' },
+                    { _id: '4', nombre: 'Cuarto Semestre' },
+                    { _id: '5', nombre: 'Quinto Semestre' },
+                    { _id: '6', nombre: 'Sexto Semestre' },
+                    { _id: '7', nombre: 'Séptimo Semestre' },
+                    { _id: '8', nombre: 'Octavo Semestre' }
+                ];
+                
+                const semesterFilter = document.getElementById('semester-filter');
+                const materiaSemestre = document.getElementById('materia-semestre');
+                
+                semesterFilter.innerHTML = '<option value="">Todos los semestres</option>' +
+                    semestres.map(s => `<option value="${s._id}">${s.nombre}</option>`).join('');
+                
+                materiaSemestre.innerHTML = '<option value="">Seleccionar semestre</option>' +
+                    semestres.map(s => `<option value="${s._id}">${s.nombre}</option>`).join('');
+            }
+        }
+        
+        function configurarFiltros() {
+            const searchInput = document.getElementById('search-input');
+            const statusFilter = document.getElementById('status-filter');
+            const semesterFilter = document.getElementById('semester-filter');
+            
+            // Para búsqueda, usar debounce para evitar muchas peticiones
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    aplicarFiltros();
+                }, 500); // Esperar 500ms después del último input
+            });
+            
+            // Para los selects, aplicar filtros inmediatamente
+            [statusFilter, semesterFilter].forEach(element => {
+                element.addEventListener('change', aplicarFiltros);
+            });
+        }
+        
+        function aplicarFiltros() {
+            // Obtener valores de los filtros
+            currentFilters.search = document.getElementById('search-input').value;
+            currentFilters.status = document.getElementById('status-filter').value;
+            currentFilters.semester = document.getElementById('semester-filter').value;
+            
+            // Resetear a la primera página
+            currentPage = 1;
+            
+            // Recargar materias con filtros
+            cargarMaterias(1);
+        }
+        
+        function cambiarPagina(direction) {
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                cargarMaterias(newPage);
+            }
+        }
+        
+        function irAPagina(page) {
+            if (page >= 1 && page <= totalPages) {
+                cargarMaterias(page);
+            }
+        }
+        
+        function actualizarPaginacion() {
+            const paginationInfo = document.getElementById('pagination-info');
+            const prevButton = document.getElementById('prev-page');
+            const nextButton = document.getElementById('next-page');
+            const pageNumbers = document.getElementById('page-numbers');
+            
+            // Actualizar información de paginación
+            const startItem = (currentPage - 1) * 10 + 1;
+            const endItem = Math.min(currentPage * 10, totalMaterias);
+            paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${totalMaterias} materias`;
+            
+            // Actualizar botones de navegación
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages;
+            
+            // Generar números de página
+            pageNumbers.innerHTML = '';
+            
+            // Mostrar máximo 5 páginas
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            // Ajustar si estamos cerca del final
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // Botón "Primera página" si no está visible
+            if (startPage > 1) {
+                const firstButton = document.createElement('button');
+                firstButton.textContent = '1';
+                firstButton.className = 'px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50';
+                firstButton.onclick = () => irAPagina(1);
+                pageNumbers.appendChild(firstButton);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.className = 'px-2 py-1 text-sm text-slate-500';
+                    pageNumbers.appendChild(ellipsis);
+                }
+            }
+            
+            // Números de página
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = `px-3 py-1 text-sm border rounded-md ${
+                    i === currentPage 
+                        ? 'bg-emerald-500 text-white border-emerald-500' 
+                        : 'bg-white border-slate-300 hover:bg-slate-50'
+                }`;
+                pageButton.onclick = () => irAPagina(i);
+                pageNumbers.appendChild(pageButton);
+            }
+            
+            // Botón "Última página" si no está visible
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.className = 'px-2 py-1 text-sm text-slate-500';
+                    pageNumbers.appendChild(ellipsis);
+                }
+                
+                const lastButton = document.createElement('button');
+                lastButton.textContent = totalPages;
+                lastButton.className = 'px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50';
+                lastButton.onclick = () => irAPagina(totalPages);
+                pageNumbers.appendChild(lastButton);
+            }
+        }
+        
+        function configurarFormulario() {
+            const form = document.getElementById('materia-form');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const materiaData = {
+                    nombre: formData.get('nombre'),
+                    codigo: formData.get('codigo'),
+                    creditos: parseInt(formData.get('creditos')),
+                    semestre: formData.get('semestre'),
+                    descripcion: formData.get('descripcion'),
+                    cupoMaximo: parseInt(formData.get('cupoMaximo')),
+                    activa: formData.get('activa') === 'true'
+                };
+                
+                try {
+                    const response = await fetch('/admin/api/materias', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(materiaData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error del servidor: ${response.status}`);
+                    }
+                    
+                    const nuevaMateria = await response.json();
+                    console.log('Materia creada:', nuevaMateria);
+                    
+                    mostrarNotificacion('Materia creada', `${nuevaMateria.nombre} (${nuevaMateria.codigo}) fue creada exitosamente`);
+                    
+                    cerrarModal();
+                    cargarMaterias();
+                    
+                } catch (error) {
+                    console.error('Error creando materia:', error);
+                    mostrarNotificacion('Error', 'No se pudo crear la materia: ' + error.message);
+                }
+            });
+        }
+        
+        function mostrarFormularioCrear() {
+            document.getElementById('modal-title').textContent = 'Nueva Materia';
+            document.getElementById('materia-form').reset();
+            document.getElementById('materia-modal').classList.remove('hidden');
+        }
+        
+        function editarMateria(id) {
+            console.log('Editando materia:', id);
+            // Implementar edición
+        }
+        
+        function eliminarMateria(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta materia?')) {
+                console.log('Eliminando materia:', id);
+                // Implementar eliminación
+            }
+        }
+        
+        function cerrarModal() {
+            document.getElementById('materia-modal').classList.add('hidden');
+        }
+        
+        function mostrarError(titulo, mensaje) {
+            const tbody = document.getElementById('materias-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                            <p class="text-red-500">${titulo}</p>
+                            <p class="text-sm text-slate-500 mt-2">${mensaje}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -15,7 +15,7 @@ const usuariosPrueba = [
         nombre: 'Administrador',
         apellido: 'Sistema',
         rol: 'administrador',
-        legajo: 'ADM001'
+        cedula: '12345678'
     },
     {
         email: 'estudiante1@universidad.edu',
@@ -23,7 +23,7 @@ const usuariosPrueba = [
         nombre: 'Juan',
         apellido: 'Pérez',
         rol: 'estudiante',
-        legajo: 'EST001'
+        cedula: '87654321'
     },
     {
         email: 'estudiante2@universidad.edu',
@@ -31,7 +31,7 @@ const usuariosPrueba = [
         nombre: 'María',
         apellido: 'González',
         rol: 'estudiante',
-        legajo: 'EST002'
+        cedula: '11223344'
     }
 ];
 
@@ -467,7 +467,7 @@ async function seed() {
         
         // Crear historial académico
         console.log('📊 Creando historial académico...');
-        const estudiante1 = usuariosCreados.find(u => u.legajo === 'EST001');
+        const estudiante1 = usuariosCreados.find(u => u.cedula === '87654321');
         const arq101Hist = materiasCreadas.find(m => m.codigo === 'ARQ101');
         const dis101Hist = materiasCreadas.find(m => m.codigo === 'DIS101');
         const prog101Hist = materiasCreadas.find(m => m.codigo === 'PROG101');
@@ -479,7 +479,7 @@ async function seed() {
                 materia: arq101Hist._id
             });
             await historial1.save();
-            console.log('✅ Historial creado: EST001 - ARQ101');
+            console.log('✅ Historial creado: 87654321 - ARQ101');
         }
         
         if (estudiante1 && dis101Hist) {
@@ -489,7 +489,7 @@ async function seed() {
                 materia: dis101Hist._id
             });
             await historial2.save();
-            console.log('✅ Historial creado: EST001 - DIS101');
+            console.log('✅ Historial creado: 87654321 - DIS101');
         }
         
         if (estudiante1 && prog101Hist) {
@@ -499,7 +499,7 @@ async function seed() {
                 materia: prog101Hist._id
             });
             await historial3.save();
-            console.log('✅ Historial creado: EST001 - PROG101');
+            console.log('✅ Historial creado: 87654321 - PROG101');
         }
         
         console.log('\n🎉 ¡Seed completado exitosamente!');
@@ -511,8 +511,8 @@ async function seed() {
         
         console.log('\n🔑 Credenciales de prueba:');
         console.log('   👨‍💼 Admin: admin@universidad.edu / admin123');
-        console.log('   👨‍🎓 Estudiante 1: estudiante1@universidad.edu / estudiante123');
-        console.log('   👩‍🎓 Estudiante 2: estudiante2@universidad.edu / estudiante123');
+        console.log('   👨‍🎓 Estudiante 1: estudiante1@universidad.edu / estudiante123 (Cédula: 87654321)');
+        console.log('   👩‍🎓 Estudiante 2: estudiante2@universidad.edu / estudiante123 (Cédula: 11223344)');
         
         console.log('\n🚀 Puedes iniciar la aplicación con: npm run dev');
         

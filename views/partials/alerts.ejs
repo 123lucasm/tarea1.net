@@ -1,0 +1,38 @@
+<!-- Sistema de Alertas -->
+<% if (typeof alerts !== 'undefined' && alerts.length > 0) { %>
+  <div class="container-fluid">
+    <% alerts.forEach(alert => { %>
+      <div class="alert alert-<%= alert.type %> alert-dismissible fade show" role="alert">
+        <i class="fas fa-<%= alert.type === 'success' ? 'check-circle' : alert.type === 'danger' ? 'exclamation-triangle' : alert.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> me-2"></i>
+        <%= alert.message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<!-- Sistema de Mensajes Flash -->
+<% if (typeof messages !== 'undefined' && messages.length > 0) { %>
+  <div class="container-fluid">
+    <% messages.forEach(message => { %>
+      <div class="alert alert-<%= message.type || 'info' %> alert-dismissible fade show" role="alert">
+        <i class="fas fa-<%= message.type === 'success' ? 'check-circle' : message.type === 'danger' ? 'exclamation-triangle' : message.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> me-2"></i>
+        <%= message.text %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<!-- Sistema de Notificaciones -->
+<% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
+  <div class="container-fluid">
+    <% notifications.forEach(notification => { %>
+      <div class="alert alert-<%= notification.type || 'info' %> alert-dismissible fade show" role="alert">
+        <i class="fas fa-<%= notification.type === 'success' ? 'check-circle' : notification.type === 'danger' ? 'exclamation-triangle' : notification.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> me-2"></i>
+        <%= notification.message %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% }); %>
+  </div>
+<% } %>

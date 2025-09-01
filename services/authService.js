@@ -29,11 +29,11 @@ class AuthService {
         throw new Error('El email ya está registrado');
       }
 
-      // Verificar si el legajo ya existe (si se proporciona)
-      if (userData.legajo) {
-        const legajoExistente = await Usuario.findOne({ legajo: userData.legajo });
-        if (legajoExistente) {
-          throw new Error('El legajo ya está registrado');
+      // Verificar si la cédula ya existe
+      if (userData.cedula) {
+        const cedulaExistente = await Usuario.findOne({ cedula: userData.cedula });
+        if (cedulaExistente) {
+          throw new Error('La cédula ya está registrada');
         }
       }
 

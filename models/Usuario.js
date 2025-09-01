@@ -30,10 +30,11 @@ const usuarioSchema = new mongoose.Schema({
     enum: ['estudiante', 'administrador'],
     default: 'estudiante'
   },
-  legajo: {
+  cedula: {
     type: String,
+    required: false, // Temporalmente opcional para usuarios existentes
     unique: true,
-    sparse: true,
+    sparse: true, // Permite múltiples valores null
     trim: true
   },
   activo: {
@@ -54,7 +55,7 @@ const usuarioSchema = new mongoose.Schema({
 // Índices para mejorar performance
 usuarioSchema.index({ email: 1 });
 usuarioSchema.index({ rol: 1 });
-usuarioSchema.index({ legajo: 1 });
+usuarioSchema.index({ cedula: 1 });
 
 // Método para hashear contraseña antes de guardar
 usuarioSchema.pre('save', async function(next) {

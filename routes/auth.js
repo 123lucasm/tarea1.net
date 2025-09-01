@@ -43,11 +43,10 @@ const validacionesRegistro = [
     .optional()
     .isIn(['estudiante', 'administrador'])
     .withMessage('Rol inválido'),
-  body('legajo')
-    .optional()
+  body('cedula')
     .trim()
-    .isLength({ min: 3 })
-    .withMessage('El legajo debe tener al menos 3 caracteres')
+    .isLength({ min: 7 })
+    .withMessage('La cédula debe tener al menos 7 caracteres')
 ];
 
 // Validaciones para login
@@ -105,9 +104,17 @@ router.post('/registro',
       
       // Notificar por WebSocket si está disponible
       if (req.io) {
+        console.log('Emitiendo evento usuario_registrado:', resultado.usuario);
         req.io.emit('usuario_registrado', {
           mensaje: 'Nuevo usuario registrado',
           usuario: resultado.usuario
+        });
+        
+        // También emitir evento genérico para compatibilidad
+        req.io.emit('nuevo-usuario', {
+          nombre: resultado.usuario.nombre,
+          apellido: resultado.usuario.apellido,
+          rol: resultado.usuario.rol
         });
       }
 
@@ -174,9 +181,9 @@ router.post('/login',
           });
         }
 
-        console.log('🔄 Redirigiendo al index principal...');
-        // Redirigir al index principal con sesión iniciada
-        res.redirect('/');
+        console.log('🔄 Redirigiendo según rol del usuario...');
+        // Redirigir según el rol del usuario
+        res.redirect('/dashboard');
       });
     } catch (error) {
       console.error('❌ Error en login:', error);
@@ -238,9 +245,9 @@ router.post('/login-test', async (req, res) => {
         });
       }
 
-      console.log('🔄 Redirigiendo al index principal...');
-      // Redirigir al index principal con sesión iniciada
-      res.redirect('/');
+      console.log('🔄 Redirigiendo según rol del usuario...');
+      // Redirigir según el rol del usuario
+      res.redirect('/dashboard');
     });
   } catch (error) {
     console.error('❌ Error en login de prueba:', error);
@@ -284,9 +291,9 @@ router.post('/login-simple', async (req, res) => {
     
     console.log('📝 Sesión creada:', req.session);
     
-    // Redirigir inmediatamente
-    console.log('🔄 Redirigiendo...');
-    res.redirect('/');
+    // Redirigir según el rol del usuario
+    console.log('🔄 Redirigiendo según rol del usuario...');
+    res.redirect('/dashboard');
     
   } catch (error) {
     console.error('❌ Error en login simple:', error);
@@ -367,6 +374,71 @@ router.get('/logout', (req, res) => {
     res.redirect('/');
   }
 });
+
+// POST /auth/actualizar-perfil - Actualizar perfil de usuario
+router.post('/actualizar-perfil', 
+  authenticateToken,
+  [
+    body('cedula')
+      .optional()
+      .trim()
+      .isLength({ min: 7 })
+      .withMessage('La cédula debe tener al menos 7 caracteres'),
+    body('nombre')
+      .optional()
+      .trim()
+      .isLength({ min: 2 })
+      .withMessage('El nombre debe tener al menos 2 caracteres'),
+    body('apellido')
+      .optional()
+      .trim()
+      .isLength({ min: 2 })
+      .withMessage('El apellido debe tener al menos 2 caracteres')
+  ],
+  manejarErroresValidacion,
+  async (req, res) => {
+    try {
+      const { cedula, nombre, apellido } = req.body;
+      const userId = req.user.userId;
+
+      // Verificar si la cédula ya existe (si se proporciona)
+      if (cedula) {
+        const cedulaExistente = await Usuario.findOne({ 
+          cedula: cedula,
+          _id: { $ne: userId }
+        });
+        if (cedulaExistente) {
+          return res.status(400).json({
+            error: 'La cédula ya está registrada por otro usuario'
+          });
+        }
+      }
+
+      // Actualizar usuario
+      const datosActualizacion = {};
+      if (cedula) datosActualizacion.cedula = cedula;
+      if (nombre) datosActualizacion.nombre = nombre;
+      if (apellido) datosActualizacion.apellido = apellido;
+
+      const usuarioActualizado = await Usuario.findByIdAndUpdate(
+        userId,
+        datosActualizacion,
+        { new: true }
+      ).select('-password -refreshToken');
+
+      res.json({
+        mensaje: 'Perfil actualizado exitosamente',
+        usuario: usuarioActualizado
+      });
+
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error);
+      res.status(500).json({
+        error: 'Error interno del servidor'
+      });
+    }
+  }
+);
 
 // POST /auth/cambiar-password - Cambiar contraseña
 router.post('/cambiar-password', 
@@ -465,9 +537,9 @@ router.post('/login-simple', async (req, res) => {
     
     console.log('📝 Sesión creada:', req.session);
     
-    // Redirigir inmediatamente
-    console.log('🔄 Redirigiendo...');
-    res.redirect('/');
+    // Redirigir según el rol del usuario
+    console.log('🔄 Redirigiendo según rol del usuario...');
+    res.redirect('/dashboard');
     
   } catch (error) {
     console.error('❌ Error en login simple:', error);

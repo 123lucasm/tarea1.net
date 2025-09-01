@@ -1,0 +1,617 @@
+/* Estilos personalizados para el panel de administrador */
+
+/* Navegación mejorada */
+.admin-nav {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    box-shadow: 0 4px 20px rgba(30, 58, 138, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-nav .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-nav .nav-brand .brand-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-nav .nav-brand .brand-text h1 {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.admin-nav .nav-brand .brand-text p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.admin-nav .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-nav .nav-user .user-info {
+    text-align: right;
+}
+
+.admin-nav .nav-user .user-info .user-name {
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.admin-nav .nav-user .user-info .user-role {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.admin-nav .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-nav .nav-actions a {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-nav .nav-actions a:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Sección de bienvenida mejorada */
+.welcome-section {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: 1px solid #475569;
+    border-radius: 24px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.3);
+}
+
+.welcome-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+.welcome-section::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -30%;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-20px, -20px) rotate(180deg); }
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 10;
+}
+
+.welcome-title {
+    color: white;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    line-height: 1.1;
+}
+
+.welcome-subtitle {
+    color: #cbd5e1;
+    font-size: 1.25rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.welcome-info {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.welcome-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(71, 85, 105, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+}
+
+.welcome-info-item i {
+    color: #94a3b8;
+}
+
+/* Botones mejorados */
+.btn-primary {
+    background: #1e3a8a;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.btn-primary:hover {
+    background: #1e40af;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-success {
+    background: #059669;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.btn-success:hover {
+    background: #047857;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Tarjetas mejoradas */
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: 0.1;
+    transform: translate(30px, -30px);
+}
+
+.stat-card.indigo::before {
+    background: #4f46e5;
+}
+
+.stat-card.emerald::before {
+    background: #059669;
+}
+
+.stat-card.amber::before {
+    background: #d97706;
+}
+
+.stat-card.violet::before {
+    background: #7c3aed;
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon.indigo {
+    background: #4f46e5;
+}
+
+.stat-icon.emerald {
+    background: #059669;
+}
+
+.stat-icon.amber {
+    background: #d97706;
+}
+
+.stat-icon.violet {
+    background: #7c3aed;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.stat-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.stat-description {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0 0 16px 0;
+}
+
+.stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stat-trend.positive {
+    color: #059669;
+}
+
+.stat-trend.live {
+    color: #7c3aed;
+}
+
+/* Actividad Reciente */
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid;
+    transition: all 0.2s ease;
+    margin-bottom: 12px;
+}
+
+.activity-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.activity-item.indigo {
+    background: linear-gradient(135deg, #eef2ff 0%, #f0f4ff 100%);
+    border-color: #c7d2fe;
+}
+
+.activity-item.emerald {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border-color: #bbf7d0;
+}
+
+.activity-item.amber {
+    background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
+    border-color: #fed7aa;
+}
+
+.activity-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.activity-icon.indigo {
+    background: #4f46e5;
+}
+
+.activity-icon.emerald {
+    background: #059669;
+}
+
+.activity-icon.amber {
+    background: #d97706;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+}
+
+.activity-description {
+    color: #64748b;
+    margin: 0 0 4px 0;
+    font-size: 0.875rem;
+}
+
+.activity-time {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.activity-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+.activity-badge.indigo {
+    background: #4f46e5;
+}
+
+.activity-badge.emerald {
+    background: #059669;
+}
+
+.activity-badge.amber {
+    background: #d97706;
+}
+
+/* Secciones de Gestión */
+.management-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.management-section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.management-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.1;
+    transform: translate(40px, -40px);
+}
+
+.management-section.indigo::before {
+    background: #4f46e5;
+}
+
+.management-section.emerald::before {
+    background: #059669;
+}
+
+.management-section.amber::before {
+    background: #d97706;
+}
+
+.management-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.management-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-right: 16px;
+}
+
+.management-icon.indigo {
+    background: #4f46e5;
+}
+
+.management-icon.emerald {
+    background: #059669;
+}
+
+.management-icon.amber {
+    background: #d97706;
+}
+
+.management-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
+
+.management-description {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.management-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1rem;
+    }
+    
+    .welcome-info {
+        flex-direction: column;
+    }
+    
+    .admin-nav .nav-user .user-info {
+        display: none;
+    }
+    
+    .activity-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .activity-icon {
+        margin-right: 0;
+        margin-bottom: 12px;
+    }
+    
+    .activity-badge {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+}
+
+/* Connection Status */
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-right: 16px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.connected {
+    background: #10b981;
+}
+
+.status-indicator.connecting {
+    background: #f59e0b;
+}
+
+#status-text {
+    font-size: 12px;
+    color: white;
+    font-weight: 500;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}

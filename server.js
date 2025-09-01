@@ -21,6 +21,8 @@ const authRoutes = require('./routes/auth');
 const materiaRoutes = require('./routes/materias');
 const elegibilidadRoutes = require('./routes/elegibilidad');
 const previasRoutes = require('./routes/previas');
+const adminRoutes = require('./routes/admin');
+
 
 // Importar middleware de autenticación
 const { checkSession, requireAuth } = require('./middleware/auth');
@@ -84,13 +86,31 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/tarea1_net', {
+// Conexión a MongoDB Atlas
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+  console.error('❌ MONGO_URI no está definido en las variables de entorno');
+  process.exit(1);
+}
+console.log('🔗 Conectando a MongoDB Atlas...');
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  dbName: 'tarea1_net'  // Forzar el uso de la base de datos tarea1_net
 })
-.then(() => console.log('✅ Conectado a MongoDB - Base de datos: tarea1_net'))
-.catch(err => console.error('❌ Error conectando a MongoDB:', err));
+.then(() => {
+  console.log('✅ Conectado a MongoDB Atlas');
+  console.log('✅ Usando base de datos: tarea1_net');
+})
+.catch(err => {
+  console.error('❌ Error conectando a MongoDB:', err.message);
+  console.log('💡 Sugerencias:');
+  console.log('   1. Verifica tu conexión a internet');
+  console.log('   2. Asegúrate de que MongoDB Atlas esté funcionando');
+  console.log('   3. Verifica que la URL en .env sea correcta');
+  console.log('   4. Verifica que tu IP esté en la whitelist de Atlas');
+});
 
 // Configuración de WebSockets
 io.on('connection', (socket) => {
@@ -115,11 +135,14 @@ app.use('/materias', checkSession, requireAuth, materiaRoutes);
 app.use('/elegibilidad', checkSession, requireAuth, elegibilidadRoutes);
 app.use('/previas', checkSession, requireAuth, previasRoutes);
 
+
 // Ruta principal con verificación de sesión
 app.get('/', checkSession, (req, res) => {
   console.log('🏠 Accediendo a página principal...');
   console.log('Estado de autenticación:', req.isAuthenticated);
   console.log('Usuario en request:', req.usuario);
+  
+
   
   res.render('index', { 
     title: 'Sistema de Elegibilidad de Materias',
@@ -138,6 +161,12 @@ app.get('/dashboard', checkSession, (req, res) => {
     return res.redirect('/auth/login');
   }
   
+  // Si es administrador, redirigir al panel de administrador
+  if (req.usuario && req.usuario.rol === 'administrador') {
+    console.log('Usuario administrador, redirigiendo al panel de admin');
+    return res.redirect('/admin');
+  }
+  
   console.log('Usuario autenticado, renderizando dashboard');
   res.render('dashboard', { 
     title: 'Dashboard - MATRICULATEC',
@@ -145,6 +174,23 @@ app.get('/dashboard', checkSession, (req, res) => {
     isAuthenticated: true
   });
 });
+
+// Ruta de prueba de Tailwind CSS
+app.get('/tailwind-test', (req, res) => {
+  res.render('tailwind-test', { 
+    title: 'Tailwind CSS Test'
+  });
+});
+
+// Ruta de prueba simple de Tailwind CSS
+app.get('/tailwind-simple', (req, res) => {
+  res.render('tailwind-simple', { 
+    title: 'Tailwind Simple Test'
+  });
+});
+
+// Rutas del panel de administrador
+app.use('/admin', adminRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {
