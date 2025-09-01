@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { checkAdmin, checkAdminAPI } = require('../middleware/adminAuth');
-const Usuario = require('../models/Usuario');
-const Materia = require('../models/Materia');
-const Previa = require('../models/Previa');
+
+// Importar modelos en el orden correcto para evitar problemas de dependencias
 const Semestre = require('../models/Semestre');
+const Materia = require('../models/Materia');
+const Usuario = require('../models/Usuario');
+const Previa = require('../models/Previa');
 
 // Aplicar middleware de administrador a las rutas de vistas
 router.use((req, res, next) => {
@@ -308,18 +310,45 @@ router.get('/api/semestres', async (req, res) => {
 // Lista de previas
 router.get('/previas', async (req, res) => {
   try {
+    console.log('🔄 Cargando vista de previas...');
+    
+    // Obtener previas con populate básico
     const previas = await Previa.find({})
-      .populate('materia', 'nombre codigo')
-      .populate('previa', 'nombre codigo')
+      .populate('materia', 'nombre codigo semestre')
+      .populate('materiaRequerida', 'nombre codigo')
       .sort({ materia: 1 });
+    
+    console.log(`✅ Previas encontradas: ${previas.length}`);
+    
+    // Hacer populate manual del semestre de cada materia
+    const previasConSemestre = await Promise.all(
+      previas.map(async (previa) => {
+        if (previa.materia && previa.materia.semestre) {
+          try {
+            const semestre = await Semestre.findById(previa.materia.semestre);
+            if (semestre) {
+              previa.materia.semestre = semestre;
+              console.log(`✅ Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
+            } else {
+              console.log(`❌ Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
+            }
+          } catch (error) {
+            console.error(`❌ Error populando semestre para ${previa.materia.nombre}:`, error);
+          }
+        }
+        return previa;
+      })
+    );
+    
+    console.log('🔍 Primera previa con semestre:', previasConSemestre[0]?.materia?.semestre);
     
     res.render('admin/previas', {
       title: 'Gestión de Previas',
       usuario: req.usuario,
-      previas: previas
+      previas: previasConSemestre
     });
   } catch (error) {
-    console.error('Error cargando previas:', error);
+    console.error('❌ Error cargando previas:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -327,16 +356,41 @@ router.get('/previas', async (req, res) => {
 // API: Obtener todas las previas
 router.get('/api/previas', async (req, res) => {
   try {
-    console.log('Intentando cargar previas...');
+    console.log('🔄 API: Intentando cargar previas...');
+    
+    // Obtener previas con populate básico
     const previas = await Previa.find({})
-      .populate('materia', 'nombre codigo')
+      .populate('materia', 'nombre codigo semestre')
       .populate('materiaRequerida', 'nombre codigo')
       .sort({ materia: 1 });
     
-    console.log(`Previas encontradas: ${previas.length}`);
-    res.json(previas);
+    console.log(`✅ API: Previas encontradas: ${previas.length}`);
+    
+    // Hacer populate manual del semestre de cada materia
+    const previasConSemestre = await Promise.all(
+      previas.map(async (previa) => {
+        if (previa.materia && previa.materia.semestre) {
+          try {
+            const semestre = await Semestre.findById(previa.materia.semestre);
+            if (semestre) {
+              previa.materia.semestre = semestre;
+              console.log(`✅ API: Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
+            } else {
+              console.log(`❌ API: Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
+            }
+          } catch (error) {
+            console.error(`❌ API: Error populando semestre para ${previa.materia.nombre}:`, error);
+          }
+        }
+        return previa;
+      })
+    );
+    
+    console.log('🔍 API: Primera previa con semestre:', previasConSemestre[0]?.materia?.semestre);
+    
+    res.json(previasConSemestre);
   } catch (error) {
-    console.error('Error cargando previas:', error);
+    console.error('❌ API: Error cargando previas:', error);
     res.status(500).json({ 
       error: 'Error interno del servidor', 
       details: error.message 
@@ -347,14 +401,17 @@ router.get('/api/previas', async (req, res) => {
 // API: Crear nueva previa
 router.post('/api/previas', async (req, res) => {
   try {
-    const { materia, materiaRequerida, tipo, notaMinima, creadoPor } = req.body;
+    const { materia, materiaRequerida, tipo, notaMinima, semestreMinimo, creditosMinimos, activa } = req.body;
     
     const nuevaPrevia = new Previa({
       materia,
       materiaRequerida,
       tipo: tipo || 'curso_aprobado',
       notaMinima: notaMinima || 3,
-      creadoPor: creadoPor || req.usuario._id
+      semestreMinimo: semestreMinimo || undefined,
+      creditosMinimos: creditosMinimos || 0,
+      activa: activa !== undefined ? activa : true,
+      creadoPor: req.usuario._id
     });
     
     await nuevaPrevia.save();
@@ -378,6 +435,44 @@ router.post('/api/previas', async (req, res) => {
     res.status(201).json(nuevaPrevia);
   } catch (error) {
     console.error('Error creando previa:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// API: Actualizar previa
+router.patch('/api/previas/:id', async (req, res) => {
+  try {
+    const { activa } = req.body;
+    
+    const previa = await Previa.findByIdAndUpdate(
+      req.params.id,
+      { activa },
+      { new: true, runValidators: true }
+    ).populate('materia', 'nombre codigo').populate('materiaRequerida', 'nombre codigo');
+    
+    if (!previa) {
+      return res.status(404).json({ error: 'Previa no encontrada' });
+    }
+    
+    res.json(previa);
+  } catch (error) {
+    console.error('Error actualizando previa:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// API: Eliminar previa
+router.delete('/api/previas/:id', async (req, res) => {
+  try {
+    const previa = await Previa.findByIdAndDelete(req.params.id);
+    
+    if (!previa) {
+      return res.status(404).json({ error: 'Previa no encontrada' });
+    }
+    
+    res.json({ message: 'Previa eliminada correctamente' });
+  } catch (error) {
+    console.error('Error eliminando previa:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });

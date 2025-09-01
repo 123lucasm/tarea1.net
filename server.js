@@ -80,11 +80,49 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Rate limiting
+// Configuración mejorada para evitar problemas durante el uso normal
+// - Rate limiter general: 1000 peticiones por 15 minutos (más permisivo)
+// - Rate limiter para APIs: 300 peticiones por 15 minutos (más estricto)
+// - No se cuentan las peticiones exitosas para evitar bloqueos innecesarios
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // Aumentado a 1000 peticiones
+  message: {
+    error: 'Demasiadas peticiones, por favor intenta más tarde',
+    retryAfter: Math.ceil(15 * 60 / 1000) // 15 minutos en segundos
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // No contar peticiones exitosas
+  skipFailedRequests: false
 });
-app.use(limiter);
+
+// Rate limiter más estricto solo para rutas de API
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 300, // 300 peticiones por 15 minutos para APIs
+  message: {
+    error: 'Demasiadas peticiones a la API, por favor intenta más tarde',
+    retryAfter: Math.ceil(15 * 60 / 1000)
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.use(limiter); // Rate limiter general más permisivo
+
+// Middleware para manejar errores de rate limiting
+app.use((err, req, res, next) => {
+  if (err.status === 429) { // Too Many Requests
+    return res.status(429).json({
+      error: 'Demasiadas peticiones',
+      message: 'Has excedido el límite de peticiones. Por favor, espera un momento antes de continuar.',
+      retryAfter: err.headers?.['retry-after'] || 60,
+      timestamp: new Date().toISOString()
+    });
+  }
+  next(err);
+});
 
 // Conexión a MongoDB Atlas
 const mongoUri = process.env.MONGO_URI;
@@ -135,6 +173,9 @@ app.use('/materias', checkSession, requireAuth, materiaRoutes);
 app.use('/elegibilidad', checkSession, requireAuth, elegibilidadRoutes);
 app.use('/previas', checkSession, requireAuth, previasRoutes);
 
+// Rutas de admin con rate limiter más estricto
+app.use('/admin', checkSession, requireAuth, adminRoutes);
+app.use('/admin/api', apiLimiter, checkSession, requireAuth, adminRoutes);
 
 // Ruta principal con verificación de sesión
 app.get('/', checkSession, (req, res) => {
