@@ -182,8 +182,8 @@ router.post('/login',
         }
 
         console.log('🔄 Redirigiendo según rol del usuario...');
-        // Redirigir según el rol del usuario
-        res.redirect('/dashboard');
+        // Redirigir según el rol del usuario con mensaje de éxito
+        res.redirect('/dashboard?login=success');
       });
     } catch (error) {
       console.error('❌ Error en login:', error);

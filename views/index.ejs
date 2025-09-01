@@ -5,29 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> - UTEC</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'utec-primary': '#1e3a8a',
-                        'utec-secondary': '#3b82f6',
-                        'utec-accent': '#06b6d4',
-                        'utec-success': '#10b981',
-                        'utec-warning': '#f59e0b',
-                        'utec-danger': '#ef4444',
-                        'utec-dark': '#1f2937',
-                        'utec-light': '#f8fafc'
-                    },
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS Local -->
+    <link rel="stylesheet" href="/css/tailwind.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
@@ -60,18 +39,43 @@
             line-height: 1.6;
             color: var(--utec-dark);
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding-top: 80px; /* Espacio para el navbar fijo */
+            margin: 0;
         }
         
         .navbar {
             background: linear-gradient(135deg, var(--utec-primary) 0%, var(--utec-secondary) 100%);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+            flex-wrap: nowrap;
+            height: 100%;
         }
         
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
             color: white !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
         }
         
         .brand-text {
@@ -85,15 +89,65 @@
             font-weight: 400;
         }
         
+        .navbar-nav {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            visibility: visible !important;
+            opacity: 1 !important;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .navbar-nav .nav-item {
+            margin: 0 0.5rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .navbar-nav .nav-item.dropdown {
+            position: relative;
+        }
+        
+        .navbar-nav .nav-item.dropdown .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            z-index: 9999;
+        }
+        
         .navbar-nav .nav-link {
             color: rgba(255, 255, 255, 0.9) !important;
             font-weight: 500;
             transition: all 0.3s ease;
-            margin: 0 0.5rem;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            display: block;
+            visibility: visible !important;
+            opacity: 1 !important;
+            white-space: nowrap;
         }
         
         .navbar-nav .nav-link:hover {
             color: white !important;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        
+        .btn-register {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-register:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
         }
         
@@ -294,7 +348,7 @@
             position: absolute;
             top: 100%;
             right: 0;
-            z-index: 1000;
+            z-index: 9999;
             min-width: 200px;
             padding: 0.5rem 0;
             margin: 0.125rem 0 0;
@@ -311,6 +365,92 @@
         
         .dropdown-menu.show {
             display: block;
+        }
+        
+        /* Estilos para el menú colapsable */
+        .navbar-toggler {
+            display: none !important;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .navbar-collapse {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            width: auto !important;
+            height: auto !important;
+            position: static !important;
+            background: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin-left: auto !important;
+            flex-shrink: 0;
+        }
+        
+        /* Estilos para desktop */
+        @media (min-width: 769px) {
+            .navbar-collapse {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                width: auto !important;
+                height: auto !important;
+                position: static !important;
+                background: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin-left: auto !important;
+            }
+            
+            .navbar-nav {
+                flex-direction: row !important;
+                width: auto !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+            
+            .navbar-nav .nav-item {
+                margin: 0 0.5rem !important;
+                width: auto !important;
+                display: inline-block !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-toggler {
+                display: block !important;
+            }
+            
+            .navbar-collapse {
+                display: none !important;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--utec-primary);
+                flex-direction: column;
+                padding: 1rem;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+            
+            .navbar-collapse.show {
+                display: flex !important;
+            }
+            
+            .navbar-nav {
+                flex-direction: column !important;
+                width: 100%;
+            }
+            
+            .navbar-nav .nav-item {
+                margin: 0.5rem 0;
+                width: 100%;
+            }
         }
         
         .dropdown-item {
@@ -357,19 +497,19 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top">
+    <nav class="navbar">
         <div class="container">
-                            <a class="navbar-brand" href="#">
-                    <i class="fas fa-graduation-cap me-2"></i>
-                    <span class="brand-text">
-                        <strong>MATRICULATEC</strong>
-                    </span>
-                </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap me-2"></i>
+                <span class="brand-text">
+                    <strong>MATRICULATEC</strong>
+                </span>
+            </a>
+            <button class="navbar-toggler" type="button" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+            <div class="navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="#inicio">Inicio</a>
                     </li>
@@ -379,39 +519,39 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#como-funciona">Cómo Funciona</a>
                     </li>
-                                            <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/materias">
-                                    <i class="fas fa-book me-1"></i>
-                                    Materias
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/elegibilidad">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    Elegibilidad
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user me-1"></i>
-                                    <%= usuario.nombre %>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="/dashboard">Mi Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="/auth/perfil">Mi Perfil</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/auth/logout">Cerrar Sesión</a></li>
-                                </ul>
-                            </li>
-                        <% } else { %>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/auth/login">Iniciar Sesión</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link btn btn-outline-light px-3" href="/auth/registro">Registrarse</a>
-                            </li>
-                        <% } %>
+                    <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/materias">
+                                <i class="fas fa-book me-1"></i>
+                                Materias
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/elegibilidad">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Elegibilidad
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(event)">
+                                <i class="fas fa-user me-1"></i>
+                                <%= usuario.nombre %>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/dashboard">Mi Dashboard</a></li>
+                                <li><a class="dropdown-item" href="/auth/perfil">Mi Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/auth/logout">Cerrar Sesión</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/login">Iniciar Sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn-register" href="/auth/registro">Registrarse</a>
+                        </li>
+                    <% } %>
                 </ul>
             </div>
         </div>
@@ -833,6 +973,40 @@
             observer.observe(statsSection);
         }
 
+        // Función para toggle del menú móvil
+        function toggleMenu() {
+            const navbarCollapse = document.getElementById('navbarNav');
+            navbarCollapse.classList.toggle('show');
+        }
+        
+        // Función para toggle del dropdown
+        function toggleDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const dropdown = event.target.closest('.dropdown');
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            
+            // Cerrar todos los otros dropdowns
+            document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                if (menu !== dropdownMenu) {
+                    menu.classList.remove('show');
+                }
+            });
+            
+            // Toggle del dropdown actual
+            dropdownMenu.classList.toggle('show');
+        }
+        
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+        
         // Navbar background change on scroll
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');

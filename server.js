@@ -171,7 +171,8 @@ app.get('/dashboard', checkSession, (req, res) => {
   res.render('dashboard', { 
     title: 'Dashboard - MATRICULATEC',
     usuario: req.usuario,
-    isAuthenticated: true
+    isAuthenticated: true,
+    loginSuccess: req.query.login === 'success'
   });
 });
 

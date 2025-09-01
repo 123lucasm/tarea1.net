@@ -20,7 +20,8 @@ router.use((req, res, next) => {
 router.get('/', (req, res) => {
   res.render('admin/dashboard', {
     title: 'Panel de Administrador',
-    usuario: req.usuario
+    usuario: req.usuario,
+    loginSuccess: req.query.login === 'success'
   });
 });
 
