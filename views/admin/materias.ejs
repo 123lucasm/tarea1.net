@@ -11,10 +11,74 @@
     <link rel="stylesheet" href="/css/admin.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Estilos personalizados para SweetAlert2 -->
+    <style>
+        .swal2-popup-modern {
+            border-radius: 20px !important;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+            border: none !important;
+            overflow: hidden !important;
+        }
+        
+        .swal2-title-modern {
+            display: none !important;
+        }
+        
+        .swal2-html-container-modern {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .swal2-confirm-modern {
+            background: linear-gradient(135deg, #e53e3e, #c53030) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .swal2-confirm-modern:hover {
+            background: linear-gradient(135deg, #c53030, #9c2626) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5) !important;
+        }
+        
+        .swal2-cancel-modern {
+            background: linear-gradient(135deg, #718096, #4a5568) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            box-shadow: 0 4px 15px rgba(113, 128, 150, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .swal2-cancel-modern:hover {
+            background: linear-gradient(135deg, #4a5568, #2d3748) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4) !important;
+        }
+        
+        .swal2-actions {
+            gap: 12px !important;
+            margin-top: 30px !important;
+        }
+        
+        .swal2-backdrop {
+            backdrop-filter: blur(8px) !important;
+        }
+    </style>
 </head>
 <body class="bg-utec-light font-inter">
     <!-- Navigation -->
@@ -176,11 +240,11 @@
                 
                 <!-- Actions -->
                 <div class="flex gap-3">
-                    <button onclick="cargarMaterias()" class="btn-secondary">
+                    <button id="btn-actualizar-materias" class="btn-secondary">
                         <i class="fas fa-sync-alt"></i>
                         Actualizar
                     </button>
-                    <button onclick="mostrarFormularioCrear()" class="btn-success">
+                    <button id="btn-nueva-materia" class="btn-success">
                         <i class="fas fa-plus"></i>
                         Nueva Materia
                     </button>
@@ -342,7 +406,7 @@
                         </div>
                         
                         <div class="flex justify-end gap-3 pt-4">
-                            <button type="button" onclick="cerrarModal()" class="btn-secondary">
+                            <button type="button" id="btn-cerrar-modal" class="btn-secondary">
                                 Cancelar
                             </button>
                             <button type="submit" class="btn-success">
@@ -360,6 +424,10 @@
     <script>
         // Inicializar Socket.IO
         const socket = io();
+        
+        // Variables globales para filtros
+        let todasLasMaterias = [];
+        let materiasFiltradas = [];
         
         // Variables globales para paginación
         let currentPage = 1;
@@ -434,12 +502,18 @@
                         <p class="text-sm text-slate-500">${mensaje}</p>
                     </div>
                     <div class="ml-auto pl-3">
-                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                        <button class="btn-cerrar-notificacion text-slate-400 hover:text-slate-600">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
             `;
+            
+            // Agregar event listener para el botón de cerrar
+            const cerrarBtn = notificacion.querySelector('.btn-cerrar-notificacion');
+            cerrarBtn.addEventListener('click', () => {
+                notificacion.remove();
+            });
             
             document.body.appendChild(notificacion);
             
@@ -493,6 +567,11 @@
                     // Fallback: si es un array directo (API antigua)
                     if (Array.isArray(data)) {
                         console.log('Usando fallback para array directo con', data.length, 'materias');
+                        
+                        // Almacenar todas las materias
+                        todasLasMaterias = data;
+                        materiasFiltradas = [...data];
+                        
                         currentPage = 1;
                         totalPages = 1;
                         totalMaterias = data.length;
@@ -505,6 +584,10 @@
                     
                     throw new Error('Formato de respuesta inválido');
                 }
+                
+                // Almacenar todas las materias para filtros
+                todasLasMaterias = data.materias;
+                materiasFiltradas = [...data.materias];
                 
                 // Actualizar variables globales
                 currentPage = data.pagination.currentPage;
@@ -563,7 +646,7 @@
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-book text-4xl text-slate-400 mb-4"></i>
                                 <p class="text-slate-500">No hay materias registradas</p>
-                                <button onclick="mostrarFormularioCrear()" class="btn-success mt-4">
+                                <button id="btn-crear-primera-materia" class="btn-success mt-4">
                                     <i class="fas fa-plus"></i>
                                     Crear Primera Materia
                                 </button>
@@ -609,16 +692,31 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-2">
-                            <button onclick="editarMateria('${materia._id}')" class="text-indigo-600 hover:text-indigo-900">
+                            <button class="btn-editar-materia text-indigo-600 hover:text-indigo-900 p-2 rounded-lg hover:bg-indigo-50 transition-colors" data-materia-id="${materia._id}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button onclick="eliminarMateria('${materia._id}')" class="text-red-600 hover:text-red-900">
+                            <button class="btn-eliminar-materia text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors" data-materia-id="${materia._id}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
             `).join('');
+            
+            // Agregar event listeners a los botones
+            tbody.querySelectorAll('.btn-editar-materia').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const materiaId = btn.getAttribute('data-materia-id');
+                    editarMateria(materiaId);
+                });
+            });
+            
+            tbody.querySelectorAll('.btn-eliminar-materia').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const materiaId = btn.getAttribute('data-materia-id');
+                    eliminarMateria(materiaId);
+                });
+            });
         }
         
         async function cargarSemestres() {
@@ -688,19 +786,135 @@
             [statusFilter, semesterFilter].forEach(element => {
                 element.addEventListener('change', aplicarFiltros);
             });
+            
+            // Event listeners para los botones de acción
+            document.getElementById('btn-actualizar-materias').addEventListener('click', () => {
+                cargarMaterias();
+            });
+            
+            document.getElementById('btn-nueva-materia').addEventListener('click', () => {
+                mostrarFormularioCrear();
+            });
+            
+            // Event listener para cerrar modal
+            document.getElementById('btn-cerrar-modal').addEventListener('click', () => {
+                cerrarModal();
+            });
+            
+            // Delegación de eventos para botones dinámicos
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('#btn-limpiar-filtros')) {
+                    limpiarFiltros();
+                }
+                if (e.target.closest('#btn-crear-primera-materia')) {
+                    mostrarFormularioCrear();
+                }
+            });
         }
         
         function aplicarFiltros() {
-            // Obtener valores de los filtros
-            currentFilters.search = document.getElementById('search-input').value;
-            currentFilters.status = document.getElementById('status-filter').value;
-            currentFilters.semester = document.getElementById('semester-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('status-filter').value;
+            const semesterFilter = document.getElementById('semester-filter').value;
             
-            // Resetear a la primera página
-            currentPage = 1;
+            // Filtrar materias
+            materiasFiltradas = todasLasMaterias.filter(materia => {
+                // Filtro de búsqueda (nombre, código, semestre)
+                const matchesSearch = !searchTerm || 
+                    materia.nombre.toLowerCase().includes(searchTerm) ||
+                    materia.codigo.toLowerCase().includes(searchTerm) ||
+                    (materia.semestre?.nombre && materia.semestre.nombre.toLowerCase().includes(searchTerm));
+                
+                // Filtro de estado
+                const matchesStatus = !statusFilter || 
+                    (statusFilter === 'activa' && materia.activa) ||
+                    (statusFilter === 'inactiva' && !materia.activa);
+                
+                // Filtro de semestre
+                const matchesSemester = !semesterFilter || materia.semestre?._id === semesterFilter;
+                
+                return matchesSearch && matchesStatus && matchesSemester;
+            });
             
-            // Recargar materias con filtros
-            cargarMaterias(1);
+            // Mostrar materias filtradas
+            mostrarMaterias(materiasFiltradas);
+            actualizarEstadisticas(materiasFiltradas);
+            
+            // Mostrar mensaje si no hay resultados
+            mostrarMensajeFiltros();
+            
+            // Actualizar indicador de filtros activos
+            actualizarIndicadorFiltros();
+        }
+
+        function mostrarMensajeFiltros() {
+            const tbody = document.getElementById('materias-table-body');
+            
+            if (materiasFiltradas.length === 0 && todasLasMaterias.length > 0) {
+                // Mostrar mensaje de no resultados
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-search text-gray-400 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No se encontraron materias</h3>
+                                <p class="text-gray-500 mb-4">No hay materias que coincidan con los filtros aplicados</p>
+                                <button id="btn-limpiar-filtros" class="btn-secondary">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Limpiar Filtros
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function limpiarFiltros() {
+            // Limpiar campos de filtro
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('semester-filter').value = '';
+            
+            // Restaurar todas las materias
+            materiasFiltradas = [...todasLasMaterias];
+            
+            // Mostrar todas las materias
+            mostrarMaterias(materiasFiltradas);
+            actualizarEstadisticas(materiasFiltradas);
+            
+            // Actualizar indicador de filtros
+            actualizarIndicadorFiltros();
+        }
+
+        function actualizarIndicadorFiltros() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            const statusFilter = document.getElementById('status-filter').value;
+            const semesterFilter = document.getElementById('semester-filter').value;
+            
+            let filtrosActivos = 0;
+            if (searchTerm) filtrosActivos++;
+            if (statusFilter) filtrosActivos++;
+            if (semesterFilter) filtrosActivos++;
+            
+            // Actualizar el contador de materias para mostrar filtros activos
+            const totalElement = document.getElementById('total-materias-count');
+            if (totalElement) {
+                if (filtrosActivos > 0) {
+                    totalElement.innerHTML = `
+                        <span class="text-emerald-600">${materiasFiltradas.length}</span>
+                        <span class="text-gray-400">/ ${todasLasMaterias.length}</span>
+                        <span class="text-xs text-amber-600 ml-2">
+                            <i class="fas fa-filter mr-1"></i>
+                            ${filtrosActivos} filtro${filtrosActivos > 1 ? 's' : ''} activo${filtrosActivos > 1 ? 's' : ''}
+                        </span>
+                    `;
+                } else {
+                    totalElement.textContent = materiasFiltradas.length;
+                }
+            }
         }
         
         function cambiarPagina(direction) {
@@ -807,9 +1021,15 @@
                     activa: formData.get('activa') === 'true'
                 };
                 
+                const materiaId = form.dataset.materiaId;
+                const isEditing = !!materiaId;
+                
                 try {
-                    const response = await fetch('/admin/api/materias', {
-                        method: 'POST',
+                    const url = isEditing ? `/admin/api/materias/${materiaId}` : '/admin/api/materias';
+                    const method = isEditing ? 'PUT' : 'POST';
+                    
+                    const response = await fetch(url, {
+                        method: method,
                         headers: {
                             'Content-Type': 'application/json',
                         },
@@ -818,20 +1038,36 @@
                     });
                     
                     if (!response.ok) {
-                        throw new Error(`Error del servidor: ${response.status}`);
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error del servidor: ${response.status}`);
                     }
                     
-                    const nuevaMateria = await response.json();
-                    console.log('Materia creada:', nuevaMateria);
+                    const materia = await response.json();
+                    console.log(isEditing ? 'Materia actualizada:' : 'Materia creada:', materia);
                     
-                    mostrarNotificacion('Materia creada', `${nuevaMateria.nombre} (${nuevaMateria.codigo}) fue creada exitosamente`);
+                    // Mostrar mensaje de éxito con SweetAlert2
+                    await Swal.fire({
+                        title: isEditing ? '¡Actualizada!' : '¡Creada!',
+                        text: `${materia.nombre} (${materia.codigo}) fue ${isEditing ? 'actualizada' : 'creada'} exitosamente`,
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
                     
                     cerrarModal();
-                    cargarMaterias();
+                    await cargarMaterias();
+                    aplicarFiltros(); // Aplicar filtros actuales
                     
                 } catch (error) {
-                    console.error('Error creando materia:', error);
-                    mostrarNotificacion('Error', 'No se pudo crear la materia: ' + error.message);
+                    console.error(`Error ${isEditing ? 'actualizando' : 'creando'} materia:`, error);
+                    
+                    await Swal.fire({
+                        title: 'Error',
+                        text: `No se pudo ${isEditing ? 'actualizar' : 'crear'} la materia: ${error.message}`,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
         }
@@ -839,23 +1075,195 @@
         function mostrarFormularioCrear() {
             document.getElementById('modal-title').textContent = 'Nueva Materia';
             document.getElementById('materia-form').reset();
+            delete document.getElementById('materia-form').dataset.materiaId; // Limpiar ID de edición
             document.getElementById('materia-modal').classList.remove('hidden');
         }
         
-        function editarMateria(id) {
-            console.log('Editando materia:', id);
-            // Implementar edición
+        async function editarMateria(id) {
+            try {
+                // Obtener datos de la materia
+                const response = await fetch(`/admin/api/materias/${id}`);
+                const materia = await response.json();
+                
+                if (response.ok) {
+                    // Llenar el formulario con los datos de la materia
+                    document.getElementById('modal-title').textContent = 'Editar Materia';
+                    document.getElementById('materia-nombre').value = materia.nombre;
+                    document.getElementById('materia-codigo').value = materia.codigo;
+                    document.getElementById('materia-creditos').value = materia.creditos;
+                    document.getElementById('materia-semestre').value = materia.semestre?._id || '';
+                    document.getElementById('materia-descripcion').value = materia.descripcion || '';
+                    document.getElementById('materia-cupo-maximo').value = materia.cupoMaximo || 50;
+                    document.getElementById('materia-activa').value = materia.activa.toString();
+                    
+                    // Mostrar modal
+                    document.getElementById('materia-modal').classList.remove('hidden');
+                    
+                    // Cambiar el comportamiento del formulario para edición
+                    const form = document.getElementById('materia-form');
+                    form.dataset.materiaId = id;
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al cargar los datos de la materia',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando materia:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al cargar los datos de la materia',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
         
-        function eliminarMateria(id) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta materia?')) {
-                console.log('Eliminando materia:', id);
-                // Implementar eliminación
+        async function eliminarMateria(id) {
+            try {
+                // Obtener datos de la materia para mostrar en la confirmación
+                const response = await fetch(`/admin/api/materias/${id}`);
+                const materia = await response.json();
+                
+                if (response.ok) {
+                    const nombreMateria = materia.nombre;
+                    
+                    // Mostrar alerta de confirmación con SweetAlert2
+                    const result = await Swal.fire({
+                        title: '¿Eliminar Materia?',
+                        html: `
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ff6b6b, #ee5a52); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);">
+                                    <i class="fas fa-trash" style="color: white; font-size: 32px;"></i>
+                                </div>
+                                <h3 style="color: #2d3748; font-size: 24px; font-weight: 600; margin: 0 0 15px 0; font-family: 'Inter', sans-serif;">
+                                    ¿Eliminar Materia?
+                                </h3>
+                                <p style="color: #4a5568; font-size: 16px; margin: 0 0 20px 0; line-height: 1.5;">
+                                    Estás a punto de eliminar permanentemente<br>
+                                    <strong style="color: #2d3748; font-size: 18px;">${nombreMateria}</strong>
+                                </p>
+                                <div style="background: linear-gradient(135deg, #fed7d7, #feb2b2); border: 1px solid #fc8181; border-radius: 12px; padding: 15px; margin: 20px 0; text-align: left;">
+                                    <div style="display: flex; align-items: center; color: #c53030;">
+                                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px; font-size: 16px;"></i>
+                                        <span style="font-weight: 600; font-size: 14px;">Esta acción no se puede deshacer</span>
+                                    </div>
+                                    <p style="color: #742a2a; font-size: 13px; margin: 8px 0 0 0; line-height: 1.4;">
+                                        Todos los datos de la materia serán eliminados permanentemente del sistema.
+                                    </p>
+                                </div>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonColor: '#e53e3e',
+                        cancelButtonColor: '#718096',
+                        confirmButtonText: `
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fas fa-trash"></i>
+                                <span>Eliminar Materia</span>
+                            </div>
+                        `,
+                        cancelButtonText: `
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fas fa-times"></i>
+                                <span>Cancelar</span>
+                            </div>
+                        `,
+                        reverseButtons: true,
+                        focusCancel: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true,
+                        showCloseButton: false,
+                        customClass: {
+                            popup: 'swal2-popup-modern',
+                            title: 'swal2-title-modern',
+                            htmlContainer: 'swal2-html-container-modern',
+                            confirmButton: 'swal2-confirm-modern',
+                            cancelButton: 'swal2-cancel-modern'
+                        },
+                        buttonsStyling: true,
+                        backdrop: 'rgba(0, 0, 0, 0.6)'
+                    });
+                    
+                    if (result.isConfirmed) {
+                        await confirmarEliminarMateria(id);
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al cargar los datos de la materia',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando materia:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al cargar los datos de la materia',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        async function confirmarEliminarMateria(materiaId) {
+            try {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Eliminando...',
+                    text: 'Por favor espera mientras eliminamos la materia',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`/admin/api/materias/${materiaId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    // Mostrar mensaje de éxito
+                    await Swal.fire({
+                        title: '¡Eliminado!',
+                        text: 'La materia ha sido eliminada correctamente',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                    
+                    // Recargar materias
+                    await cargarMaterias();
+                    aplicarFiltros(); // Aplicar filtros actuales
+                } else {
+                    const result = await response.json();
+                    await Swal.fire({
+                        title: 'Error',
+                        text: result.message || 'Error al eliminar la materia',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error eliminando materia:', error);
+                await Swal.fire({
+                    title: 'Error',
+                    text: 'Error de conexión. Intenta nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         }
         
         function cerrarModal() {
             document.getElementById('materia-modal').classList.add('hidden');
+            delete document.getElementById('materia-form').dataset.materiaId; // Limpiar ID de edición
         }
         
         function mostrarError(titulo, mensaje) {

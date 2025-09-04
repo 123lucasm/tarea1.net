@@ -11,10 +11,137 @@
     <link rel="stylesheet" href="/css/admin.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Estilos personalizados para SweetAlert2 -->
+    <style>
+        .swal2-popup-modern {
+            border-radius: 20px !important;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+            border: none !important;
+            overflow: hidden !important;
+        }
+        .swal2-title-modern { 
+            display: none !important; 
+        }
+        .swal2-html-container-modern { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+        }
+        .swal2-confirm-modern {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        .swal2-confirm-modern:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
+        }
+        .swal2-cancel-modern {
+            background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        .swal2-cancel-modern:hover {
+            background: linear-gradient(135deg, #4b5563, #374151) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4) !important;
+        }
+        .swal2-actions {
+            gap: 12px !important;
+            margin-top: 30px !important;
+        }
+        .swal2-backdrop {
+            backdrop-filter: blur(8px) !important;
+        }
+        
+        /* Estilos para select múltiple */
+        select[multiple] {
+            min-height: 120px;
+            padding: 8px;
+        }
+        
+        select[multiple] option {
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 4px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        
+        select[multiple] option:checked {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        select[multiple] option:hover {
+            background-color: #e2e8f0;
+        }
+        
+        select[multiple] option:checked:hover {
+            background-color: #2563eb;
+        }
+        
+        /* Estilos para el container de materias */
+        #materias-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            transition: border-color 0.3s ease;
+        }
+        
+        #materias-container:hover {
+            border-color: #94a3b8;
+        }
+        
+        /* Estilos para las filas de materias */
+        .materia-row {
+            transition: all 0.2s ease;
+        }
+        
+        .materia-row:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Estilos para checkboxes */
+        .materia-checkbox {
+            transform: scale(1.2);
+            accent-color: #3b82f6;
+        }
+        
+        /* Estilos para selects deshabilitados */
+        .tipo-requisito:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Animación para cuando se habilita un select */
+        .tipo-requisito:not(:disabled) {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+    </style>
 </head>
 <body class="bg-utec-light font-inter">
     <!-- Navigation -->
@@ -287,7 +414,7 @@
                 </button>
             </div>
             <form id="form-previa" class="modal-body">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="form-label">Materia</label>
                         <select id="materia" name="materia" class="form-select" required>
@@ -295,37 +422,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="form-label">Materia Requerida</label>
-                        <select id="materiaRequerida" name="materiaRequerida" class="form-select" required>
-                            <option value="">Seleccionar materia requerida</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Tipo de Requisito</label>
-                        <select id="tipo" name="tipo" class="form-select" required>
-                            <option value="curso_aprobado">Curso Aprobado</option>
-                            <option value="examen_aprobado">Examen Aprobado</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Nota Mínima</label>
-                        <select id="notaMinima" name="notaMinima" class="form-select" required>
-                            <option value="1">1 - Deficiente</option>
-                            <option value="2">2 - Insuficiente</option>
-                            <option value="3" selected>3 - Suficiente</option>
-                            <option value="4">4 - Muy Bueno</option>
-                            <option value="5">5 - Excelente</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Semestre Mínimo</label>
-                        <input type="number" id="semestreMinimo" name="semestreMinimo" 
-                               class="form-input" min="1" max="20" placeholder="Opcional">
-                    </div>
-                    <div>
-                        <label class="form-label">Créditos Mínimos</label>
-                        <input type="number" id="creditosMinimos" name="creditosMinimos" 
-                               class="form-input" min="0" placeholder="Opcional">
+                        <label class="form-label">Materias Requeridas</label>
+                        <div id="materias-container" class="space-y-3 max-h-60 overflow-y-auto border border-gray-300 rounded-lg p-4">
+                            <p class="text-sm text-gray-500">Selecciona las materias y su tipo de requisito:</p>
+                            <!-- Las materias se agregarán dinámicamente aquí -->
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 mt-4">
@@ -548,7 +649,9 @@
 
         async function cargarMaterias() {
             try {
-                const response = await fetch('/admin/api/materias', {
+                console.log('🔄 Cargando materias...');
+                // Cargar todas las materias sin paginación
+                const response = await fetch('/admin/api/materias?limit=1000', {
                     credentials: 'same-origin'
                 });
                 
@@ -557,35 +660,149 @@
                 }
                 
                 const data = await response.json();
+                console.log('📦 Datos de materias recibidos:', data);
+                
                 materias = data.materias || data;
+                console.log('📚 Materias procesadas:', materias);
+                console.log('📊 Cantidad de materias:', materias.length);
                 
                 // Llenar selectores del modal
                 llenarSelectoresMaterias();
                 
             } catch (error) {
-                console.error('Error cargando materias:', error);
+                console.error('❌ Error cargando materias:', error);
             }
         }
 
         function llenarSelectoresMaterias() {
+            console.log('🎨 Llenando selectores de materias...');
             const selectMateria = document.getElementById('materia');
-            const selectMateriaRequerida = document.getElementById('materiaRequerida');
+            const materiasContainer = document.getElementById('materias-container');
+            
+            if (!selectMateria || !materiasContainer) {
+                console.error('❌ No se encontraron los elementos del DOM');
+                return;
+            }
             
             // Limpiar opciones existentes
             selectMateria.innerHTML = '<option value="">Seleccionar materia</option>';
-            selectMateriaRequerida.innerHTML = '<option value="">Seleccionar materia requerida</option>';
             
-            materias.forEach(materia => {
-                const option1 = document.createElement('option');
-                option1.value = materia._id;
-                option1.textContent = `${materia.codigo} - ${materia.nombre}`;
+            // Limpiar container de materias y agregar texto de instrucción
+            materiasContainer.innerHTML = '<p class="text-sm text-gray-500">Primero selecciona una materia para ver las previas disponibles:</p>';
+            
+            console.log('📝 Procesando', materias.length, 'materias...');
+            
+            materias.forEach((materia, index) => {
+                console.log(`📚 Materia ${index + 1}:`, materia);
+                // Agregar al select principal
+                const option = document.createElement('option');
+                option.value = materia._id;
+                option.textContent = `${materia.codigo} - ${materia.nombre}`;
+                selectMateria.appendChild(option);
+            });
+            
+            // Agregar event listener para cuando cambie la materia principal
+            selectMateria.addEventListener('change', function() {
+                actualizarMateriasDisponibles(this.value);
+            });
+        }
+        
+        function actualizarMateriasDisponibles(materiaId) {
+            console.log('🔄 Actualizando materias disponibles para:', materiaId);
+            const materiasContainer = document.getElementById('materias-container');
+            
+            if (!materiaId) {
+                materiasContainer.innerHTML = '<p class="text-sm text-gray-500">Primero selecciona una materia para ver las previas disponibles:</p>';
+                return;
+            }
+            
+            // Encontrar la materia seleccionada
+            const materiaSeleccionada = materias.find(m => m._id === materiaId);
+            if (!materiaSeleccionada) {
+                console.error('❌ Materia seleccionada no encontrada');
+                return;
+            }
+            
+            console.log('📚 Materia seleccionada:', materiaSeleccionada);
+            
+            // Filtrar materias que pueden ser previas:
+            // 1. No puede ser la misma materia
+            // 2. Debe ser de un semestre anterior
+            const materiasDisponibles = materias.filter(materia => {
+                // No puede ser la misma materia
+                if (materia._id === materiaId) {
+                    return false;
+                }
                 
-                const option2 = document.createElement('option');
-                option2.value = materia._id;
-                option2.textContent = `${materia.codigo} - ${materia.nombre}`;
+                // Si no tiene semestre, no se puede comparar
+                if (!materia.semestre || !materiaSeleccionada.semestre) {
+                    return false;
+                }
                 
-                selectMateria.appendChild(option1);
-                selectMateriaRequerida.appendChild(option2);
+                // Comparar semestres (asumiendo que tienen un campo 'numero' o similar)
+                const semestreMateria = materia.semestre.numero || materia.semestre.orden || 0;
+                const semestreSeleccionada = materiaSeleccionada.semestre.numero || materiaSeleccionada.semestre.orden || 0;
+                
+                console.log(`📊 Comparando semestres: ${materia.codigo} (${semestreMateria}) vs ${materiaSeleccionada.codigo} (${semestreSeleccionada})`);
+                
+                return semestreMateria < semestreSeleccionada;
+            });
+            
+            console.log('✅ Materias disponibles como previas:', materiasDisponibles.length);
+            
+            // Limpiar container
+            materiasContainer.innerHTML = '<p class="text-sm text-gray-500">Selecciona las materias y su tipo de requisito:</p>';
+            
+            if (materiasDisponibles.length === 0) {
+                materiasContainer.innerHTML += '<p class="text-sm text-amber-600 mt-2">No hay materias de semestres anteriores disponibles como previas.</p>';
+                return;
+            }
+            
+            // Crear checkboxes para materias disponibles
+            materiasDisponibles.forEach((materia, index) => {
+                console.log(`📚 Agregando materia disponible ${index + 1}:`, materia);
+                
+                const materiaDiv = document.createElement('div');
+                materiaDiv.className = 'materia-row flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors';
+                materiaDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" 
+                               id="materia-${materia._id}" 
+                               class="materia-checkbox form-checkbox" 
+                               data-materia-id="${materia._id}"
+                               data-materia-codigo="${materia.codigo}"
+                               data-materia-nombre="${materia.nombre}">
+                        <label for="materia-${materia._id}" class="text-sm font-medium text-gray-900 cursor-pointer">
+                            ${materia.codigo} - ${materia.nombre}
+                            <span class="text-xs text-gray-500 ml-2">(${materia.semestre?.nombre || 'Sin semestre'})</span>
+                        </label>
+                    </div>
+                    <select class="tipo-requisito form-select text-sm w-32" disabled>
+                        <option value="curso_aprobado">Curso</option>
+                        <option value="examen_aprobado">Examen</option>
+                    </select>
+                `;
+                
+                materiasContainer.appendChild(materiaDiv);
+            });
+            
+            // Agregar event listeners para los checkboxes
+            agregarEventListenersMaterias();
+        }
+        
+        function agregarEventListenersMaterias() {
+            const checkboxes = document.querySelectorAll('.materia-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const selectTipo = this.parentElement.parentElement.querySelector('.tipo-requisito');
+                    if (this.checked) {
+                        selectTipo.disabled = false;
+                        selectTipo.classList.remove('opacity-50');
+                    } else {
+                        selectTipo.disabled = true;
+                        selectTipo.classList.add('opacity-50');
+                    }
+                });
             });
         }
 
@@ -1023,26 +1240,142 @@
         function abrirModalPrevia() {
             document.getElementById('modal-title').textContent = 'Nueva Previa';
             document.getElementById('form-previa').reset();
+            delete document.getElementById('form-previa').dataset.previaId; // Limpiar ID de edición
+            
+            // Limpiar el container de materias
+            const materiasContainer = document.getElementById('materias-container');
+            materiasContainer.innerHTML = '<p class="text-sm text-gray-500">Primero selecciona una materia para ver las previas disponibles:</p>';
+            
             document.getElementById('modal-previa').classList.remove('hidden');
+        }
+
+        function cerrarModalPrevia() {
+            document.getElementById('modal-previa').classList.add('hidden');
+            document.getElementById('form-previa').reset();
+            delete document.getElementById('form-previa').dataset.previaId;
+            
+            // Limpiar el container de materias
+            const materiasContainer = document.getElementById('materias-container');
+            materiasContainer.innerHTML = '<p class="text-sm text-gray-500">Primero selecciona una materia para ver las previas disponibles:</p>';
+        }
+
+        async function editarPrevia(materiaId) {
+            try {
+                // Obtener datos de todas las previas de la materia
+                const response = await fetch(`/admin/api/previas/materia/${materiaId}`);
+                const previas = await response.json();
+                
+                if (response.ok && previas && previas.length > 0) {
+                    // Usar la primera previa para obtener la información de la materia
+                    const primeraPrevia = previas[0];
+                    
+                    // Llenar el formulario con los datos de la previa
+                    document.getElementById('modal-title').textContent = 'Editar Previas';
+                    document.getElementById('materia').value = primeraPrevia.materia?._id || '';
+                    
+                    // Cargar las materias disponibles para esta materia
+                    actualizarMateriasDisponibles(primeraPrevia.materia?._id);
+                    
+                    // Esperar un poco para que se carguen las materias disponibles
+                    setTimeout(() => {
+                        // Seleccionar todas las materias requeridas en los checkboxes
+                        previas.forEach(previa => {
+                            if (previa.materiaRequerida?._id) {
+                                const checkbox = document.getElementById(`materia-${previa.materiaRequerida._id}`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                    const selectTipo = checkbox.parentElement.parentElement.querySelector('.tipo-requisito');
+                                    selectTipo.disabled = false;
+                                    selectTipo.classList.remove('opacity-50');
+                                    selectTipo.value = previa.tipo || 'curso_aprobado';
+                                }
+                            }
+                        });
+                        
+                        // Usar el estado de la primera previa para el checkbox general
+                        document.getElementById('activa').checked = primeraPrevia.activa || false;
+                    }, 100);
+                    
+                    // Mostrar modal
+                    document.getElementById('modal-previa').classList.remove('hidden');
+                    
+                    // Cambiar el comportamiento del formulario para edición
+                    const form = document.getElementById('form-previa');
+                    form.dataset.materiaId = materiaId; // Usar materiaId en lugar de previaId individual
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se encontraron previas para editar',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando previas:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al cargar los datos de las previas',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
 
         document.getElementById('form-previa').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
+            
+            // Recopilar materias seleccionadas con sus tipos
+            const materiasSeleccionadas = [];
+            const checkboxes = document.querySelectorAll('.materia-checkbox:checked');
+            
+            checkboxes.forEach(checkbox => {
+                const materiaId = checkbox.getAttribute('data-materia-id');
+                const selectTipo = checkbox.parentElement.parentElement.querySelector('.tipo-requisito');
+                const tipo = selectTipo.value;
+                
+                materiasSeleccionadas.push({
+                    materiaId: materiaId,
+                    tipo: tipo
+                });
+            });
+            
+            const previaId = this.dataset.previaId;
+            const materiaId = this.dataset.materiaId;
+            const isEditing = !!previaId || !!materiaId;
+            
             const data = {
-                materia: formData.get('materia'),
-                materiaRequerida: formData.get('materiaRequerida'),
-                tipo: formData.get('tipo'),
-                notaMinima: parseInt(formData.get('notaMinima')),
-                semestreMinimo: formData.get('semestreMinimo') ? parseInt(formData.get('semestreMinimo')) : undefined,
-                creditosMinimos: formData.get('creditosMinimos') ? parseInt(formData.get('creditosMinimos')) : undefined,
+                materiasRequeridas: materiasSeleccionadas,
                 activa: formData.get('activa') === 'on'
             };
             
+            // Solo agregar materia si no estamos editando múltiples previas
+            if (!materiaId) {
+                data.materia = formData.get('materia');
+            }
+            
+            console.log('📤 Datos que se enviarán:', data);
+            console.log('📋 Materias seleccionadas:', materiasSeleccionadas);
+            
             try {
-                const response = await fetch('/admin/api/previas', {
-                    method: 'POST',
+                let url, method;
+                if (isEditing && materiaId) {
+                    // Edición de múltiples previas de una materia
+                    url = `/admin/api/previas/materia/${materiaId}`;
+                    method = 'PUT';
+                } else if (isEditing && previaId) {
+                    // Edición de una previa individual
+                    url = `/admin/api/previas/${previaId}`;
+                    method = 'PUT';
+                } else {
+                    // Creación de nueva previa
+                    url = '/admin/api/previas';
+                    method = 'POST';
+                }
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -1051,17 +1384,35 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Error del servidor: ${response.status}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error del servidor: ${response.status}`);
                 }
                 
-                const nuevaPrevia = await response.json();
-                mostrarNotificacion('Éxito', 'Previa creada correctamente');
+                const previa = await response.json();
+                console.log(isEditing ? 'Previa actualizada:' : 'Previa creada:', previa);
+                
+                // Mostrar mensaje de éxito con SweetAlert2
+                await Swal.fire({
+                    title: isEditing ? '¡Actualizada!' : '¡Creada!',
+                    text: `La previa fue ${isEditing ? 'actualizada' : 'creada'} exitosamente`,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                
                 cerrarModalPrevia();
                 cargarPrevias();
                 
             } catch (error) {
-                console.error('Error creando previa:', error);
-                mostrarError('Error creando previa: ' + error.message);
+                console.error(`Error ${isEditing ? 'actualizando' : 'creando'} previa:`, error);
+                
+                await Swal.fire({
+                    title: 'Error',
+                    text: `No se pudo ${isEditing ? 'actualizar' : 'crear'} la previa: ${error.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         });
 
@@ -1089,27 +1440,94 @@
             }
         }
 
-        async function eliminarPrevia(id) {
-            if (!confirm('¿Estás seguro de que quieres eliminar esta previa?')) {
-                return;
-            }
-            
+        async function eliminarPrevia(materiaId) {
             try {
-                const response = await fetch(`/admin/api/previas/${id}`, {
-                    method: 'DELETE',
-                    credentials: 'same-origin'
-                });
+                // Obtener datos de la previa para mostrar en la confirmación
+                const response = await fetch(`/admin/api/previas/materia/${materiaId}`);
+                const previa = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(`Error del servidor: ${response.status}`);
+                if (!response.ok || !previa) {
+                    await Swal.fire({
+                        title: 'Error',
+                        text: 'No se encontró la previa para eliminar',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
                 }
                 
-                mostrarNotificacion('Éxito', 'Previa eliminada correctamente');
-                cargarPrevias();
+                // Mostrar confirmación con SweetAlert2
+                const result = await Swal.fire({
+                    title: '¿Eliminar previa?',
+                    html: `
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a52); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);">
+                                <i class="fas fa-trash" style="color: white; font-size: 32px;"></i>
+                            </div>
+                            <h3 style="color: #1e293b; font-size: 18px; font-weight: 600; margin-bottom: 10px;">${previa.materia?.nombre || 'Previa'}</h3>
+                            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Esta acción no se puede deshacer</p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    customClass: {
+                        popup: 'swal2-popup-modern',
+                        title: 'swal2-title-modern',
+                        htmlContainer: 'swal2-html-container-modern',
+                        confirmButton: 'swal2-confirm-modern',
+                        cancelButton: 'swal2-cancel-modern'
+                    }
+                });
+                
+                if (result.isConfirmed) {
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Eliminando...',
+                        text: 'Por favor espera',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Realizar la eliminación
+                    const deleteResponse = await fetch(`/admin/api/previas/${previa._id}`, {
+                        method: 'DELETE',
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (!deleteResponse.ok) {
+                        const errorData = await deleteResponse.json();
+                        throw new Error(errorData.message || `Error del servidor: ${deleteResponse.status}`);
+                    }
+                    
+                    // Mostrar éxito
+                    await Swal.fire({
+                        title: '¡Eliminada!',
+                        text: 'La previa fue eliminada exitosamente',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                    
+                    // Recargar datos
+                    await cargarPrevias();
+                }
                 
             } catch (error) {
                 console.error('Error eliminando previa:', error);
-                mostrarError('Error eliminando previa: ' + error.message);
+                
+                await Swal.fire({
+                    title: 'Error',
+                    text: `No se pudo eliminar la previa: ${error.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         }
 
@@ -1127,12 +1545,18 @@
                         <p class="text-sm text-slate-500">${mensaje}</p>
                     </div>
                     <div class="ml-auto pl-3">
-                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                        <button class="btn-cerrar-notificacion text-slate-400 hover:text-slate-600">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
             `;
+            
+            // Agregar event listener para el botón de cerrar
+            const cerrarBtn = notificacion.querySelector('.btn-cerrar-notificacion');
+            cerrarBtn.addEventListener('click', () => {
+                notificacion.remove();
+            });
             
             document.body.appendChild(notificacion);
             
@@ -1166,12 +1590,18 @@
                         <p class="text-sm text-slate-500">${mensaje}</p>
                     </div>
                     <div class="ml-auto pl-3">
-                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                        <button class="btn-cerrar-notificacion text-slate-400 hover:text-slate-600">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
             `;
+            
+            // Agregar event listener para el botón de cerrar
+            const cerrarBtn = notificacion.querySelector('.btn-cerrar-notificacion');
+            cerrarBtn.addEventListener('click', () => {
+                notificacion.remove();
+            });
             
             document.body.appendChild(notificacion);
             
