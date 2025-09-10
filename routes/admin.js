@@ -408,15 +408,22 @@ router.get('/previas', async (req, res) => {
   try {
     console.log('🔄 Cargando vista de previas...');
     
-    // Obtener previas con populate básico
+    // Obtener previas con populate completo
     const previas = await Previa.find({})
-      .populate('materia', 'nombre codigo semestre')
+      .populate({
+        path: 'materia',
+        select: 'nombre codigo semestre',
+        populate: {
+          path: 'semestre',
+          select: 'nombre numero orden'
+        }
+      })
       .populate('materiaRequerida', 'nombre codigo')
       .sort({ materia: 1 });
     
     console.log(`✅ Previas encontradas: ${previas.length}`);
     
-    // Filtrar previas con referencias válidas y hacer populate del semestre
+    // Filtrar previas con referencias válidas
     const previasValidas = [];
     
     for (const previa of previas) {
@@ -426,21 +433,6 @@ router.get('/previas', async (req, res) => {
         // Eliminar la previa con referencia rota
         await Previa.findByIdAndDelete(previa._id);
         continue;
-      }
-      
-      // Hacer populate del semestre si existe
-      if (previa.materia.semestre) {
-        try {
-          const semestre = await Semestre.findById(previa.materia.semestre);
-          if (semestre) {
-            previa.materia.semestre = semestre;
-            console.log(`✅ Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
-          } else {
-            console.log(`❌ Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
-          }
-        } catch (error) {
-          console.error(`❌ Error populando semestre para ${previa.materia.nombre}:`, error);
-        }
       }
       
       previasValidas.push(previa);
@@ -465,16 +457,24 @@ router.get('/api/previas', async (req, res) => {
   try {
     console.log('🔄 API: Intentando cargar previas...');
     
-    // Obtener previas con populate básico
+    // Obtener previas con populate completo
     const previas = await Previa.find({})
-      .populate('materia', 'nombre codigo semestre')
+      .populate({
+        path: 'materia',
+        select: 'nombre codigo semestre',
+        populate: {
+          path: 'semestre',
+          select: 'nombre numero orden'
+        }
+      })
       .populate('materiaRequerida', 'nombre codigo')
       .sort({ materia: 1 });
     
     console.log(`✅ API: Previas encontradas: ${previas.length}`);
     
-    // Filtrar previas con referencias válidas y hacer populate del semestre
+    // Filtrar previas con referencias válidas
     const previasValidas = [];
+    const semestresCache = new Map(); // Cache para semestres
     
     for (const previa of previas) {
       // Verificar que tanto la materia como la materia requerida existen
@@ -485,15 +485,21 @@ router.get('/api/previas', async (req, res) => {
         continue;
       }
       
-      // Hacer populate del semestre si existe
+      // Hacer populate del semestre si existe (con cache)
       if (previa.materia.semestre) {
         try {
-          const semestre = await Semestre.findById(previa.materia.semestre);
+          let semestre;
+          if (semestresCache.has(previa.materia.semestre)) {
+            semestre = semestresCache.get(previa.materia.semestre);
+          } else {
+            semestre = await Semestre.findById(previa.materia.semestre);
+            if (semestre) {
+              semestresCache.set(previa.materia.semestre, semestre);
+            }
+          }
+          
           if (semestre) {
             previa.materia.semestre = semestre;
-            console.log(`✅ API: Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
-          } else {
-            console.log(`❌ API: Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
           }
         } catch (error) {
           console.error(`❌ API: Error populando semestre para ${previa.materia.nombre}:`, error);
@@ -882,6 +888,55 @@ router.get('/api/actividad-reciente', async (req, res) => {
   } catch (error) {
     console.error('Error cargando actividad reciente:', error);
     res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+  }
+});
+
+// API: Obtener últimos accesos de usuarios
+router.get('/api/ultimos-accesos', async (req, res) => {
+  try {
+    console.log('🔄 Cargando últimos accesos de usuarios...');
+    
+    // Obtener usuarios ordenados por último acceso (más reciente primero)
+    const usuarios = await Usuario.find({ activo: true })
+      .select('nombre apellido email rol ultimoAcceso')
+      .sort({ ultimoAcceso: -1 })
+      .limit(10);
+    
+    console.log(`✅ Usuarios encontrados: ${usuarios.length}`);
+    
+    // Formatear datos para el frontend
+    const ultimosAccesos = usuarios.map(usuario => {
+      const ahora = new Date();
+      const ultimoAcceso = new Date(usuario.ultimoAcceso);
+      const diferenciaMs = ahora - ultimoAcceso;
+      const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+      const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
+      const diferenciaDias = Math.floor(diferenciaMs / (1000 * 60 * 60 * 24));
+      
+      let tiempoTranscurrido;
+      if (diferenciaMinutos < 60) {
+        tiempoTranscurrido = diferenciaMinutos <= 1 ? 'Hace un momento' : `Hace ${diferenciaMinutos} minutos`;
+      } else if (diferenciaHoras < 24) {
+        tiempoTranscurrido = diferenciaHoras === 1 ? 'Hace 1 hora' : `Hace ${diferenciaHoras} horas`;
+      } else {
+        tiempoTranscurrido = diferenciaDias === 1 ? 'Hace 1 día' : `Hace ${diferenciaDias} días`;
+      }
+      
+      return {
+        id: usuario._id,
+        nombre: `${usuario.nombre} ${usuario.apellido}`,
+        email: usuario.email,
+        rol: usuario.rol,
+        ultimoAcceso: ultimoAcceso,
+        tiempoTranscurrido: tiempoTranscurrido,
+        esReciente: diferenciaMinutos < 30 // Marcar como reciente si fue hace menos de 30 minutos
+      };
+    });
+    
+    res.json(ultimosAccesos);
+  } catch (error) {
+    console.error('❌ Error cargando últimos accesos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

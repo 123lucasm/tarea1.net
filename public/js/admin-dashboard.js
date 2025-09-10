@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar actividad reciente
     cargarActividadReciente();
     
+    // Cargar últimos accesos
+    cargarUltimosAccesos();
+    
     // Actualizar fecha y hora
     actualizarFechaHora();
     setInterval(actualizarFechaHora, 1000);
@@ -451,4 +454,85 @@ function actualizarGraficoUsuarios(distribucion) {
     usersChart.update('active');
     
     console.log('Gráfico actualizado correctamente');
+}
+
+// Función para cargar últimos accesos de usuarios
+async function cargarUltimosAccesos() {
+    try {
+        console.log('🔄 Cargando últimos accesos...');
+        
+        const response = await fetch('/admin/api/ultimos-accesos', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const ultimosAccesos = await response.json();
+        console.log('📦 Últimos accesos recibidos:', ultimosAccesos);
+        
+        mostrarUltimosAccesos(ultimosAccesos);
+        
+    } catch (error) {
+        console.error('❌ Error cargando últimos accesos:', error);
+        mostrarErrorUltimosAccesos('Error cargando últimos accesos: ' + error.message);
+    }
+}
+
+// Función para mostrar últimos accesos en el DOM
+function mostrarUltimosAccesos(ultimosAccesos) {
+    const container = document.getElementById('ultimos-accesos');
+    if (!container) return;
+    
+    if (ultimosAccesos.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-user-times text-4xl text-slate-400 mb-4"></i>
+                <p class="text-slate-500">No hay usuarios con accesos recientes</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = ultimosAccesos.map(acceso => `
+        <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors ${acceso.esReciente ? 'bg-green-50 border-green-200' : ''}">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-indigo-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-slate-900">${acceso.nombre}</p>
+                    <p class="text-sm text-slate-500">${acceso.email}</p>
+                    <p class="text-xs text-slate-400 capitalize">${acceso.rol}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-medium ${acceso.esReciente ? 'text-green-600' : 'text-slate-600'}">${acceso.tiempoTranscurrido}</p>
+                ${acceso.esReciente ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">En línea</span>' : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
+
+// Función para mostrar error en últimos accesos
+function mostrarErrorUltimosAccesos(mensaje) {
+    const container = document.getElementById('ultimos-accesos');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="text-center py-8">
+            <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+            <p class="text-red-500">${mensaje}</p>
+            <button onclick="cargarUltimosAccesos()" class="mt-4 btn-secondary">
+                <i class="fas fa-retry"></i>
+                Reintentar
+            </button>
+        </div>
+    `;
 }

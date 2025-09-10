@@ -12,7 +12,10 @@ const usuarioSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() {
+      // Solo es requerido si no hay googleId (usuarios normales)
+      return !this.googleId;
+    },
     minlength: 6
   },
   nombre: {
@@ -47,6 +50,14 @@ const usuarioSchema = new mongoose.Schema({
   },
   refreshToken: {
     type: String
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Permite múltiples valores null
+  },
+  avatar: {
+    type: String
   }
 }, {
   timestamps: true
@@ -56,6 +67,7 @@ const usuarioSchema = new mongoose.Schema({
 usuarioSchema.index({ email: 1 });
 usuarioSchema.index({ rol: 1 });
 usuarioSchema.index({ cedula: 1 });
+usuarioSchema.index({ googleId: 1 });
 
 // Método para hashear contraseña antes de guardar
 usuarioSchema.pre('save', async function(next) {
@@ -72,6 +84,10 @@ usuarioSchema.pre('save', async function(next) {
 
 // Método para comparar contraseñas
 usuarioSchema.methods.compararPassword = async function(passwordCandidata) {
+  // Si es un usuario de Google, no tiene contraseña
+  if (this.googleId) {
+    return false;
+  }
   return await bcrypt.compare(passwordCandidata, this.password);
 };
 

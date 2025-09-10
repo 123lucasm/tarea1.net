@@ -143,7 +143,25 @@ function actualizarEstadoConexion(estado, texto) {
 
 async function cargarPrevias() {
     console.log('🔄 Cargando previas...');
+    
+    // Mostrar indicador de carga
+    const tbody = document.getElementById('previas-tbody');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
+                        <p class="text-slate-500">Cargando previas...</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+    
     try {
+        const startTime = performance.now();
+        
         const response = await fetch('/admin/api/previas', {
             method: 'GET',
             headers: {
@@ -156,7 +174,9 @@ async function cargarPrevias() {
         }
         
         const data = await response.json();
-        console.log('📦 Datos recibidos de la API:', data);
+        const endTime = performance.now();
+        
+        console.log(`📦 Datos recibidos de la API en ${(endTime - startTime).toFixed(2)}ms:`, data);
         
         previas = data;
         previasFiltradas = [...previas];
@@ -459,10 +479,12 @@ function mostrarPrevias() {
 }
 
 function agruparPreviasPorMateria(previas) {
-    console.log('🔍 Previas recibidas para agrupar:', previas);
+    const startTime = performance.now();
+    console.log('🔍 Agrupando previas:', previas.length);
+    
     const grupos = {};
     
-    previas.forEach(previa => {
+    for (const previa of previas) {
         const materiaId = previa.materia._id || previa.materia;
         const materiaNombre = previa.materia.nombre || 'N/A';
         const materiaCodigo = previa.materia.codigo || 'N/A';
@@ -485,7 +507,8 @@ function agruparPreviasPorMateria(previas) {
             };
         }
         
-        grupos[materiaId].previas.push({
+        const grupo = grupos[materiaId];
+        grupo.previas.push({
             materiaRequerida: previa.materiaRequerida,
             tipo: previa.tipo,
             notaMinima: previa.notaMinima,
@@ -494,14 +517,21 @@ function agruparPreviasPorMateria(previas) {
             activa: previa.activa
         });
         
-        grupos[materiaId].totalPrevias++;
-        grupos[materiaId].tipos.add(previa.tipo);
-        grupos[materiaId].creditosMinimos = Math.max(grupos[materiaId].creditosMinimos, previa.creditosMinimos);
-        grupos[materiaId].activa = grupos[materiaId].activa && previa.activa;
-        grupos[materiaId].semestreMinimo = Math.max(grupos[materiaId].semestreMinimo, previa.semestreMinimo);
-    });
+        grupo.totalPrevias++;
+        grupo.tipos.add(previa.tipo);
+        grupo.creditosMinimos = Math.max(grupo.creditosMinimos, previa.creditosMinimos);
+        grupo.activa = grupo.activa && previa.activa;
+        
+        if (previa.semestreMinimo && (!grupo.semestreMinimo || previa.semestreMinimo < grupo.semestreMinimo)) {
+            grupo.semestreMinimo = previa.semestreMinimo;
+        }
+    }
     
-    return Object.values(grupos).sort((a, b) => a.materia.codigo.localeCompare(b.materia.codigo));
+    const endTime = performance.now();
+    const resultado = Object.values(grupos).sort((a, b) => a.materia.codigo.localeCompare(b.materia.codigo));
+    console.log(`✅ Agrupación completada en ${(endTime - startTime).toFixed(2)}ms: ${resultado.length} grupos`);
+    
+    return resultado;
 }
 
 function abrirModalPrevia() {

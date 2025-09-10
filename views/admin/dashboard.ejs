@@ -320,6 +320,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Últimos Accesos de Usuarios -->
+        <div class="card-utec">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-slate-800">
+                    <i class="fas fa-user-clock mr-3"></i>
+                    Últimos Accesos
+                </h3>
+                <button class="btn-secondary" onclick="cargarUltimosAccesos()">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualizar
+                </button>
+            </div>
+            <div id="ultimos-accesos">
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p class="text-slate-500">Cargando últimos accesos...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Custom JavaScript for Admin Dashboard -->

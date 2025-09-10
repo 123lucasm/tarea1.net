@@ -2,8 +2,33 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const AuthService = require('../services/authService');
 const { authenticateToken } = require('../middleware/auth');
+const passport = require('passport');
 
 const router = express.Router();
+
+// Función auxiliar para actualizar último acceso
+async function actualizarUltimoAcceso(usuarioId, email) {
+  try {
+    console.log('🔄 Actualizando último acceso para:', email);
+    
+    const Usuario = require('../models/Usuario');
+    const fechaActual = new Date();
+    
+    const resultado = await Usuario.findByIdAndUpdate(
+      usuarioId, 
+      { ultimoAcceso: fechaActual }, 
+      { new: true, runValidators: true }
+    );
+    
+    if (resultado) {
+      console.log('✅ Último acceso actualizado:', resultado.ultimoAcceso);
+    } else {
+      console.log('⚠️ Usuario no encontrado para actualizar');
+    }
+  } catch (error) {
+    console.error('❌ Error actualizando último acceso:', error.message);
+  }
+}
 
 // GET /auth/login - Mostrar página de login
 router.get('/login', (req, res) => {
@@ -148,6 +173,9 @@ router.post('/login',
       console.log('🔍 Verificando que req.session existe:', !!req.session);
       console.log('🔍 Tipo de req.session:', typeof req.session);
       
+      // Actualizar último acceso del usuario
+      await actualizarUltimoAcceso(resultado.usuario.id, resultado.usuario.email);
+      
       // Crear sesión del usuario
       req.session.userId = resultado.usuario.id;
       req.session.userEmail = resultado.usuario.email;
@@ -216,6 +244,9 @@ router.post('/login-test', async (req, res) => {
     const resultado = await AuthService.iniciarSesion(email, password, false); // Sin tokens, solo sesión
     console.log('✅ Login exitoso, resultado:', resultado);
     
+    // Actualizar último acceso del usuario
+    await actualizarUltimoAcceso(resultado.usuario.id, resultado.usuario.email);
+    
     // Crear sesión del usuario
     req.session.userId = resultado.usuario.id;
     req.session.userEmail = resultado.usuario.email;
@@ -283,6 +314,11 @@ router.post('/login-simple', async (req, res) => {
     }
     
     console.log('✅ Usuario autenticado:', usuario.nombre);
+    console.log('🔄 Llamando a actualizarUltimoAcceso...');
+    
+    // Actualizar último acceso del usuario
+    await actualizarUltimoAcceso(usuario._id, usuario.email);
+    console.log('✅ Función actualizarUltimoAcceso completada');
     
     // Crear sesión
     req.session.userId = usuario._id;
@@ -529,6 +565,11 @@ router.post('/login-simple', async (req, res) => {
     }
     
     console.log('✅ Usuario autenticado:', usuario.nombre);
+    console.log('🔄 Llamando a actualizarUltimoAcceso...');
+    
+    // Actualizar último acceso del usuario
+    await actualizarUltimoAcceso(usuario._id, usuario.email);
+    console.log('✅ Función actualizarUltimoAcceso completada');
     
     // Crear sesión
     req.session.userId = usuario._id;
@@ -550,5 +591,43 @@ router.post('/login-simple', async (req, res) => {
     });
   }
 });
+
+// Rutas de Google OAuth
+// Ruta para iniciar autenticación con Google
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+// Callback de Google OAuth
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/auth/login?error=google_auth_failed' }),
+  async (req, res) => {
+    try {
+      console.log('✅ Autenticación con Google exitosa');
+      
+      // Actualizar último acceso
+      await actualizarUltimoAcceso(req.user._id, req.user.email);
+      
+      // Crear sesión del usuario
+      req.session.userId = req.user._id;
+      req.session.userEmail = req.user.email;
+      req.session.userName = `${req.user.nombre} ${req.user.apellido}`;
+      req.session.userRole = req.user.rol;
+      
+      console.log('📝 Sesión creada para usuario de Google:', req.user.email);
+      
+      // Redirigir según el rol del usuario
+      if (req.user.rol === 'administrador') {
+        res.redirect('/admin');
+      } else {
+        res.redirect('/dashboard');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error en callback de Google:', error);
+      res.redirect('/auth/login?error=google_callback_error');
+    }
+  }
+);
 
 module.exports = router;
