@@ -346,13 +346,35 @@ router.put('/api/materias/:id', async (req, res) => {
 // API: Eliminar materia
 router.delete('/api/materias/:id', async (req, res) => {
   try {
-    const materia = await Materia.findByIdAndDelete(req.params.id);
+    const materiaId = req.params.id;
     
+    // Verificar que la materia existe
+    const materia = await Materia.findById(materiaId);
     if (!materia) {
       return res.status(404).json({ error: 'Materia no encontrada' });
     }
     
-    res.json({ message: 'Materia eliminada correctamente' });
+    console.log(`🗑️ Eliminando materia: ${materia.nombre} (${materia.codigo})`);
+    
+    // Eliminar todas las previas asociadas a esta materia
+    // 1. Previas donde esta materia es la materia principal
+    const previasEliminadas1 = await Previa.deleteMany({ materia: materiaId });
+    console.log(`🗑️ Previas eliminadas (como materia principal): ${previasEliminadas1.deletedCount}`);
+    
+    // 2. Previas donde esta materia es requerida por otras materias
+    const previasEliminadas2 = await Previa.deleteMany({ materiaRequerida: materiaId });
+    console.log(`🗑️ Previas eliminadas (como materia requerida): ${previasEliminadas2.deletedCount}`);
+    
+    // Eliminar la materia
+    await Materia.findByIdAndDelete(materiaId);
+    
+    const totalPreviasEliminadas = previasEliminadas1.deletedCount + previasEliminadas2.deletedCount;
+    console.log(`✅ Materia eliminada exitosamente. Total de previas eliminadas: ${totalPreviasEliminadas}`);
+    
+    res.json({ 
+      message: 'Materia eliminada correctamente',
+      previasEliminadas: totalPreviasEliminadas
+    });
   } catch (error) {
     console.error('Error eliminando materia:', error);
     res.status(500).json({ error: 'Error interno del servidor', details: error.message });
@@ -394,32 +416,43 @@ router.get('/previas', async (req, res) => {
     
     console.log(`✅ Previas encontradas: ${previas.length}`);
     
-    // Hacer populate manual del semestre de cada materia
-    const previasConSemestre = await Promise.all(
-      previas.map(async (previa) => {
-        if (previa.materia && previa.materia.semestre) {
-          try {
-            const semestre = await Semestre.findById(previa.materia.semestre);
-            if (semestre) {
-              previa.materia.semestre = semestre;
-              console.log(`✅ Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
-            } else {
-              console.log(`❌ Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
-            }
-          } catch (error) {
-            console.error(`❌ Error populando semestre para ${previa.materia.nombre}:`, error);
-          }
-        }
-        return previa;
-      })
-    );
+    // Filtrar previas con referencias válidas y hacer populate del semestre
+    const previasValidas = [];
     
-    console.log('🔍 Primera previa con semestre:', previasConSemestre[0]?.materia?.semestre);
+    for (const previa of previas) {
+      // Verificar que tanto la materia como la materia requerida existen
+      if (!previa.materia || !previa.materiaRequerida) {
+        console.log(`❌ Previa con referencia rota eliminada - ID: ${previa._id}`);
+        // Eliminar la previa con referencia rota
+        await Previa.findByIdAndDelete(previa._id);
+        continue;
+      }
+      
+      // Hacer populate del semestre si existe
+      if (previa.materia.semestre) {
+        try {
+          const semestre = await Semestre.findById(previa.materia.semestre);
+          if (semestre) {
+            previa.materia.semestre = semestre;
+            console.log(`✅ Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
+          } else {
+            console.log(`❌ Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
+          }
+        } catch (error) {
+          console.error(`❌ Error populando semestre para ${previa.materia.nombre}:`, error);
+        }
+      }
+      
+      previasValidas.push(previa);
+    }
+    
+    console.log(`✅ Previas válidas después del filtrado: ${previasValidas.length}`);
+    console.log('🔍 Primera previa con semestre:', previasValidas[0]?.materia?.semestre);
     
     res.render('admin/previas', {
       title: 'Gestión de Previas',
       usuario: req.usuario,
-      previas: previasConSemestre
+      previas: previasValidas
     });
   } catch (error) {
     console.error('❌ Error cargando previas:', error);
@@ -440,29 +473,40 @@ router.get('/api/previas', async (req, res) => {
     
     console.log(`✅ API: Previas encontradas: ${previas.length}`);
     
-    // Hacer populate manual del semestre de cada materia
-    const previasConSemestre = await Promise.all(
-      previas.map(async (previa) => {
-        if (previa.materia && previa.materia.semestre) {
-          try {
-            const semestre = await Semestre.findById(previa.materia.semestre);
-            if (semestre) {
-              previa.materia.semestre = semestre;
-              console.log(`✅ API: Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
-            } else {
-              console.log(`❌ API: Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
-            }
-          } catch (error) {
-            console.error(`❌ API: Error populando semestre para ${previa.materia.nombre}:`, error);
+    // Filtrar previas con referencias válidas y hacer populate del semestre
+    const previasValidas = [];
+    
+    for (const previa of previas) {
+      // Verificar que tanto la materia como la materia requerida existen
+      if (!previa.materia || !previa.materiaRequerida) {
+        console.log(`❌ API: Previa con referencia rota eliminada - ID: ${previa._id}`);
+        // Eliminar la previa con referencia rota
+        await Previa.findByIdAndDelete(previa._id);
+        continue;
+      }
+      
+      // Hacer populate del semestre si existe
+      if (previa.materia.semestre) {
+        try {
+          const semestre = await Semestre.findById(previa.materia.semestre);
+          if (semestre) {
+            previa.materia.semestre = semestre;
+            console.log(`✅ API: Semestre populado para ${previa.materia.nombre}:`, semestre.nombre);
+          } else {
+            console.log(`❌ API: Semestre no encontrado para ${previa.materia.nombre}, ID:`, previa.materia.semestre);
           }
+        } catch (error) {
+          console.error(`❌ API: Error populando semestre para ${previa.materia.nombre}:`, error);
         }
-        return previa;
-      })
-    );
+      }
+      
+      previasValidas.push(previa);
+    }
     
-    console.log('🔍 API: Primera previa con semestre:', previasConSemestre[0]?.materia?.semestre);
+    console.log(`✅ API: Previas válidas después del filtrado: ${previasValidas.length}`);
+    console.log('🔍 API: Primera previa con semestre:', previasValidas[0]?.materia?.semestre);
     
-    res.json(previasConSemestre);
+    res.json(previasValidas);
   } catch (error) {
     console.error('❌ API: Error cargando previas:', error);
     res.status(500).json({ 
@@ -672,6 +716,52 @@ router.delete('/api/previas/:id', async (req, res) => {
   } catch (error) {
     console.error('Error eliminando previa:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// API: Limpiar previas huérfanas (previas con referencias rotas)
+router.post('/api/previas/limpiar-huerfanas', async (req, res) => {
+  try {
+    console.log('🧹 Iniciando limpieza de previas huérfanas...');
+    
+    // Obtener todas las previas
+    const previas = await Previa.find({})
+      .populate('materia', 'nombre codigo')
+      .populate('materiaRequerida', 'nombre codigo');
+    
+    let previasEliminadas = 0;
+    const previasEliminadasDetalle = [];
+    
+    for (const previa of previas) {
+      // Verificar si alguna de las referencias está rota
+      if (!previa.materia || !previa.materiaRequerida) {
+        console.log(`🗑️ Eliminando previa huérfana - ID: ${previa._id}`);
+        
+        // Guardar información antes de eliminar
+        previasEliminadasDetalle.push({
+          id: previa._id,
+          materia: previa.materia ? `${previa.materia.nombre} (${previa.materia.codigo})` : 'REFERENCIA ROTA',
+          materiaRequerida: previa.materiaRequerida ? `${previa.materiaRequerida.nombre} (${previa.materiaRequerida.codigo})` : 'REFERENCIA ROTA'
+        });
+        
+        await Previa.findByIdAndDelete(previa._id);
+        previasEliminadas++;
+      }
+    }
+    
+    console.log(`✅ Limpieza completada. Previas eliminadas: ${previasEliminadas}`);
+    
+    res.json({
+      message: 'Limpieza de previas huérfanas completada',
+      previasEliminadas,
+      detalle: previasEliminadasDetalle
+    });
+  } catch (error) {
+    console.error('❌ Error limpiando previas huérfanas:', error);
+    res.status(500).json({ 
+      error: 'Error interno del servidor', 
+      details: error.message 
+    });
   }
 });
 

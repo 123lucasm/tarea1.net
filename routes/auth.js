@@ -183,7 +183,8 @@ router.post('/login',
 
         console.log('🔄 Redirigiendo según rol del usuario...');
         // Redirigir según el rol del usuario con mensaje de éxito
-        res.redirect('/dashboard?login=success');
+        const userName = encodeURIComponent(resultado.usuario.nombre);
+        res.redirect(`/dashboard?loginSuccess=true&userName=${userName}`);
       });
     } catch (error) {
       console.error('❌ Error en login:', error);

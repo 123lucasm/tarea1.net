@@ -1,0 +1,151 @@
+/* Estilos personalizados para SweetAlert2 en Previas */
+.swal2-popup-modern {
+    border-radius: 20px !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+    border: none !important;
+    overflow: hidden !important;
+}
+
+.swal2-title-modern { 
+    display: none !important; 
+}
+
+.swal2-html-container-modern { 
+    margin: 0 !important; 
+    padding: 0 !important; 
+}
+
+.swal2-confirm-modern {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-confirm-modern:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+.swal2-cancel-modern {
+    background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-cancel-modern:hover {
+    background: linear-gradient(135deg, #4b5563, #374151) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4) !important;
+}
+
+.swal2-actions {
+    gap: 12px !important;
+    margin-top: 30px !important;
+}
+
+.swal2-backdrop {
+    backdrop-filter: blur(8px) !important;
+}
+
+/* Estilos para select múltiple */
+select[multiple] {
+    min-height: 120px;
+    padding: 8px;
+}
+
+select[multiple] option {
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 4px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+select[multiple] option:checked {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+}
+
+select[multiple] option:hover {
+    background-color: #e2e8f0;
+}
+
+select[multiple] option:checked:hover {
+    background-color: #2563eb;
+}
+
+/* Estilos para el container de materias */
+#materias-container {
+    background-color: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    transition: border-color 0.3s ease;
+}
+
+#materias-container:hover {
+    border-color: #94a3b8;
+}
+
+/* Estilos para las filas de materias */
+.materia-row {
+    transition: all 0.2s ease;
+}
+
+.materia-row:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para checkboxes */
+.materia-checkbox {
+    transform: scale(1.2);
+    accent-color: #3b82f6;
+}
+
+/* Estilos para selects deshabilitados */
+.tipo-requisito:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Animación para cuando se habilita un select */
+.tipo-requisito:not(:disabled) {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+}
+
+/* Estilos para paginación */
+.btn-pagina-numero {
+    @apply px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors cursor-pointer;
+    min-width: 40px;
+    text-align: center;
+}
+
+.btn-pagina-numero.activa {
+    @apply bg-indigo-600 text-white border-indigo-600;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+}
+
+.btn-pagina-numero.activa:hover {
+    @apply bg-indigo-700;
+}
+
+.btn-pagina-numero:hover:not(.activa) {
+    @apply bg-slate-100 border-slate-400;
+}
