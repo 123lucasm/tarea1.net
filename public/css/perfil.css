@@ -1,0 +1,270 @@
+/* Estilos específicos para el perfil de administrador */
+
+/* Avatar y perfil */
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    width: 8rem;
+    height: 8rem;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.05);
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #10b981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.avatar-edit-btn:hover {
+    background: #059669;
+    transform: scale(1.1);
+}
+
+/* Formulario de perfil */
+.form-input {
+    @apply w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors;
+}
+
+.form-input:read-only {
+    @apply bg-slate-50 text-slate-600 cursor-not-allowed;
+}
+
+.form-input:focus:read-only {
+    @apply ring-0 border-slate-300;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-slate-700 mb-2;
+}
+
+/* Toggle switches */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 2.75rem;
+    height: 1.5rem;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.4s;
+    border-radius: 1.5rem;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 1.125rem;
+    width: 1.125rem;
+    left: 0.1875rem;
+    bottom: 0.1875rem;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #4f46e5;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(1.25rem);
+}
+
+/* Configuración de cuenta */
+.config-item {
+    @apply flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors;
+}
+
+.config-item h5 {
+    @apply font-medium text-slate-800;
+}
+
+.config-item p {
+    @apply text-sm text-slate-600;
+}
+
+/* Validación de contraseña */
+.password-requirements {
+    @apply text-sm text-slate-600 mt-2;
+}
+
+.password-requirements ul {
+    @apply list-disc list-inside mt-1 space-y-1;
+}
+
+.password-requirements li {
+    @apply transition-colors;
+}
+
+.password-requirements li.valid {
+    @apply text-emerald-600;
+}
+
+.password-requirements li.invalid {
+    @apply text-red-500;
+}
+
+/* Botones */
+.btn-primary {
+    @apply inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150;
+}
+
+.btn-secondary {
+    @apply inline-flex items-center px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150;
+}
+
+.btn-warning {
+    @apply inline-flex items-center px-4 py-2 bg-amber-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-700 focus:bg-amber-700 active:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition ease-in-out duration-150;
+}
+
+.btn-danger {
+    @apply inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150;
+}
+
+/* Estados de validación */
+.input-valid {
+    @apply border-emerald-500 focus:ring-emerald-500 focus:border-emerald-500;
+}
+
+.input-invalid {
+    @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+}
+
+/* Animaciones */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .avatar {
+        width: 6rem;
+        height: 6rem;
+        font-size: 1.5rem;
+    }
+    
+    .avatar-edit-btn {
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    .config-item {
+        @apply flex-col items-start space-y-2;
+    }
+    
+    .config-item > div:last-child {
+        @apply self-end;
+    }
+}
+
+/* Estados de carga */
+.loading {
+    @apply opacity-50 pointer-events-none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Notificaciones */
+.notification {
+    @apply fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm;
+}
+
+.notification.success {
+    @apply bg-emerald-100 border border-emerald-200 text-emerald-800;
+}
+
+.notification.error {
+    @apply bg-red-100 border border-red-200 text-red-800;
+}
+
+.notification.warning {
+    @apply bg-amber-100 border border-amber-200 text-amber-800;
+}
+
+.notification.info {
+    @apply bg-blue-100 border border-blue-200 text-blue-800;
+}

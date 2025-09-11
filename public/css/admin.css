@@ -544,6 +544,14 @@
     background: #d97706;
 }
 
+.management-section.violet::before {
+    background: #7c3aed;
+}
+
+.management-section.purple::before {
+    background: #8b5cf6;
+}
+
 .management-header {
     display: flex;
     align-items: center;
@@ -571,6 +579,14 @@
 
 .management-icon.amber {
     background: #d97706;
+}
+
+.management-icon.violet {
+    background: #7c3aed;
+}
+
+.management-icon.purple {
+    background: #8b5cf6;
 }
 
 .management-title {
