@@ -7,7 +7,7 @@ const passport = require('passport');
 const router = express.Router();
 
 // Función auxiliar para actualizar último acceso
-async function actualizarUltimoAcceso(usuarioId, email) {
+async function actualizarUltimoAcceso(usuarioId, email, req = null) {
   try {
     console.log('🔄 Actualizando último acceso para:', email);
     
@@ -22,6 +22,20 @@ async function actualizarUltimoAcceso(usuarioId, email) {
     
     if (resultado) {
       console.log('✅ Último acceso actualizado:', resultado.ultimoAcceso);
+      
+      // Emitir evento de Socket.IO si está disponible
+      if (req && req.io) {
+        req.io.emit('ultimo-acceso-actualizado', {
+          usuario: {
+            id: resultado._id,
+            nombre: resultado.nombre,
+            apellido: resultado.apellido,
+            email: resultado.email,
+            rol: resultado.rol
+          },
+          ultimoAcceso: resultado.ultimoAcceso
+        });
+      }
     } else {
       console.log('⚠️ Usuario no encontrado para actualizar');
     }
@@ -174,7 +188,7 @@ router.post('/login',
       console.log('🔍 Tipo de req.session:', typeof req.session);
       
       // Actualizar último acceso del usuario
-      await actualizarUltimoAcceso(resultado.usuario.id, resultado.usuario.email);
+      await actualizarUltimoAcceso(resultado.usuario.id, resultado.usuario.email, req);
       
       // Crear sesión del usuario
       req.session.userId = resultado.usuario.id;
@@ -203,8 +217,7 @@ router.post('/login',
         
         // Notificar por WebSocket si está disponible
         if (req.io) {
-          req.io.emit('usuario_conectado', {
-            mensaje: 'Usuario conectado',
+          req.io.emit('user-login', {
             usuario: resultado.usuario
           });
         }
@@ -386,9 +399,13 @@ router.get('/logout', (req, res) => {
       
       // Notificar por WebSocket si está disponible
       if (req.io) {
-        req.io.emit('usuario_desconectado', {
-          mensaje: 'Usuario desconectado',
-          usuario: req.session.userId
+        req.io.emit('user-logout', {
+          usuario: {
+            id: req.session.userId,
+            nombre: req.session.userName,
+            email: req.session.userEmail,
+            rol: req.session.userRole
+          }
         });
       }
 
@@ -606,7 +623,7 @@ router.get('/google/callback',
       console.log('✅ Autenticación con Google exitosa');
       
       // Actualizar último acceso
-      await actualizarUltimoAcceso(req.user._id, req.user.email);
+      await actualizarUltimoAcceso(req.user._id, req.user.email, req);
       
       // Crear sesión del usuario
       req.session.userId = req.user._id;
@@ -615,6 +632,19 @@ router.get('/google/callback',
       req.session.userRole = req.user.rol;
       
       console.log('📝 Sesión creada para usuario de Google:', req.user.email);
+      
+      // Notificar por WebSocket si está disponible
+      if (req.io) {
+        req.io.emit('user-login', {
+          usuario: {
+            id: req.user._id,
+            nombre: req.user.nombre,
+            apellido: req.user.apellido,
+            email: req.user.email,
+            rol: req.user.rol
+          }
+        });
+      }
       
       // Redirigir según el rol del usuario
       if (req.user.rol === 'administrador') {
