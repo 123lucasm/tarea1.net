@@ -72,20 +72,36 @@ class AuthService {
   // Iniciar sesión
   static async iniciarSesion(email, password, conTokens = true) {
     try {
+      console.log('🔐 AuthService: Iniciando sesión para email:', email);
+      
       // Buscar usuario por email
       const usuario = await Usuario.findOne({ email });
       if (!usuario) {
+        console.log('❌ AuthService: Usuario no encontrado para email:', email);
         throw new Error('Credenciales inválidas');
       }
 
+      console.log('✅ AuthService: Usuario encontrado:', {
+        id: usuario._id,
+        email: usuario.email,
+        nombre: usuario.nombre,
+        tienePassword: !!usuario.password,
+        tieneGoogleId: !!usuario.googleId,
+        activo: usuario.activo
+      });
+
       // Verificar contraseña
       const passwordValida = await usuario.compararPassword(password);
+      console.log('🔑 AuthService: Verificación de contraseña:', passwordValida);
+      
       if (!passwordValida) {
+        console.log('❌ AuthService: Contraseña inválida para usuario:', usuario.email);
         throw new Error('Credenciales inválidas');
       }
 
       // Verificar si el usuario está activo
       if (!usuario.activo) {
+        console.log('❌ AuthService: Usuario inactivo:', usuario.email);
         throw new Error('Usuario inactivo');
       }
 
