@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar últimos accesos
     cargarUltimosAccesos();
     
+    // Cargar estadísticas mensuales
+    cargarEstadisticasMensuales();
+    
     // Actualizar fecha y hora
     actualizarFechaHora();
     setInterval(actualizarFechaHora, 1000);
@@ -24,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function configurarSocketEvents() {
+    // Unirse a la sala de administradores
+    socket.emit('join-room', 'admin');
+    
     // Escuchar nuevos usuarios (desde registro público)
     socket.on('usuario_registrado', function(data) {
         console.log('Usuario registrado desde auth:', data);
@@ -45,6 +51,50 @@ function configurarSocketEvents() {
         console.log('Nueva materia creada:', materia);
         mostrarNotificacion('Nueva materia creada', `${materia.nombre} (${materia.codigo}) fue agregada`);
         cargarEstadisticas(); // Actualizar estadísticas
+        cargarActividadReciente(); // Actualizar actividad
+    });
+    
+    // Escuchar nuevos semestres
+    socket.on('nuevo-semestre', function(data) {
+        console.log('Nuevo semestre creado:', data);
+        mostrarNotificacion('Nuevo semestre creado', `${data.semestre.nombre} fue agregado`);
+        cargarEstadisticas(); // Actualizar estadísticas
+        cargarActividadReciente(); // Actualizar actividad
+    });
+    
+    // Escuchar login de usuarios
+    socket.on('user-logged-in', function(data) {
+        console.log('Usuario inició sesión:', data);
+        mostrarNotificacion('Usuario conectado', `${data.usuario.nombre} ${data.usuario.apellido} inició sesión`);
+        cargarUltimosAccesos(); // Actualizar últimos accesos
+        cargarActividadReciente(); // Actualizar actividad
+    });
+    
+    // Escuchar logout de usuarios
+    socket.on('user-logged-out', function(data) {
+        console.log('Usuario cerró sesión:', data);
+        mostrarNotificacion('Usuario desconectado', `${data.usuario.nombre} ${data.usuario.apellido} cerró sesión`);
+        cargarUltimosAccesos(); // Actualizar últimos accesos
+        cargarActividadReciente(); // Actualizar actividad
+    });
+    
+    // Escuchar actividad de usuarios
+    socket.on('user-activity-update', function(data) {
+        console.log('Actividad de usuario:', data);
+        mostrarNotificacion('Actividad detectada', `${data.usuario.nombre} ${data.actividad}`);
+        cargarActividadReciente(); // Actualizar actividad
+    });
+    
+    // Escuchar confirmación de login
+    socket.on('login-confirmed', function(data) {
+        console.log('Login confirmado:', data);
+        // No mostrar notificación para el propio usuario
+    });
+    
+    // Escuchar actualización de último acceso
+    socket.on('ultimo-acceso-actualizado', function(data) {
+        console.log('Último acceso actualizado:', data);
+        cargarUltimosAccesos(); // Actualizar últimos accesos
         cargarActividadReciente(); // Actualizar actividad
     });
     
@@ -535,4 +585,265 @@ function mostrarErrorUltimosAccesos(mensaje) {
             </button>
         </div>
     `;
+}
+
+// Función para cargar estadísticas mensuales
+async function cargarEstadisticasMensuales() {
+    try {
+        console.log('📊 Cargando estadísticas mensuales...');
+        
+        const response = await fetch('/admin/api/dashboard-actividad', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('📊 Respuesta del servidor:', response.status, response.statusText);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Estadísticas mensuales recibidas:', data);
+        console.log('📊 Datos históricos:', data.historico);
+        
+        // Actualizar las tarjetas de estadísticas con datos mensuales
+        actualizarEstadisticasMensuales(data);
+        
+        // Crear gráfico de actividad mensual
+        crearGraficoActividadMensual(data.historico);
+        
+    } catch (error) {
+        console.error('❌ Error cargando estadísticas mensuales:', error);
+        console.log('📊 Creando gráfico de ejemplo debido al error...');
+        
+        // Crear gráfico de ejemplo en caso de error
+        const ctx = document.getElementById('actividadMensualChart');
+        if (ctx) {
+            crearGraficoEjemplo(ctx);
+        }
+    }
+}
+
+// Función para actualizar las tarjetas de estadísticas con datos mensuales
+function actualizarEstadisticasMensuales(data) {
+    const { mesActual, tendencias } = data;
+    
+    // Actualizar tarjeta de usuarios con tendencia
+    const totalUsuariosElement = document.getElementById('total-usuarios');
+    if (totalUsuariosElement && mesActual.estadisticas) {
+        const usuarios = mesActual.estadisticas.totalUsuariosActivos || 0;
+        const cambio = tendencias.usuarios.cambio || 0;
+        
+        totalUsuariosElement.innerHTML = `
+            <span class="animate-pulse">${usuarios}</span>
+            ${cambio !== 0 ? `
+                <div class="stat-trend ${cambio > 0 ? 'positive' : 'negative'}">
+                    <i class="fas fa-arrow-${cambio > 0 ? 'up' : 'down'}"></i>
+                    <span>${Math.abs(cambio)}% vs mes anterior</span>
+                </div>
+            ` : ''}
+        `;
+    }
+    
+    // Actualizar tarjeta de materias con tendencia
+    const totalMateriasElement = document.getElementById('total-materias');
+    if (totalMateriasElement && mesActual.estadisticas) {
+        const materias = mesActual.estadisticas.actividadesPorTipo?.materiasConsultadas || 0;
+        
+        totalMateriasElement.innerHTML = `
+            <span class="animate-pulse">${materias}</span>
+            <div class="stat-trend positive">
+                <i class="fas fa-eye"></i>
+                <span>consultas este mes</span>
+            </div>
+        `;
+    }
+    
+    // Actualizar tarjeta de previas con tendencia
+    const totalPreviasElement = document.getElementById('total-previas');
+    if (totalPreviasElement && mesActual.estadisticas) {
+        const previas = mesActual.estadisticas.actividadesPorTipo?.previasConsultadas || 0;
+        
+        totalPreviasElement.innerHTML = `
+            <span class="animate-pulse">${previas}</span>
+            <div class="stat-trend positive">
+                <i class="fas fa-link"></i>
+                <span>consultas este mes</span>
+            </div>
+        `;
+    }
+    
+    // Actualizar tarjeta de semestres con tendencia
+    const totalSemestresElement = document.getElementById('total-semestres');
+    if (totalSemestresElement && mesActual.estadisticas) {
+        const semestres = mesActual.estadisticas.actividadesPorTipo?.semestresConsultados || 0;
+        
+        totalSemestresElement.innerHTML = `
+            <span class="animate-pulse">${semestres}</span>
+            <div class="stat-trend positive">
+                <i class="fas fa-graduation-cap"></i>
+                <span>consultas este mes</span>
+            </div>
+        `;
+    }
+}
+
+// Función para crear gráfico de actividad mensual
+function crearGraficoActividadMensual(datosHistoricos) {
+    const ctx = document.getElementById('actividadMensualChart');
+    console.log('📊 Creando gráfico de actividad mensual...');
+    console.log('📊 Canvas encontrado:', !!ctx);
+    console.log('📊 Datos históricos:', datosHistoricos);
+    
+    if (!ctx) {
+        console.error('❌ No se encontró el canvas con ID: actividadMensualChart');
+        return;
+    }
+    
+    if (!datosHistoricos || datosHistoricos.length === 0) {
+        console.log('📊 No hay datos históricos, creando gráfico de ejemplo');
+        crearGraficoEjemplo(ctx);
+        return;
+    }
+    
+    // Preparar datos para el gráfico
+    const labels = datosHistoricos.map(dato => {
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        return `${meses[dato.mes - 1]} ${dato.año}`;
+    });
+    
+    const usuariosData = datosHistoricos.map(dato => dato.totalUsuariosActivos || 0);
+    const actividadesData = datosHistoricos.map(dato => dato.totalActividades || 0);
+    
+    // Destruir gráfico existente si existe
+    if (window.actividadMensualChart) {
+        window.actividadMensualChart.destroy();
+    }
+    
+    // Crear nuevo gráfico
+    window.actividadMensualChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Usuarios Activos',
+                    data: usuariosData,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Total Actividades',
+                    data: actividadesData,
+                    borderColor: '#059669',
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Actividad Mensual - Últimos 6 Meses',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+    
+    console.log('📊 Gráfico de actividad mensual creado');
+}
+
+// Función para crear gráfico de ejemplo cuando no hay datos
+function crearGraficoEjemplo(ctx) {
+    console.log('📊 Creando gráfico de ejemplo...');
+    
+    // Destruir gráfico existente si existe
+    if (window.actividadMensualChart) {
+        window.actividadMensualChart.destroy();
+    }
+    
+    // Crear gráfico de ejemplo con datos ficticios
+    window.actividadMensualChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [
+                {
+                    label: 'Usuarios Activos',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Total Actividades',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: '#059669',
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Actividad Mensual - Sin datos disponibles',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+    
+    console.log('📊 Gráfico de ejemplo creado');
 }

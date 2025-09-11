@@ -122,6 +122,15 @@ function configurarEventosBotones() {
     if (prevPage) prevPage.addEventListener('click', () => cambiarPagina(-1));
     if (nextPage) nextPage.addEventListener('click', () => cambiarPagina(1));
     
+    // Event listener para el formulario de previas
+    const formPrevia = document.getElementById('form-previa');
+    if (formPrevia) {
+        console.log('✅ Registrando event listener para formulario de previas');
+        formPrevia.addEventListener('submit', manejarSubmitPrevia);
+    } else {
+        console.error('❌ No se encontró el formulario de previas');
+    }
+    
     // Delegación de eventos para números de página
     document.addEventListener('click', function(e) {
         if (e.target.closest('.btn-pagina-numero')) {
@@ -552,17 +561,27 @@ function abrirModalPrevia() {
 }
 
 function cerrarModalPrevia() {
+    console.log('🚪 Cerrando modal de previas');
     const modalPrevia = document.getElementById('modal-previa');
     const formPrevia = document.getElementById('form-previa');
     const materiasContainer = document.getElementById('materias-container');
     
-    if (modalPrevia) modalPrevia.classList.add('hidden');
+    if (modalPrevia) {
+        modalPrevia.classList.add('hidden');
+        console.log('✅ Modal ocultado');
+    } else {
+        console.error('❌ No se encontró el modal de previas');
+    }
+    
     if (formPrevia) {
         formPrevia.reset();
         delete formPrevia.dataset.previaId;
+        console.log('✅ Formulario reseteado');
     }
+    
     if (materiasContainer) {
         materiasContainer.innerHTML = '<p class="text-sm text-gray-500">Primero selecciona una materia para ver las previas disponibles:</p>';
+        console.log('✅ Contenedor de materias limpiado');
     }
 }
 
@@ -748,22 +767,73 @@ function cerrarModalPreviasDetalle() {
     if (modalDetalle) modalDetalle.classList.add('hidden');
 }
 
-function editarPrevia(materiaId) {
-    const previasData = document.querySelector(`[data-materia-id="${materiaId}"]`)?.getAttribute('data-previas');
-    if (!previasData) return;
-    
-    const previas = JSON.parse(previasData);
-    const modalTitle = document.getElementById('modal-title');
-    const formPrevia = document.getElementById('form-previa');
-    const modalPrevia = document.getElementById('modal-previa');
-    
-    if (modalTitle) modalTitle.textContent = 'Editar Previa';
-    if (formPrevia) formPrevia.dataset.previaId = materiaId;
-    if (modalPrevia) modalPrevia.classList.remove('hidden');
+async function editarPrevia(materiaId) {
+    try {
+        console.log('🔄 Editando previas para materia:', materiaId);
+        
+        // Obtener las previas de esta materia desde el servidor
+        const response = await fetch(`/admin/api/previas/materia/${materiaId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+        }
+        
+        const previas = await response.json();
+        console.log('📦 Previas obtenidas para edición:', previas);
+        
+        const modalTitle = document.getElementById('modal-title');
+        const formPrevia = document.getElementById('form-previa');
+        const modalPrevia = document.getElementById('modal-previa');
+        const selectMateria = document.getElementById('materia');
+        const materiasContainer = document.getElementById('materias-container');
+        
+        if (modalTitle) modalTitle.textContent = 'Editar Previas';
+        if (formPrevia) formPrevia.dataset.previaId = materiaId;
+        if (modalPrevia) modalPrevia.classList.remove('hidden');
+        
+        // Seleccionar la materia en el select
+        if (selectMateria) {
+            selectMateria.value = materiaId;
+            // Disparar el evento change para cargar las materias disponibles
+            selectMateria.dispatchEvent(new Event('change'));
+        }
+        
+        // Esperar un poco para que se carguen las materias disponibles
+        setTimeout(() => {
+            if (materiasContainer) {
+                // Marcar las materias que ya están como previas
+                previas.forEach(previa => {
+                    const checkbox = document.querySelector(`input[data-materia-id="${previa.materiaRequerida._id}"]`);
+                    const selectTipo = document.querySelector(`input[data-materia-id="${previa.materiaRequerida._id}"]`)?.parentElement?.parentElement?.querySelector('.tipo-requisito');
+                    
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                    
+                    if (selectTipo) {
+                        selectTipo.value = previa.tipo;
+                    }
+                });
+            }
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Error obteniendo previas para edición:', error);
+        mostrarError('Error cargando previas para edición: ' + error.message);
+    }
 }
 
 async function togglePrevia(materiaId, estadoActual) {
     try {
+        console.log('🔄 Cambiando estado de previas para materia:', materiaId, 'de', estadoActual, 'a', !estadoActual);
+        
         const response = await fetch(`/admin/api/previas/toggle/${materiaId}`, {
             method: 'PUT',
             headers: {
@@ -773,15 +843,24 @@ async function togglePrevia(materiaId, estadoActual) {
         });
         
         if (!response.ok) {
-            throw new Error(`Error del servidor: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error del servidor: ${response.status}`);
         }
         
         const data = await response.json();
-        mostrarNotificacion('Éxito', data.message, 'success');
-        cargarPrevias();
+        console.log('✅ Respuesta del servidor:', data);
+        
+        // Mostrar notificación de éxito
+        console.log('🔔 Mostrando notificación de éxito para toggle');
+        mostrarNotificacion('Éxito', data.message || 'Estado de previas actualizado correctamente', 'success');
+        
+        // Recargar las previas
+        console.log('🔄 Recargando previas...');
+        await cargarPrevias();
+        console.log('✅ Previas recargadas');
         
     } catch (error) {
-        console.error('Error al cambiar estado de la previa:', error);
+        console.error('❌ Error al cambiar estado de la previa:', error);
         mostrarError('Error al cambiar estado de la previa: ' + error.message);
     }
 }
@@ -803,72 +882,234 @@ async function eliminarPrevia(materiaId) {
     
     if (result.isConfirmed) {
         try {
-            const response = await fetch(`/admin/api/previas/${materiaId}`, {
+            console.log('🗑️ Eliminando todas las previas de la materia:', materiaId);
+            
+            const response = await fetch(`/admin/api/previas/materia/${materiaId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
             
+            console.log('📡 Respuesta del servidor recibida:', response.status, response.statusText);
+            
             if (!response.ok) {
-                throw new Error(`Error del servidor: ${response.status}`);
+                const errorData = await response.json();
+                console.error('❌ Error del servidor:', errorData);
+                throw new Error(errorData.error || `Error del servidor: ${response.status}`);
             }
             
             const data = await response.json();
-            mostrarNotificacion('Éxito', data.message, 'success');
-            cargarPrevias();
+            console.log('✅ Datos de respuesta:', data);
+            
+            // Mostrar notificación de éxito
+            console.log('🔔 Mostrando notificación de éxito para eliminación');
+            mostrarNotificacion('Éxito', data.message || 'Previas eliminadas correctamente', 'success');
+            
+            // Recargar las previas
+            console.log('🔄 Recargando previas...');
+            await cargarPrevias();
+            console.log('✅ Previas recargadas');
             
         } catch (error) {
-            console.error('Error al eliminar previa:', error);
+            console.error('❌ Error al eliminar previa:', error);
             mostrarError('Error al eliminar previa: ' + error.message);
         }
+    } else {
+        console.log('❌ Eliminación cancelada por el usuario');
     }
 }
 
 function mostrarNotificacion(titulo, mensaje, tipo = 'info') {
+    console.log('🔔 Mostrando notificación:', { titulo, mensaje, tipo });
+    
+    // Usar SweetAlert2 como alternativa si está disponible
+    if (typeof Swal !== 'undefined') {
+        const iconos = {
+            success: 'success',
+            error: 'error',
+            warning: 'warning',
+            info: 'info'
+        };
+        
+        Swal.fire({
+            title: titulo,
+            text: mensaje,
+            icon: iconos[tipo] || 'info',
+            timer: 3000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+        return;
+    }
+    
+    // Fallback a notificación personalizada
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        background: ${tipo === 'success' ? '#f0fdf4' : tipo === 'error' ? '#fef2f2' : tipo === 'warning' ? '#fffbeb' : '#f0f9ff'};
+        border: 1px solid ${tipo === 'success' ? '#bbf7d0' : tipo === 'error' ? '#fecaca' : tipo === 'warning' ? '#fed7aa' : '#bae6fd'};
+        color: ${tipo === 'success' ? '#166534' : tipo === 'error' ? '#dc2626' : tipo === 'warning' ? '#d97706' : '#1e40af'};
+    `;
     
     const iconos = {
-        success: 'fas fa-check-circle text-emerald-500',
-        error: 'fas fa-exclamation-circle text-red-500',
-        warning: 'fas fa-exclamation-triangle text-amber-500',
-        info: 'fas fa-info-circle text-blue-500'
-    };
-    
-    const colores = {
-        success: 'bg-emerald-50 border-emerald-200',
-        error: 'bg-red-50 border-red-200',
-        warning: 'bg-amber-50 border-amber-200',
-        info: 'bg-blue-50 border-blue-200'
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
     };
     
     notification.innerHTML = `
-        <div class="flex items-start space-x-3">
-            <i class="${iconos[tipo]} text-xl"></i>
-            <div class="flex-1">
-                <h4 class="text-sm font-medium text-slate-900">${titulo}</h4>
-                <p class="text-sm text-slate-600 mt-1">${mensaje}</p>
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span style="font-size: 20px;">${iconos[tipo] || 'ℹ️'}</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 4px;">${titulo}</div>
+                <div style="font-size: 14px; opacity: 0.8;">${mensaje}</div>
             </div>
-            <button class="text-slate-400 hover:text-slate-600" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                background: none;
+                border: none;
+                font-size: 18px;
+                cursor: pointer;
+                opacity: 0.6;
+                padding: 0;
+                margin-left: 8px;
+            ">×</button>
         </div>
     `;
     
-    notification.classList.add(colores[tipo], 'border');
     document.body.appendChild(notification);
     
+    // Animar entrada
     setTimeout(() => {
-        notification.classList.remove('translate-x-full');
+        notification.style.transform = 'translateX(0)';
     }, 100);
     
+    // Auto-remover después de 5 segundos
     setTimeout(() => {
-        notification.classList.add('translate-x-full');
-        setTimeout(() => notification.remove(), 300);
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
     }, 5000);
+    
+    console.log('✅ Notificación agregada al DOM');
 }
 
 function mostrarError(mensaje) {
     mostrarNotificacion('Error', mensaje, 'error');
+}
+
+// Función de prueba para verificar notificaciones (se puede llamar desde la consola)
+function probarNotificaciones() {
+    console.log('🧪 Probando notificaciones...');
+    mostrarNotificacion('Prueba', 'Esta es una notificación de prueba', 'success');
+    setTimeout(() => mostrarNotificacion('Prueba 2', 'Esta es otra notificación de prueba', 'error'), 1000);
+    setTimeout(() => mostrarNotificacion('Prueba 3', 'Esta es una notificación de advertencia', 'warning'), 2000);
+}
+
+// Hacer la función disponible globalmente para pruebas
+window.probarNotificaciones = probarNotificaciones;
+
+async function manejarSubmitPrevia(e) {
+    console.log('🚀 Formulario de previas enviado');
+    e.preventDefault();
+    
+    const formPrevia = document.getElementById('form-previa');
+    const materiaId = formPrevia.dataset.previaId;
+    const materia = document.getElementById('materia').value;
+    const activa = document.getElementById('activa').checked;
+    
+    console.log('📝 Datos del formulario:', { materiaId, materia, activa });
+    
+    // Obtener las materias seleccionadas
+    const checkboxes = document.querySelectorAll('.materia-checkbox:checked');
+    console.log('📋 Checkboxes seleccionados:', checkboxes.length);
+    
+    const materiasRequeridas = Array.from(checkboxes).map(checkbox => {
+        const selectTipo = checkbox.parentElement.parentElement.querySelector('.tipo-requisito');
+        const materia = {
+            materiaId: checkbox.dataset.materiaId,
+            tipo: selectTipo.value
+        };
+        console.log('📚 Materia requerida:', materia);
+        return materia;
+    });
+    
+    console.log('📦 Materias requeridas totales:', materiasRequeridas);
+    
+    if (materiasRequeridas.length === 0) {
+        console.log('❌ No hay materias seleccionadas');
+        mostrarError('Debe seleccionar al menos una materia requerida');
+        return;
+    }
+    
+    try {
+        let response;
+        
+        if (materiaId) {
+            // Editar previas existentes
+            console.log('🔄 Actualizando previas para materia:', materiaId);
+            response = await fetch(`/admin/api/previas/materia/${materiaId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    materiasRequeridas,
+                    activa
+                })
+            });
+        } else {
+            // Crear nuevas previas
+            console.log('🔄 Creando nuevas previas para materia:', materia);
+            response = await fetch('/admin/api/previas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    materia,
+                    materiasRequeridas,
+                    activa
+                })
+            });
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Respuesta del servidor:', data);
+        
+        // Mostrar notificación de éxito
+        const mensajeExito = materiaId ? 'Previas actualizadas correctamente' : 'Previas creadas correctamente';
+        console.log('🔔 Mostrando notificación de éxito:', mensajeExito);
+        mostrarNotificacion('Éxito', mensajeExito, 'success');
+        
+        cerrarModalPrevia();
+        
+        // Recargar las previas
+        console.log('🔄 Recargando previas...');
+        await cargarPrevias();
+        console.log('✅ Previas recargadas');
+        
+    } catch (error) {
+        console.error('❌ Error procesando previas:', error);
+        mostrarError('Error procesando previas: ' + error.message);
+    }
 }
