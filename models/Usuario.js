@@ -84,8 +84,8 @@ usuarioSchema.pre('save', async function(next) {
 
 // Método para comparar contraseñas
 usuarioSchema.methods.compararPassword = async function(passwordCandidata) {
-  // Si es un usuario de Google, no tiene contraseña
-  if (this.googleId) {
+  // Si no tiene contraseña (solo Google), no puede usar contraseña
+  if (!this.password) {
     return false;
   }
   return await bcrypt.compare(passwordCandidata, this.password);
