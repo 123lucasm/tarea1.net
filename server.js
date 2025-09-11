@@ -26,6 +26,11 @@ const adminRoutes = require('./routes/admin');
 
 // Importar middleware de autenticación
 const { checkSession, requireAuth } = require('./middleware/auth');
+const { 
+  registrarActividadMensual, 
+  registrarTiempoSesion, 
+  establecerTimestampLogin 
+} = require('./middleware/actividadMensual');
 
 // Configuración de middleware con CSP personalizado
 app.use(helmet({
@@ -159,6 +164,61 @@ mongoose.connect(mongoUri, {
 io.on('connection', (socket) => {
   console.log('🔌 Usuario conectado:', socket.id);
   
+  // Evento para registrar login de usuario
+  socket.on('user-login', (data) => {
+    console.log('👤 Usuario inició sesión:', data);
+    
+    // Emitir a todos los clientes conectados (excepto al que inició sesión)
+    socket.broadcast.emit('user-logged-in', {
+      usuario: data.usuario,
+      timestamp: new Date(),
+      tipo: 'login'
+    });
+    
+    // Emitir también al cliente que inició sesión para confirmación
+    socket.emit('login-confirmed', {
+      mensaje: 'Sesión iniciada correctamente',
+      timestamp: new Date()
+    });
+  });
+  
+  // Evento para registrar logout de usuario
+  socket.on('user-logout', (data) => {
+    console.log('👋 Usuario cerró sesión:', data);
+    
+    // Emitir a todos los clientes conectados
+    socket.broadcast.emit('user-logged-out', {
+      usuario: data.usuario,
+      timestamp: new Date(),
+      tipo: 'logout'
+    });
+  });
+  
+  // Evento para registrar actividad de usuario
+  socket.on('user-activity', (data) => {
+    console.log('📊 Actividad de usuario:', data);
+    
+    // Emitir a todos los clientes conectados
+    socket.broadcast.emit('user-activity-update', {
+      usuario: data.usuario,
+      actividad: data.actividad,
+      timestamp: new Date(),
+      tipo: 'activity'
+    });
+  });
+  
+  // Evento para unirse a una sala específica (ej: admin)
+  socket.on('join-room', (room) => {
+    socket.join(room);
+    console.log(`🏠 Usuario ${socket.id} se unió a la sala: ${room}`);
+  });
+  
+  // Evento para salir de una sala
+  socket.on('leave-room', (room) => {
+    socket.leave(room);
+    console.log(`🚪 Usuario ${socket.id} salió de la sala: ${room}`);
+  });
+  
   socket.on('disconnect', () => {
     console.log('🔌 Usuario desconectado:', socket.id);
   });
@@ -171,16 +231,16 @@ app.use((req, res, next) => {
 });
 
 // Rutas públicas (sin verificación de sesión)
-app.use('/auth', authRoutes);
+app.use('/auth', establecerTimestampLogin, registrarActividadMensual, authRoutes);
 
 // Middleware para verificar sesión solo en rutas protegidas
-app.use('/materias', checkSession, requireAuth, materiaRoutes);
-app.use('/elegibilidad', checkSession, requireAuth, elegibilidadRoutes);
-app.use('/previas', checkSession, requireAuth, previasRoutes);
+app.use('/materias', checkSession, requireAuth, registrarActividadMensual, materiaRoutes);
+app.use('/elegibilidad', checkSession, requireAuth, registrarActividadMensual, elegibilidadRoutes);
+app.use('/previas', checkSession, requireAuth, registrarActividadMensual, previasRoutes);
 
 // Rutas de admin con rate limiter más estricto
-app.use('/admin', checkSession, requireAuth, adminRoutes);
-app.use('/admin/api', apiLimiter, checkSession, requireAuth, adminRoutes);
+app.use('/admin', checkSession, requireAuth, registrarActividadMensual, adminRoutes);
+app.use('/admin/api', apiLimiter, checkSession, requireAuth, registrarActividadMensual, adminRoutes);
 
 // Ruta principal con verificación de sesión
 app.get('/', checkSession, (req, res) => {
