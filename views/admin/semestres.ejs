@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Semestres - MATRICULATEC</title>
+    
+    <!-- Tailwind CSS Local -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <!-- Admin CSS Personalizado -->
+    <link rel="stylesheet" href="/css/admin.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- CSS personalizado para semestres -->
+    <link rel="stylesheet" href="/css/semestres.css">
+</head>
+<body class="bg-utec-light font-inter">
+    <!-- Navigation -->
+    <nav class="admin-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="nav-brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Panel Admin</h1>
+                        <p>MATRICULATEC</p>
+                    </div>
+                </div>
+                <div class="nav-user">
+                    <div class="user-info">
+                        <p class="user-name"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                        <p class="user-role">Administrador</p>
+                    </div>
+                    <div class="nav-actions">
+                        <div class="connection-status" id="connection-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="status-text">Conectando...</span>
+                        </div>
+                        <a href="/admin">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="/admin/usuarios">
+                            <i class="fas fa-users"></i>
+                            <span>Usuarios</span>
+                        </a>
+                        <a href="/admin/materias">
+                            <i class="fas fa-book"></i>
+                            <span>Materias</span>
+                        </a>
+                        <a href="/admin/previas">
+                            <i class="fas fa-link"></i>
+                            <span>Previas</span>
+                        </a>
+                        <a href="/auth/logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Salir</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <h1 class="welcome-title">
+                        <i class="fas fa-graduation-cap mr-4"></i>
+                        Gestión de Semestres
+                    </h1>
+                    <p class="welcome-subtitle">
+                        Administra los semestres académicos y su configuración
+                    </p>
+                    <div class="welcome-info">
+                        <div class="welcome-info-item">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span id="total-semestres">0 semestres configurados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Semestres -->
+            <div class="stat-card indigo">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon indigo">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="total-semestres-count">0</p>
+                        <p class="stat-label">semestres</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Total Semestres</h3>
+                <p class="stat-description">Semestres configurados en el sistema</p>
+            </div>
+
+            <!-- Semestres Activos -->
+            <div class="stat-card emerald">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon emerald">
+                        <i class="fas fa-check-circle text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="semestres-activos-count">0</p>
+                        <p class="stat-label">activos</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Semestres Activos</h3>
+                <p class="stat-description">Semestres disponibles para uso</p>
+            </div>
+
+            <!-- Semestres con Materias -->
+            <div class="stat-card amber">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon amber">
+                        <i class="fas fa-book text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="semestres-con-materias-count">0</p>
+                        <p class="stat-label">con materias</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Con Materias</h3>
+                <p class="stat-description">Semestres que tienen materias asignadas</p>
+            </div>
+
+            <!-- Créditos Totales -->
+            <div class="stat-card violet">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="stat-icon violet">
+                        <i class="fas fa-coins text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="stat-number" id="creditos-totales-count">0</p>
+                        <p class="stat-label">créditos</p>
+                    </div>
+                </div>
+                <h3 class="stat-title">Créditos Totales</h3>
+                <p class="stat-description">Suma de créditos de todos los semestres</p>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="card-utec mb-8">
+            <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                    <!-- Search -->
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400"></i>
+                        </div>
+                        <input type="text" id="search-semestres" placeholder="Buscar por nombre, número o descripción..." 
+                               class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    </div>
+                    
+                    <!-- Filter by Status -->
+                    <select id="filter-estado" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">Todos los estados</option>
+                        <option value="true">Solo activos</option>
+                        <option value="false">Solo inactivos</option>
+                    </select>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button id="limpiar-filtros" class="btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Limpiar
+                    </button>
+                    <button class="btn-nuevo-semestre btn-success">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nuevo Semestre
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Semestres Table -->
+        <div class="card-utec">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 semestres-table">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-hashtag mr-2"></i>
+                                    <span>Número</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-graduation-cap mr-2"></i>
+                                    <span>Nombre</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-sort-numeric-up mr-2"></i>
+                                    <span>Orden</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-coins mr-2"></i>
+                                    <span>Créditos</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-book mr-2"></i>
+                                    <span>Materias</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-toggle-on mr-2"></i>
+                                    <span>Estado</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    <span>Acciones</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="semestres-tbody" class="bg-white divide-y divide-slate-200">
+                        <!-- Loading state -->
+                        <tr id="loading-row">
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-spinner fa-spin text-4xl text-slate-400 mb-4"></i>
+                                    <p class="text-slate-500">Cargando semestres...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div id="pagination-container" class="px-6 py-4 border-t border-slate-200 bg-slate-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center text-sm text-slate-700">
+                        <span id="pagination-info">Mostrando 0 de 0 semestres</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="prev-page" class="px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed btn-pagina-prev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        
+                        <div id="page-numbers" class="flex space-x-1">
+                            <!-- Page numbers will be generated here -->
+                        </div>
+                        
+                        <button id="next-page" class="px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed btn-pagina-next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Modal Crear/Editar Semestre -->
+    <div id="modal-semestre" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nuevo Semestre</h3>
+                <button class="modal-close btn-cerrar-modal-semestre">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-semestre" class="modal-body">
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="form-label">Número de Semestre</label>
+                        <input type="number" id="numero" name="numero" class="form-input" min="1" max="20" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-input" placeholder="Ej: Semestre 1" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" class="form-input" rows="3" placeholder="Descripción del semestre..."></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">Orden</label>
+                        <input type="number" id="orden" name="orden" class="form-input" min="1" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Créditos Requeridos</label>
+                        <input type="number" id="creditosRequeridos" name="creditosRequeridos" class="form-input" min="0" value="0">
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 mt-4">
+                    <input type="checkbox" id="activa" name="activa" class="form-checkbox" checked>
+                    <label for="activa" class="form-label-checkbox">Semestre activo</label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary btn-cerrar-modal-semestre">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript personalizado para semestres -->
+    <script src="/js/semestres.js"></script>
+</body>
+</html>

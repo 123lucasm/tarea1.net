@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - MATRICULATEC</title>
+    
+    <!-- Tailwind CSS Local -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <!-- Admin CSS Personalizado -->
+    <link rel="stylesheet" href="/css/admin.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- CSS personalizado para perfil -->
+    <link rel="stylesheet" href="/css/perfil.css">
+</head>
+<body class="bg-utec-light font-inter">
+    <!-- Navigation -->
+    <nav class="admin-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="nav-brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Panel Admin</h1>
+                        <p>MATRICULATEC</p>
+                    </div>
+                </div>
+                <div class="nav-user">
+                    <div class="user-info">
+                        <p class="user-name"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                        <p class="user-role">Administrador</p>
+                    </div>
+                    <div class="nav-actions">
+                        <div class="connection-status" id="connection-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="status-text">Conectando...</span>
+                        </div>
+                        <a href="/admin">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="/admin/perfil" class="active">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Mi Perfil</span>
+                        </a>
+                        <a href="/auth/logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Salir</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <h1 class="welcome-title">
+                        <i class="fas fa-user-cog mr-4"></i>
+                        Mi Perfil
+                    </h1>
+                    <p class="welcome-subtitle">
+                        Gestiona tu información personal y configuración de cuenta
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Información del Usuario -->
+            <div class="lg:col-span-1">
+                <div class="card-utec">
+                    <div class="text-center">
+                        <!-- Avatar -->
+                        <div class="relative inline-block mb-6">
+                            <div class="w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                                <%= usuario.nombre.charAt(0).toUpperCase() %><%= usuario.apellido.charAt(0).toUpperCase() %>
+                            </div>
+                            <button id="cambiar-avatar" class="absolute bottom-0 right-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors shadow-lg">
+                                <i class="fas fa-camera text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Información básica -->
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">
+                            <%= usuario.nombre %> <%= usuario.apellido %>
+                        </h2>
+                        <p class="text-slate-600 mb-4"><%= usuario.email %></p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            Administrador
+                        </span>
+                        
+                        <!-- Estadísticas del perfil -->
+                        <div class="mt-6 space-y-3">
+                            <div class="flex justify-between items-center py-2 border-b border-slate-200">
+                                <span class="text-slate-600">Miembro desde</span>
+                                <span class="font-medium">
+                                    <%= new Date(usuario.createdAt).toLocaleDateString('es-ES', { 
+                                        year: 'numeric', 
+                                        month: 'long' 
+                                    }) %>
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-200">
+                                <span class="text-slate-600">Último acceso</span>
+                                <span class="font-medium">
+                                    <%= usuario.ultimoAcceso ? new Date(usuario.ultimoAcceso).toLocaleDateString('es-ES') : 'Nunca' %>
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-slate-600">Estado</span>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium <%= usuario.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' %>">
+                                    <i class="fas fa-<%= usuario.activo ? 'check-circle' : 'times-circle' %> mr-1"></i>
+                                    <%= usuario.activo ? 'Activo' : 'Inactivo' %>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Edición -->
+            <div class="lg:col-span-2">
+                <div class="card-utec">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">
+                            <i class="fas fa-edit mr-3"></i>
+                            Información Personal
+                        </h3>
+                        <button id="editar-perfil" class="btn-primary">
+                            <i class="fas fa-edit mr-2"></i>
+                            Editar Perfil
+                        </button>
+                    </div>
+
+                    <form id="form-perfil" class="space-y-6">
+                        <!-- Información Básica -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">Nombre</label>
+                                <input type="text" id="nombre" name="nombre" class="form-input" value="<%= usuario.nombre %>" readonly>
+                            </div>
+                            <div>
+                                <label class="form-label">Apellido</label>
+                                <input type="text" id="apellido" name="apellido" class="form-input" value="<%= usuario.apellido %>" readonly>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">Email</label>
+                                <input type="email" id="email" name="email" class="form-input" value="<%= usuario.email %>" readonly>
+                            </div>
+                            <div>
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" id="telefono" name="telefono" class="form-input" value="<%= usuario.telefono || '' %>" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div>
+                            <label class="form-label">Biografía</label>
+                            <textarea id="biografia" name="biografia" class="form-input" rows="4" readonly><%= usuario.biografia || '' %></textarea>
+                        </div>
+
+                        <!-- Configuración de Cuenta -->
+                        <div class="border-t border-slate-200 pt-6">
+                            <h4 class="text-lg font-semibold text-slate-800 mb-4">
+                                <i class="fas fa-cog mr-2"></i>
+                                Configuración de Cuenta
+                            </h4>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                                    <div>
+                                        <h5 class="font-medium text-slate-800">Notificaciones por Email</h5>
+                                        <p class="text-sm text-slate-600">Recibir notificaciones importantes por correo electrónico</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="notificaciones-email" class="sr-only peer" <%= usuario.notificacionesEmail ? 'checked' : '' %>>
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                                    <div>
+                                        <h5 class="font-medium text-slate-800">Modo Oscuro</h5>
+                                        <p class="text-sm text-slate-600">Cambiar el tema de la interfaz a modo oscuro</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="modo-oscuro" class="sr-only peer" <%= usuario.modoOscuro ? 'checked' : '' %>>
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-slate-200">
+                            <button type="button" id="cancelar-edicion" class="btn-secondary" style="display: none;">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancelar
+                            </button>
+                            <button type="submit" id="guardar-perfil" class="btn-primary" style="display: none;">
+                                <i class="fas fa-save mr-2"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Cambio de Contraseña -->
+                <div class="card-utec mt-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-slate-800">
+                            <i class="fas fa-lock mr-3"></i>
+                            Seguridad
+                        </h3>
+                        <button id="cambiar-contraseña" class="btn-warning">
+                            <i class="fas fa-key mr-2"></i>
+                            Cambiar Contraseña
+                        </button>
+                    </div>
+
+                    <form id="form-contraseña" class="space-y-6" style="display: none;">
+                        <div>
+                            <label class="form-label">Contraseña Actual</label>
+                            <div class="relative">
+                                <input type="password" id="contraseña-actual" name="contraseñaActual" class="form-input pr-10">
+                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword('contraseña-actual')">
+                                    <i class="fas fa-eye text-slate-400"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Nueva Contraseña</label>
+                            <div class="relative">
+                                <input type="password" id="nueva-contraseña" name="nuevaContraseña" class="form-input pr-10">
+                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword('nueva-contraseña')">
+                                    <i class="fas fa-eye text-slate-400"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="text-sm text-slate-600">
+                                    <p>La contraseña debe tener al menos:</p>
+                                    <ul class="list-disc list-inside mt-1 space-y-1">
+                                        <li id="length-check" class="text-red-500">8 caracteres</li>
+                                        <li id="uppercase-check" class="text-red-500">1 letra mayúscula</li>
+                                        <li id="lowercase-check" class="text-red-500">1 letra minúscula</li>
+                                        <li id="number-check" class="text-red-500">1 número</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Confirmar Nueva Contraseña</label>
+                            <div class="relative">
+                                <input type="password" id="confirmar-contraseña" name="confirmarContraseña" class="form-input pr-10">
+                                <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword('confirmar-contraseña')">
+                                    <i class="fas fa-eye text-slate-400"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-slate-200">
+                            <button type="button" id="cancelar-contraseña" class="btn-secondary">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancelar
+                            </button>
+                            <button type="submit" id="guardar-contraseña" class="btn-warning">
+                                <i class="fas fa-save mr-2"></i>
+                                Cambiar Contraseña
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript personalizado para perfil -->
+    <script src="/js/perfil.js"></script>
+</body>
+</html>

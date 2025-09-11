@@ -37,20 +37,24 @@
                         <p class="user-name"><%= usuario.nombre %> <%= usuario.apellido %></p>
                         <p class="user-role">Administrador</p>
                     </div>
-                                    <div class="nav-actions">
-                    <div class="connection-status" id="connection-status">
-                        <div class="status-indicator" id="status-indicator"></div>
-                        <span id="status-text">Conectando...</span>
+                    <div class="nav-actions">
+                        <div class="connection-status" id="connection-status">
+                            <div class="status-indicator" id="status-indicator"></div>
+                            <span id="status-text">Conectando...</span>
+                        </div>
+                        <a href="/admin" class="active">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="/admin/perfil">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Mi Perfil</span>
+                        </a>
+                        <a href="/auth/logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Salir</span>
+                        </a>
                     </div>
-                    <a href="/dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="/auth/logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Salir</span>
-                    </a>
-                </div>
                 </div>
             </div>
         </div>
@@ -195,13 +199,13 @@
                     </div>
                 </div>
                 <div class="h-64">
-                    <canvas id="activityChart"></canvas>
+                    <canvas id="actividadMensualChart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Management Sections -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <!-- Gestión de Usuarios -->
             <div class="management-section indigo">
                 <div class="management-header">
@@ -217,10 +221,6 @@
                     <a href="/admin/usuarios" class="w-full btn-primary block text-center">
                         <i class="fas fa-list"></i>
                         Ver Todos los Usuarios
-                    </a>
-                    <a href="/admin/usuarios/nuevo" class="w-full btn-success block text-center">
-                        <i class="fas fa-user-plus"></i>
-                        Crear Usuario
                     </a>
                 </div>
             </div>
@@ -241,10 +241,6 @@
                         <i class="fas fa-list"></i>
                         Ver Todas las Materias
                     </a>
-                    <a href="/admin/materias/nueva" class="w-full btn-success block text-center">
-                        <i class="fas fa-plus"></i>
-                        Crear Materia
-                    </a>
                 </div>
             </div>
 
@@ -264,9 +260,24 @@
                         <i class="fas fa-list"></i>
                         Ver Todas las Previas
                     </a>
-                    <a href="/admin/previas/nueva" class="w-full btn-success block text-center">
-                        <i class="fas fa-link"></i>
-                        Crear Previa
+                </div>
+            </div>
+
+            <!-- Gestión de Semestres -->
+            <div class="management-section violet">
+                <div class="management-header">
+                    <div class="management-icon violet">
+                        <i class="fas fa-university text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="management-title">Semestres</h3>
+                        <p class="management-description">Administra semestres académicos</p>
+                    </div>
+                </div>
+                <div class="management-actions">
+                    <a href="/admin/semestres" class="w-full btn-primary block text-center">
+                        <i class="fas fa-list"></i>
+                        Ver Todos los Semestres
                     </a>
                 </div>
             </div>
