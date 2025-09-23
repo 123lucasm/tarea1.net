@@ -225,20 +225,32 @@ router.post('/elegibilidad/verificar', requireAuth, async (req, res) => {
             });
         }
 
-        // Verificar cada previa
+        // Verificar cada previa considerando el tipo
         const requisitosFaltantes = [];
         let cumple = true;
 
         for (const previa of previas) {
-            if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
-                cumple = false;
-                const materiaRequerida = await Materia.findById(previa.materiaRequerida);
-                requisitosFaltantes.push({
-                    materia: materiaRequerida?.nombre || 'Materia no encontrada',
-                    codigo: materiaRequerida?.codigo || 'N/A',
-                    tipo: previa.tipo,
-                    notaMinima: previa.notaMinima
-                });
+            const materiaRequerida = await Materia.findById(previa.materiaRequerida);
+            
+            if (previa.tipo === 'curso_aprobado') {
+                // Para curso aprobado: DEBE estar cursada y aprobada
+                if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
+                    cumple = false;
+                    requisitosFaltantes.push({
+                        materia: materiaRequerida?.nombre || 'Materia no encontrada',
+                        codigo: materiaRequerida?.codigo || 'N/A',
+                        tipo: 'curso_aprobado',
+                        tipoDescripcion: 'Curso Aprobado (obligatorio)',
+                        notaMinima: previa.notaMinima,
+                        causa: 'Debe estar cursada y aprobada'
+                    });
+                }
+            } else if (previa.tipo === 'examen_aprobado') {
+                // Para examen aprobado: puede estar cursada Y aprobada O puede rendir examen
+                // Por ahora, si no está cursada, puede rendir examen (siempre elegible)
+                // En un sistema más completo, aquí se verificaría si puede rendir el examen
+                console.log(`📝 Materia ${materiaRequerida?.codigo} requiere examen de ${previa.materiaRequerida}, puede rendir examen`);
+                // No agregamos a requisitos faltantes porque puede rendir examen
             }
         }
 
@@ -264,7 +276,7 @@ router.post('/elegibilidad/verificar', requireAuth, async (req, res) => {
     }
 });
 
-// GET /elegibilidad/materias - Obtener todas las materias con su elegibilidad
+// GET /elegibilidad/materias - Obtener todas las materias con su elegibilidad (desde historial)
 router.get('/elegibilidad/materias', requireAuth, async (req, res) => {
     try {
         const estudianteId = req.usuario._id;
@@ -285,6 +297,35 @@ router.get('/elegibilidad/materias', requireAuth, async (req, res) => {
 
     } catch (error) {
         console.error('Error obteniendo elegibilidad:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// POST /elegibilidad/materias - Calcular elegibilidad con materias específicas seleccionadas
+router.post('/elegibilidad/materias', requireAuth, async (req, res) => {
+    try {
+        const { materiasCursadas } = req.body;
+
+        if (!Array.isArray(materiasCursadas)) {
+            return res.status(400).json({ error: 'materiasCursadas debe ser un array' });
+        }
+
+        console.log('📋 Calculando elegibilidad para materias cursadas:', materiasCursadas.length);
+
+        // Usar el servicio de elegibilidad mejorado
+        const ElegibilidadService = require('../services/elegibilidadService');
+        const resultado = await ElegibilidadService.obtenerMateriasElegiblesPorCursadas(materiasCursadas);
+
+        console.log('✅ Resultado elegibilidad:', {
+            elegibles: resultado.materiasElegibles.length,
+            noElegibles: resultado.materiasNoElegibles.length,
+            cursadas: resultado.materiasCursadas.length
+        });
+
+        res.json(resultado);
+
+    } catch (error) {
+        console.error('Error calculando elegibilidad:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
@@ -315,20 +356,31 @@ async function verificarElegibilidadMateria(materia, materiasCursadas) {
         };
     }
 
-    // Verificar cada previa
+    // Verificar cada previa considerando el tipo
     const requisitosFaltantes = [];
     let cumple = true;
 
     for (const previa of previas) {
-        if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
-            cumple = false;
-            const materiaRequerida = await Materia.findById(previa.materiaRequerida);
-            requisitosFaltantes.push({
-                materia: materiaRequerida?.nombre || 'Materia no encontrada',
-                codigo: materiaRequerida?.codigo || 'N/A',
-                tipo: previa.tipo,
-                notaMinima: previa.notaMinima
-            });
+        const materiaRequerida = await Materia.findById(previa.materiaRequerida);
+        
+        if (previa.tipo === 'curso_aprobado') {
+            // Para curso aprobado: DEBE estar cursada y aprobada
+            if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
+                cumple = false;
+                requisitosFaltantes.push({
+                    materia: materiaRequerida?.nombre || 'Materia no encontrada',
+                    codigo: materiaRequerida?.codigo || 'N/A',
+                    tipo: 'curso_aprobado',
+                    tipoDescripcion: 'Curso Aprobado (obligatorio)',
+                    notaMinima: previa.notaMinima,
+                    causa: 'Debe estar cursada y aprobada'
+                });
+            }
+        } else if (previa.tipo === 'examen_aprobado') {
+            // Para examen aprobado: puede estar cursada Y aprobada O puede rendir examen
+            // Por ahora, si no está cursada, puede rendir examen (siempre elegible)
+            console.log(`📝 Materia ${materiaRequerida?.codigo} requiere examen de ${previa.materiaRequerida}, puede rendir examen`);
+            // No agregamos a requisitos faltantes porque puede rendir examen
         }
     }
 

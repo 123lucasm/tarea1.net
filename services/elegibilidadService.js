@@ -324,15 +324,26 @@ class ElegibilidadService {
     let cumple = true;
 
     for (const previa of previas) {
-      if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
-        cumple = false;
-        const materiaRequerida = await Materia.findById(previa.materiaRequerida);
-        requisitosFaltantes.push({
-          materia: materiaRequerida?.nombre || 'Materia no encontrada',
-          codigo: materiaRequerida?.codigo || 'N/A',
-          tipo: previa.tipo,
-          notaMinima: previa.notaMinima
-        });
+      const materiaRequerida = await Materia.findById(previa.materiaRequerida);
+      
+      if (previa.tipo === 'curso_aprobado') {
+        // Para curso aprobado: DEBE estar cursada y aprobada
+        if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
+          cumple = false;
+          requisitosFaltantes.push({
+            materia: materiaRequerida?.nombre || 'Materia no encontrada',
+            codigo: materiaRequerida?.codigo || 'N/A',
+            tipo: 'curso_aprobado',
+            tipoDescripcion: 'Curso Aprobado (obligatorio)',
+            notaMinima: previa.notaMinima,
+            causa: 'Debe estar cursada y aprobada'
+          });
+        }
+      } else if (previa.tipo === 'examen_aprobado') {
+        // Para examen aprobado: puede estar cursada Y aprobada O puede rendir examen
+        // Por ahora, si no está cursada, puede rendir examen (siempre elegible)
+        console.log(`📝 Materia ${materiaRequerida?.codigo} requiere examen de ${previa.materiaRequerida}, puede rendir examen`);
+        // No agregamos a requisitos faltantes porque puede rendir examen
       }
     }
 
