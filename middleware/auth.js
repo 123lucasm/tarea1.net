@@ -4,33 +4,34 @@ const Usuario = require('../models/Usuario');
 // Middleware para verificar sesión del usuario
 const checkSession = async (req, res, next) => {
   try {
-    console.log('Verificando sesión:', req.session);
+    console.log('🔍 Verificando sesión para:', req.path);
+    console.log('📋 Sesión actual:', req.session);
     
     if (req.session && req.session.userId) {
-      console.log('Sesión encontrada, userId:', req.session.userId);
+      console.log('✅ Sesión encontrada, userId:', req.session.userId);
       
       // Buscar usuario en la base de datos
       const usuario = await Usuario.findById(req.session.userId).select('-password');
       
       if (usuario && usuario.activo) {
-        console.log('Usuario válido encontrado:', usuario.nombre);
+        console.log('✅ Usuario válido encontrado:', usuario.nombre, usuario.rol);
         req.usuario = usuario;
         req.isAuthenticated = true;
       } else {
-        console.log('Usuario no válido o inactivo, limpiando sesión');
+        console.log('❌ Usuario no válido o inactivo, limpiando sesión');
         // Usuario no válido, limpiar sesión
         req.session.destroy();
         req.isAuthenticated = false;
       }
     } else {
-      console.log('No hay sesión activa');
+      console.log('⚠️ No hay sesión activa');
       req.isAuthenticated = false;
     }
     
-    console.log('Estado de autenticación:', req.isAuthenticated);
+    console.log('🔐 Estado de autenticación:', req.isAuthenticated);
     next();
   } catch (error) {
-    console.error('Error en verificación de sesión:', error);
+    console.error('❌ Error en verificación de sesión:', error);
     req.isAuthenticated = false;
     next();
   }

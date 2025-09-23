@@ -22,6 +22,7 @@ const materiaRoutes = require('./routes/materias');
 const elegibilidadRoutes = require('./routes/elegibilidad');
 const previasRoutes = require('./routes/previas');
 const adminRoutes = require('./routes/admin');
+const materiasCursadasRoutes = require('./routes/materias-cursadas');
 
 
 // Importar middleware de autenticación
@@ -237,6 +238,7 @@ app.use('/auth', establecerTimestampLogin, registrarActividadMensual, authRoutes
 app.use('/materias', checkSession, requireAuth, registrarActividadMensual, materiaRoutes);
 app.use('/elegibilidad', checkSession, requireAuth, registrarActividadMensual, elegibilidadRoutes);
 app.use('/previas', checkSession, requireAuth, registrarActividadMensual, previasRoutes);
+app.use('/materias-cursadas', checkSession, requireAuth, registrarActividadMensual, materiasCursadasRoutes);
 
 // Rutas de admin con rate limiter más estricto
 app.use('/admin', checkSession, requireAuth, registrarActividadMensual, adminRoutes);
@@ -248,7 +250,7 @@ app.get('/', checkSession, (req, res) => {
   console.log('Estado de autenticación:', req.isAuthenticated);
   console.log('Usuario en request:', req.usuario);
   
-
+  
   
   res.render('index', { 
     title: 'Sistema de Elegibilidad de Materias',
@@ -295,9 +297,6 @@ app.get('/tailwind-simple', (req, res) => {
     title: 'Tailwind Simple Test'
   });
 });
-
-// Rutas del panel de administrador
-app.use('/admin', adminRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {

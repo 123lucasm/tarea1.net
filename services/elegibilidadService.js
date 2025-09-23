@@ -205,6 +205,143 @@ class ElegibilidadService {
     }
   }
 
+  // Obtener materias elegibles basadas en materias cursadas específicas
+  static async obtenerMateriasElegiblesPorCursadas(materiasCursadas, semestre = null, anio = null) {
+    try {
+      let filtro = { activa: true };
+      
+      if (semestre && anio) {
+        filtro.semestre = semestre;
+        filtro.anio = anio;
+      }
+
+      const materias = await Materia.find(filtro);
+      const materiasElegibles = [];
+      const materiasNoElegibles = [];
+      const materiasCursadasList = [];
+
+      for (const materia of materias) {
+        // Si ya la cursó, la agregamos a la lista de cursadas
+        if (materiasCursadas.includes(materia._id.toString())) {
+          materiasCursadasList.push({
+            ...materia.toObject(),
+            estado: 'cursada'
+          });
+          continue;
+        }
+
+        // Verificar elegibilidad basada en las materias cursadas
+        const elegibilidad = await this.verificarElegibilidadPorCursadas(materia._id, materiasCursadas);
+        
+        if (elegibilidad.elegible) {
+          materiasElegibles.push({
+            ...materia.toObject(),
+            elegibilidad
+          });
+        } else {
+          materiasNoElegibles.push({
+            ...materia.toObject(),
+            elegibilidad
+          });
+        }
+      }
+
+      return {
+        materiasElegibles,
+        materiasNoElegibles,
+        materiasCursadas: materiasCursadasList,
+        totalElegibles: materiasElegibles.length,
+        totalNoElegibles: materiasNoElegibles.length,
+        totalCursadas: materiasCursadasList.length
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Verificar elegibilidad basada en materias cursadas específicas
+  static async verificarElegibilidadPorCursadas(materiaId, materiasCursadas) {
+    try {
+      const materia = await Materia.findById(materiaId);
+      if (!materia) {
+        throw new Error('Materia no encontrada');
+      }
+
+      if (!materia.activa) {
+        return {
+          elegible: false,
+          causa: 'Materia inactiva',
+          materia: materia.nombre
+        };
+      }
+
+      if (!materia.hayCupo()) {
+        return {
+          elegible: false,
+          causa: 'Sin cupo disponible',
+          materia: materia.nombre
+        };
+      }
+
+      // Verificar requisitos previos usando las materias cursadas proporcionadas
+      const previas = await Previa.find({ 
+        materia: materiaId, 
+        activa: true 
+      });
+      
+      const requisitosCumplidos = await this.verificarRequisitosPreviosPorCursadas(
+        materiasCursadas,
+        previas
+      );
+
+      if (!requisitosCumplidos.cumple) {
+        return { 
+          elegible: false, 
+          causa: 'No cumple requisitos previos',
+          materia: materia.nombre,
+          requisitosFaltantes: requisitosCumplidos.requisitosFaltantes
+        };
+      }
+
+      return {
+        elegible: true,
+        materia: materia.nombre,
+        creditos: materia.creditos,
+        horarios: materia.horarios
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Verificar requisitos previos usando materias cursadas específicas
+  static async verificarRequisitosPreviosPorCursadas(materiasCursadas, previas) {
+    if (!previas || previas.length === 0) {
+      return { cumple: true, requisitosFaltantes: [] };
+    }
+
+    const requisitosFaltantes = [];
+    let cumple = true;
+
+    for (const previa of previas) {
+      if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
+        cumple = false;
+        const materiaRequerida = await Materia.findById(previa.materiaRequerida);
+        requisitosFaltantes.push({
+          materia: materiaRequerida?.nombre || 'Materia no encontrada',
+          codigo: materiaRequerida?.codigo || 'N/A',
+          tipo: previa.tipo,
+          notaMinima: previa.notaMinima
+        });
+      }
+    }
+
+    return {
+      cumple,
+      requisitosFaltantes
+    };
+  }
+
   // Verificar conflictos de horario entre materias
   static async verificarConflictosHorario(estudianteId, materiasSeleccionadas) {
     try {

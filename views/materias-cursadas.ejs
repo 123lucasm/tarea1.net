@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+
+    <!-- Tailwind CSS Local -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --utec-primary: #1e3a8a;
+            --utec-secondary: #3b82f6;
+            --utec-accent: #06b6d4;
+            --utec-success: #10b981;
+            --utec-warning: #f59e0b;
+            --utec-danger: #ef4444;
+            --utec-dark: #1f2937;
+            --utec-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--utec-light) 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            padding-top: 80px;
+            margin: 0;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--utec-primary) 0%, var(--utec-secondary) 100%);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+            flex-wrap: nowrap;
+            height: 100%;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .navbar-nav {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            visibility: visible !important;
+            opacity: 1 !important;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .navbar-nav .nav-item {
+            margin: 0 0.5rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            display: block;
+            visibility: visible !important;
+            opacity: 1 !important;
+            white-space: nowrap;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        .main-content {
+            padding-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--utec-primary) 0%, var(--utec-secondary) 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 2rem 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .materia-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #e5e7eb;
+            position: relative;
+        }
+
+        .materia-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .materia-card.elegible {
+            border-left-color: var(--utec-success);
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+
+        .materia-card.no-elegible {
+            border-left-color: var(--utec-danger);
+            background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+        }
+
+        .materia-card.cursada {
+            border-left-color: var(--utec-accent);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .materia-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .materia-codigo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--utec-primary);
+            margin-right: 1rem;
+        }
+
+        .materia-nombre {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--utec-dark);
+            flex-grow: 1;
+        }
+
+        .materia-creditos {
+            background: var(--utec-accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .materia-descripcion {
+            color: #6b7280;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .materia-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-icon {
+            color: var(--utec-accent);
+            width: 16px;
+        }
+
+        .info-text {
+            color: var(--utec-dark);
+            font-size: 0.9rem;
+        }
+
+        .elegibilidad-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .elegibilidad-badge.elegible {
+            background: var(--utec-success);
+            color: white;
+        }
+
+        .elegibilidad-badge.no-elegible {
+            background: var(--utec-danger);
+            color: white;
+        }
+
+        .elegibilidad-badge.cursada {
+            background: var(--utec-accent);
+            color: white;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-container:hover {
+            border-color: var(--utec-accent);
+            background: #f0f9ff;
+        }
+
+        .checkbox-container.checked {
+            border-color: var(--utec-success);
+            background: #f0fdf4;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .custom-checkbox.checked {
+            background: var(--utec-success);
+            border-color: var(--utec-success);
+            color: white;
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            color: var(--utec-dark);
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--utec-primary) 0%, var(--utec-secondary) 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--utec-accent);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--utec-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--utec-dark);
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--utec-accent);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            border-radius: 0.75rem;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border-left: 4px solid var(--utec-accent);
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .materia-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .elegibilidad-badge {
+                position: static;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-graduation-cap me-2"></i>
+                <strong>MATRICULATEC</strong>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-home me-1"></i>
+                    Dashboard
+                </a>
+                <a class="nav-link" href="/materias">
+                    <i class="fas fa-book me-1"></i>
+                    Materias
+                </a>
+                <a class="nav-link" href="/elegibilidad">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Elegibilidad
+                </a>
+                <a class="nav-link" href="/auth/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i>
+                    Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header text-center">
+                <h1 class="page-title">Mis Materias Cursadas</h1>
+                <p class="page-subtitle">Selecciona las materias que ya has cursado para ver tu elegibilidad</p>
+            </div>
+
+            <!-- Instructions -->
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Instrucciones:</strong> Marca las materias que ya has cursado y aprobado. El sistema calculará automáticamente qué materias puedes cursar en el próximo semestre.
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid" id="statsContainer">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMaterias">0</div>
+                    <div class="stat-label">Total Materias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="materiasCursadas">0</div>
+                    <div class="stat-label">Cursadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="materiasElegibles">0</div>
+                    <div class="stat-label">Elegibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="materiasNoElegibles">0</div>
+                    <div class="stat-label">No Elegibles</div>
+                </div>
+            </div>
+
+            <!-- Materias Cursadas Selection -->
+            <div class="content-card">
+                <h3 class="mb-4">
+                    <i class="fas fa-check-square me-2"></i>
+                    Selecciona las materias que has cursado
+                </h3>
+                <div id="materiasCursadasContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>Cargando materias...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materias Elegibles -->
+            <div class="content-card" id="materiasElegiblesContainer" style="display: none;">
+                <h3 class="mb-4">
+                    <i class="fas fa-check-circle me-2 text-success"></i>
+                    Materias que puedes cursar
+                </h3>
+                <div id="materiasElegiblesList"></div>
+            </div>
+
+            <!-- Materias No Elegibles -->
+            <div class="content-card" id="materiasNoElegiblesContainer" style="display: none;">
+                <h3 class="mb-4">
+                    <i class="fas fa-times-circle me-2 text-danger"></i>
+                    Materias que no puedes cursar aún
+                </h3>
+                <div id="materiasNoElegiblesList"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mb-4">
+                <button class="btn btn-primary me-3" id="btnCalcularElegibilidad">
+                    <i class="fas fa-calculator me-2"></i>
+                    Calcular Elegibilidad
+                </button>
+                <button class="btn btn-secondary me-3" id="btnLimpiarSeleccion">
+                    <i class="fas fa-eraser me-2"></i>
+                    Limpiar Selección
+                </button>
+                <button class="btn btn-warning" id="btnTestCheckbox">
+                    <i class="fas fa-bug me-2"></i>
+                    Probar Checkbox
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let materias = [];
+        let materiasCursadas = new Set();
+        let materiasElegibles = [];
+        let materiasNoElegibles = [];
+
+        // Función para toggle de materia cursada
+        function toggleMateriaCursada(materiaId) {
+            console.log('🖱️ Toggle materia:', materiaId);
+            console.log('📋 Estado actual:', materiasCursadas.has(materiaId));
+            
+            if (materiasCursadas.has(materiaId)) {
+                materiasCursadas.delete(materiaId);
+                console.log('❌ Materia removida de cursadas');
+            } else {
+                materiasCursadas.add(materiaId);
+                console.log('✅ Materia agregada a cursadas');
+            }
+            
+            console.log('📊 Total materias cursadas:', materiasCursadas.size);
+            
+            renderizarMateriasCursadas();
+            actualizarEstadisticas();
+        }
+
+        // Cargar materias al inicializar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarMaterias();
+            asignarEventosBotones();
+        });
+
+        // Función para asignar eventos a los botones
+        function asignarEventosBotones() {
+            // Botón calcular elegibilidad
+            const btnCalcular = document.getElementById('btnCalcularElegibilidad');
+            if (btnCalcular) {
+                btnCalcular.addEventListener('click', calcularElegibilidad);
+            }
+
+            // Botón limpiar selección
+            const btnLimpiar = document.getElementById('btnLimpiarSeleccion');
+            if (btnLimpiar) {
+                btnLimpiar.addEventListener('click', limpiarSeleccion);
+            }
+
+            // Botón probar checkbox
+            const btnTest = document.getElementById('btnTestCheckbox');
+            if (btnTest) {
+                btnTest.addEventListener('click', testCheckbox);
+            }
+
+            console.log('🔗 Eventos de botones asignados');
+        }
+
+        // Función para cargar todas las materias
+        async function cargarMaterias() {
+            try {
+                console.log('🔄 Cargando materias...');
+                const response = await fetch('/materias-cursadas/api/materias');
+                
+                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ Error del servidor:', errorData);
+                    throw new Error(`Error ${response.status}: ${errorData.error || 'Error desconocido'}`);
+                }
+                
+                const data = await response.json();
+                console.log('📚 Datos recibidos:', data);
+                
+                materias = data.materias || data;
+                console.log(`✅ Materias cargadas: ${materias.length}`);
+                
+                renderizarMateriasCursadas();
+                actualizarEstadisticas();
+            } catch (error) {
+                console.error('❌ Error cargando materias:', error);
+                document.getElementById('materiasCursadasContainer').innerHTML = 
+                    `<div class="alert alert-danger">
+                        <h5>Error al cargar las materias</h5>
+                        <p><strong>Detalles:</strong> ${error.message}</p>
+                        <p>Por favor, intenta recargar la página o contacta al administrador.</p>
+                        <button class="btn btn-outline-danger btn-sm" onclick="cargarMaterias()">
+                            <i class="fas fa-refresh me-1"></i>
+                            Reintentar
+                        </button>
+                    </div>`;
+            }
+        }
+
+        // Función para renderizar las materias que se pueden marcar como cursadas
+        function renderizarMateriasCursadas() {
+            const container = document.getElementById('materiasCursadasContainer');
+            
+            if (materias.length === 0) {
+                container.innerHTML = '<div class="alert alert-warning">No hay materias disponibles.</div>';
+                return;
+            }
+
+            console.log('🎨 Renderizando materias...', materias.length);
+
+            const materiasHTML = materias.map(materia => `
+                <div class="checkbox-container ${materiasCursadas.has(materia._id) ? 'checked' : ''}" 
+                     data-materia-id="${materia._id}">
+                    <div class="custom-checkbox ${materiasCursadas.has(materia._id) ? 'checked' : ''}">
+                        ${materiasCursadas.has(materia._id) ? '<i class="fas fa-check"></i>' : ''}
+                    </div>
+                    <div class="checkbox-label">
+                        <strong>${materia.codigo}</strong> - ${materia.nombre}
+                        <br>
+                        <small class="text-muted">${materia.creditos} créditos</small>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = materiasHTML;
+            
+            // Asignar eventos después de renderizar
+            asignarEventosCheckboxes();
+        }
+
+        // Función para asignar eventos a los checkboxes
+        function asignarEventosCheckboxes() {
+            const checkboxes = document.querySelectorAll('.checkbox-container');
+            console.log('🔗 Asignando eventos a', checkboxes.length, 'checkboxes');
+            
+            checkboxes.forEach(checkbox => {
+                const materiaId = checkbox.getAttribute('data-materia-id');
+                console.log('📌 Asignando evento a materia:', materiaId);
+                
+                // Remover eventos anteriores para evitar duplicados
+                const newCheckbox = checkbox.cloneNode(true);
+                checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+                
+                // Asignar nuevo event listener
+                newCheckbox.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🖱️ Click en checkbox:', materiaId);
+                    toggleMateriaCursada(materiaId);
+                });
+            });
+        }
+
+
+        // Función para calcular elegibilidad
+        async function calcularElegibilidad() {
+            if (materiasCursadas.size === 0) {
+                alert('Por favor selecciona al menos una materia que hayas cursado.');
+                return;
+            }
+
+            try {
+                // Mostrar loading
+                document.getElementById('materiasElegiblesContainer').style.display = 'none';
+                document.getElementById('materiasNoElegiblesContainer').style.display = 'none';
+
+                // Obtener elegibilidad desde el servidor
+                const response = await fetch('/materias-cursadas/elegibilidad/materias', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener elegibilidad');
+                }
+
+                const data = await response.json();
+                
+                materiasElegibles = data.materiasElegibles || [];
+                materiasNoElegibles = data.materiasNoElegibles || [];
+
+                renderizarResultados();
+                actualizarEstadisticas();
+
+            } catch (error) {
+                console.error('Error al calcular elegibilidad:', error);
+                alert('Error al calcular elegibilidad. Intenta nuevamente.');
+            }
+        }
+
+        // Función para verificar elegibilidad de una materia específica
+        async function verificarElegibilidadMateria(materiaId) {
+            try {
+                const response = await fetch(`/materias-cursadas/elegibilidad/verificar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        materiaId: materiaId,
+                        materiasCursadas: Array.from(materiasCursadas)
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al verificar elegibilidad');
+                }
+
+                const data = await response.json();
+                return data.elegible;
+            } catch (error) {
+                console.error('Error verificando elegibilidad:', error);
+                return false;
+            }
+        }
+
+        // Función para renderizar resultados
+        function renderizarResultados() {
+            // Renderizar materias elegibles
+            if (materiasElegibles.length > 0) {
+                const elegiblesHTML = materiasElegibles.map(materia => crearMateriaCard(materia, 'elegible')).join('');
+                document.getElementById('materiasElegiblesList').innerHTML = elegiblesHTML;
+                document.getElementById('materiasElegiblesContainer').style.display = 'block';
+            }
+
+            // Renderizar materias no elegibles
+            if (materiasNoElegibles.length > 0) {
+                const noElegiblesHTML = materiasNoElegibles.map(materia => crearMateriaCard(materia, 'no-elegible')).join('');
+                document.getElementById('materiasNoElegiblesList').innerHTML = noElegiblesHTML;
+                document.getElementById('materiasNoElegiblesContainer').style.display = 'block';
+            }
+        }
+
+        // Función para crear tarjeta de materia
+        function crearMateriaCard(materia, tipo) {
+            const badgeText = tipo === 'elegible' ? 'Puedes cursar' : 'No puedes cursar';
+            const badgeIcon = tipo === 'elegible' ? 'fa-check' : 'fa-times';
+            
+            return `
+                <div class="materia-card ${tipo}">
+                    <div class="elegibilidad-badge ${tipo}">
+                        <i class="fas ${badgeIcon}"></i>
+                        ${badgeText}
+                    </div>
+                    <div class="materia-header">
+                        <span class="materia-codigo">${materia.codigo}</span>
+                        <span class="materia-nombre">${materia.nombre}</span>
+                        <span class="materia-creditos">${materia.creditos} créditos</span>
+                    </div>
+                    <div class="materia-descripcion">${materia.descripcion || 'Sin descripción disponible'}</div>
+                    <div class="materia-info">
+                        <div class="info-item">
+                            <i class="fas fa-calendar info-icon"></i>
+                            <span class="info-text">Semestre ${materia.semestre?.numero || 'N/A'}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-users info-icon"></i>
+                            <span class="info-text">Cupo: ${materia.cupoDisponible}/${materia.cupoMaximo}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-chalkboard-teacher info-icon"></i>
+                            <span class="info-text">${materia.profesor?.nombre || 'Sin asignar'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Función para actualizar estadísticas
+        function actualizarEstadisticas() {
+            document.getElementById('totalMaterias').textContent = materias.length;
+            document.getElementById('materiasCursadas').textContent = materiasCursadas.size;
+            document.getElementById('materiasElegibles').textContent = materiasElegibles.length;
+            document.getElementById('materiasNoElegibles').textContent = materiasNoElegibles.length;
+        }
+
+        // Función para limpiar selección
+        function limpiarSeleccion() {
+            materiasCursadas.clear();
+            materiasElegibles = [];
+            materiasNoElegibles = [];
+            
+            renderizarMateriasCursadas();
+            document.getElementById('materiasElegiblesContainer').style.display = 'none';
+            document.getElementById('materiasNoElegiblesContainer').style.display = 'none';
+            actualizarEstadisticas();
+        }
+
+        // Función de prueba para verificar que los eventos funcionan
+        function testCheckbox() {
+            console.log('🧪 Probando checkbox...');
+            if (materias.length > 0) {
+                const primeraMateria = materias[0];
+                console.log('🔄 Toggleando primera materia:', primeraMateria.codigo);
+                toggleMateriaCursada(primeraMateria._id);
+            } else {
+                console.log('❌ No hay materias para probar');
+            }
+        }
+
+        // Hacer la función de prueba disponible globalmente
+        window.testCheckbox = testCheckbox;
+    </script>
+</body>
+</html>
