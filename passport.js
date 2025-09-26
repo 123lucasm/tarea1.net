@@ -44,6 +44,7 @@ passport.use(new GoogleStrategy({
             avatar: profile.photos[0].value,
             rol: 'estudiante', // Rol por defecto
             activo: true,
+            necesitaActualizarCedula: true, // Marcar que necesita actualizar cédula
             ultimoAcceso: new Date()
         });
         

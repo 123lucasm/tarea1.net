@@ -45,6 +45,27 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+// Middleware para verificar si el usuario necesita actualizar cédula obligatoriamente
+const requireCedulaUpdate = async (req, res, next) => {
+  try {
+    // Solo verificar si hay usuario autenticado
+    if (req.isAuthenticated && req.usuario) {
+      // Si necesita actualizar cédula obligatoriamente y no está en el perfil
+      if (req.usuario.necesitaActualizarCedula && 
+          !req.path.includes('/auth/perfil') && 
+          !req.path.includes('/auth/actualizar-perfil') &&
+          !req.path.includes('/auth/logout')) {
+        console.log('🛡️ Usuario bloqueado: necesita actualizar cédula obligatoriamente');
+        return res.redirect('/auth/perfil?actualizacion=obligatoria&primera_vez=google');
+      }
+    }
+    next();
+  } catch (error) {
+    console.error('❌ Error verificando actualización obligatoria:', error);
+    next();
+  }
+};
+
 // Middleware para verificar token JWT (mantener compatibilidad)
 const authenticateToken = async (req, res, next) => {
   try {
@@ -206,6 +227,7 @@ const generateNewAccessToken = async (req, res, next) => {
 module.exports = {
   checkSession,
   requireAuth,
+  requireCedulaUpdate,
   authenticateToken,
   requireRole,
   requireAdmin,

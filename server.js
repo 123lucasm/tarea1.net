@@ -26,7 +26,7 @@ const materiasCursadasRoutes = require('./routes/materias-cursadas');
 
 
 // Importar middleware de autenticación
-const { checkSession, requireAuth } = require('./middleware/auth');
+const { checkSession, requireAuth, requireCedulaUpdate } = require('./middleware/auth');
 const { 
   registrarActividadMensual, 
   registrarTiempoSesion, 
@@ -235,17 +235,17 @@ app.use((req, res, next) => {
 app.use('/auth', establecerTimestampLogin, registrarActividadMensual, authRoutes);
 
 // Middleware para verificar sesión solo en rutas protegidas
-app.use('/materias', checkSession, requireAuth, registrarActividadMensual, materiaRoutes);
-app.use('/elegibilidad', checkSession, requireAuth, registrarActividadMensual, elegibilidadRoutes);
-app.use('/previas', checkSession, requireAuth, registrarActividadMensual, previasRoutes);
-app.use('/materias-cursadas', checkSession, requireAuth, registrarActividadMensual, materiasCursadasRoutes);
+app.use('/materias', checkSession, requireAuth, requireCedulaUpdate, registrarActividadMensual, materiaRoutes);
+app.use('/elegibilidad', checkSession, requireAuth, requireCedulaUpdate, registrarActividadMensual, elegibilidadRoutes);
+app.use('/previas', checkSession, requireAuth, requireCedulaUpdate, registrarActividadMensual, previasRoutes);
+app.use('/materias-cursadas', checkSession, requireAuth, requireCedulaUpdate, registrarActividadMensual, materiasCursadasRoutes);
 
 // Rutas de admin con rate limiter más estricto
-app.use('/admin', checkSession, requireAuth, registrarActividadMensual, adminRoutes);
-app.use('/admin/api', apiLimiter, checkSession, requireAuth, registrarActividadMensual, adminRoutes);
+app.use('/admin', checkSession, requireAuth, requireCedulaUpdate, registrarActividadMensual, adminRoutes);
+app.use('/admin/api', apiLimiter, checkSession, requireAuth, requireCedulaUpdate, registrarActividadMensual, adminRoutes);
 
 // Ruta principal con verificación de sesión
-app.get('/', checkSession, (req, res) => {
+app.get('/', checkSession, requireAuth, requireCedulaUpdate, (req, res) => {
   console.log('🏠 Accediendo a página principal...');
   console.log('Estado de autenticación:', req.isAuthenticated);
   console.log('Usuario en request:', req.usuario);
@@ -260,7 +260,7 @@ app.get('/', checkSession, (req, res) => {
 });
 
 // Ruta del dashboard con verificación de sesión
-app.get('/dashboard', checkSession, (req, res) => {
+app.get('/dashboard', checkSession, requireAuth, requireCedulaUpdate, (req, res) => {
   console.log('Accediendo a dashboard, isAuthenticated:', req.isAuthenticated);
   console.log('Usuario en request:', req.usuario);
   
@@ -295,6 +295,13 @@ app.get('/tailwind-test', (req, res) => {
 app.get('/tailwind-simple', (req, res) => {
   res.render('tailwind-simple', { 
     title: 'Tailwind Simple Test'
+  });
+});
+
+// Ruta para ejemplo de shadcn/ui
+app.get('/ejemplo-shadcn', (req, res) => {
+  res.render('ejemplo-shadcn', { 
+    title: 'Ejemplo shadcn/ui'
   });
 });
 

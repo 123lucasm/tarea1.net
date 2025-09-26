@@ -58,6 +58,10 @@ const usuarioSchema = new mongoose.Schema({
   },
   avatar: {
     type: String
+  },
+  necesitaActualizarCedula: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

@@ -18,20 +18,18 @@
     <!-- Custom CSS for Index Page -->
     <link rel="stylesheet" href="/css/index.css">
 </head>
-<body>
+<body style="padding-top: 80px;">
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <i class="fas fa-graduation-cap me-2"></i>
-                <span class="brand-text">
-                    <strong>MATRICULATEC</strong>
-                </span>
+                <strong>MATRICULATEC</strong>
             </a>
-            <button class="navbar-toggler" type="button" onclick="toggleMenu()">
-                <i class="fas fa-bars"></i>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-togg-icon"></span>
             </button>
-            <div class="navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="#inicio">Inicio</a>
@@ -42,21 +40,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#como-funciona">Cómo Funciona</a>
                     </li>
+                </ul>
+                <ul class="navbar-nav ms-auto" style="margin-right: 1rem;">
                     <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/materias">
-                                <i class="fas fa-book me-1"></i>
-                                Materias
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/elegibilidad">
-                                <i class="fas fa-check-circle me-1"></i>
-                                Elegibilidad
-                            </a>
-                        </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" onclick="toggleDropdown(event)">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user me-1"></i>
                                 <%= usuario.nombre %>
                             </a>

@@ -431,7 +431,6 @@ router.get('/logout', (req, res) => {
 
 // POST /auth/actualizar-perfil - Actualizar perfil de usuario
 router.post('/actualizar-perfil', 
-  authenticateToken,
   [
     body('cedula')
       .optional()
@@ -452,8 +451,16 @@ router.post('/actualizar-perfil',
   manejarErroresValidacion,
   async (req, res) => {
     try {
-      const { cedula, nombre, apellido } = req.body;
-      const userId = req.user.userId;
+      // Verificar sesión
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          error: 'Debes iniciar sesión para actualizar tu perfil'
+        });
+      }
+
+      const { cedula, nombre, apellido, biografia, notificacionesEmail, modoOscuro } = req.body;
+      const userId = req.session.userId;
+      const Usuario = require('../models/Usuario');
 
       // Verificar si la cédula ya existe (si se proporciona)
       if (cedula) {
@@ -470,15 +477,28 @@ router.post('/actualizar-perfil',
 
       // Actualizar usuario
       const datosActualizacion = {};
-      if (cedula) datosActualizacion.cedula = cedula;
+      if (cedula) {
+        datosActualizacion.cedula = cedula;
+        // Si la nueva cédula no empieza con 'G' (no es una cédula generada automáticamente),
+        // marcar que ya no necesita actualizar cédula
+        if (!cedula.startsWith('G')) {
+          datosActualizacion.necesitaActualizarCedula = false;
+        }
+      }
       if (nombre) datosActualizacion.nombre = nombre;
       if (apellido) datosActualizacion.apellido = apellido;
+      if (biografia !== undefined) datosActualizacion.biografia = biografia;
+      if (notificacionesEmail !== undefined) datosActualizacion.notificacionesEmail = notificacionesEmail === 'on';
+      if (modoOscuro !== undefined) datosActualizacion.modoOscuro = modoOscuro === 'on';
 
       const usuarioActualizado = await Usuario.findByIdAndUpdate(
         userId,
         datosActualizacion,
         { new: true }
       ).select('-password -refreshToken');
+
+      // Actualizar datos de sesión
+      req.session.userName = `${usuarioActualizado.nombre} ${usuarioActualizado.apellido}`;
 
       res.json({
         mensaje: 'Perfil actualizado exitosamente',
@@ -496,15 +516,21 @@ router.post('/actualizar-perfil',
 
 // POST /auth/cambiar-password - Cambiar contraseña
 router.post('/cambiar-password', 
-  authenticateToken,
   validacionesCambioPassword,
   manejarErroresValidacion,
   async (req, res) => {
     try {
+      // Verificar sesión
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+          error: 'Debes iniciar sesión para cambiar tu contraseña'
+        });
+      }
+
       const { passwordActual, passwordNueva } = req.body;
       
       await AuthService.cambiarPassword(
-        req.usuario._id,
+        req.session.userId,
         passwordActual,
         passwordNueva
       );
@@ -530,20 +556,40 @@ router.post('/cambiar-password',
   }
 );
 
-// GET /auth/perfil - Obtener perfil del usuario autenticado
-router.get('/perfil', authenticateToken, async (req, res) => {
+// GET /auth/perfil - Mostrar página de perfil del usuario
+router.get('/perfil', async (req, res) => {
   try {
-    const usuario = await AuthService.obtenerUsuario(req.usuario._id);
+    // Verificar si hay sesión activa
+    if (!req.session || !req.session.userId) {
+      return res.redirect('/auth/login?error=Debes iniciar sesión para acceder a tu perfil');
+    }
+
+    // Obtener datos del usuario desde la sesión o base de datos
+    const Usuario = require('../models/Usuario');
+    const usuario = await Usuario.findById(req.session.userId).select('-password -refreshToken');
     
-    res.json({
-      usuario
+    if (!usuario) {
+      return res.redirect('/auth/login?error=Usuario no encontrado');
+    }
+
+    // Verificar parámetros de URL para saber si es una actualización obligatoria
+    const actualizacionObligatoria = req.query.actualizacion === 'obligatoria';
+    const primeraVezGoogle = req.query.primera_vez === 'google';
+
+    // Verificar también en el usuario si necesita actualización
+    const usuarioActualizado = await Usuario.findById(req.session.userId);
+    const necesitaActualizacion = usuarioActualizado.necesitaActualizarCedula || actualizacionObligatoria;
+
+    res.render('auth/perfil', {
+      title: 'Mi Perfil',
+      usuario: usuario,
+      isAuthenticated: true,
+      actualizacionObligatoria: necesitaActualizacion,
+      primeraVezGoogle: primeraVezGoogle
     });
   } catch (error) {
     console.error('Error al obtener perfil:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      code: 'INTERNAL_ERROR'
-    });
+    res.redirect('/auth/login?error=Error al cargar el perfil');
   }
 });
 
@@ -622,6 +668,26 @@ router.get('/google/callback',
     try {
       console.log('✅ Autenticación con Google exitosa');
       
+      // Verificar si el usuario es nuevo creado con Google OAuth y necesita actualizar cédula
+      const Usuario = require('../models/Usuario');
+      const usuarioCompleto = await Usuario.findById(req.user._id);
+      
+      // Marcar usuario de Google para actualización de cédula si es necesario
+      if (usuarioCompleto.googleId && usuarioCompleto.necesitaActualizarCedula) {
+        console.log('🔔 Usuario de Google con marcado de actualización obligatoria');
+      } else if (usuarioCompleto.googleId && usuarioCompleto.cedula && usuarioCompleto.cedula.startsWith('G')) {
+        const hoy = new Date();
+        const usuarioCreado = usuarioCompleto.createdAt;
+        const diferenciaMs = hoy - usuarioCreado;
+        const unaHora = 60 * 60 * 1000; // Una hora en milisegundos
+        
+        // Si fue creado hace menos de una hora (usuario nuevo de Google), necesita actualizar cédula
+        if (diferenciaMs < unaHora) {
+          await Usuario.findByIdAndUpdate(req.user._id, { necesitaActualizarCedula: true });
+          console.log('🔔 Usuario de Google nuevo requiere actualización de cédula');
+        }
+      }
+      
       // Actualizar último acceso
       await actualizarUltimoAcceso(req.user._id, req.user.email, req);
       
@@ -644,6 +710,15 @@ router.get('/google/callback',
             rol: req.user.rol
           }
         });
+      }
+      
+      // Redirigir según si necesita actualizar cédula o según el rol
+      const usuarioActualizado = await Usuario.findById(req.user._id);
+      
+      if (usuarioActualizado.necesitaActualizarCedula) {
+        console.log('📋 Redirigiendo a perfil para actualización obligatoria de cédula');
+        res.redirect('/auth/perfil?actualizacion=obligatoria&primera_vez=google');
+        return;
       }
       
       // Redirigir según el rol del usuario
