@@ -427,11 +427,22 @@ router.post('/elegibilidad/verificar', requireAuth, async (req, res) => {
                     });
                 }
             } else if (previa.tipo === 'examen_aprobado') {
-                // Para examen aprobado: puede estar cursada Y aprobada O puede rendir examen
-                // Por ahora, si no está cursada, puede rendir examen (siempre elegible)
-                // En un sistema más completo, aquí se verificaría si puede rendir el examen
-                console.log(`📝 Materia ${materiaRequerida?.codigo} requiere examen de ${previa.materiaRequerida}, puede rendir examen`);
-                // No agregamos a requisitos faltantes porque puede rendir examen
+                // Para examen aprobado: DEBE estar aprobada (ya sea por curso o por examen)
+                // En el contexto de elegibilidad, si no está cursada, no puede estar aprobada
+                if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
+                    cumple = false;
+                    requisitosFaltantes.push({
+                        materia: materiaRequerida?.nombre || 'Materia no encontrada',
+                        codigo: materiaRequerida?.codigo || 'N/A',
+                        tipo: 'examen_aprobado',
+                        tipoDescripcion: 'Examen Aprobado (obligatorio)',
+                        notaMinima: previa.notaMinima,
+                        causa: 'Debe estar aprobada (por curso o examen)'
+                    });
+                } else {
+                    // Si está cursada, asumimos que está aprobada (esto se maneja en el historial académico)
+                    console.log(`✅ Materia ${materiaRequerida?.codigo} ya está cursada y aprobada`);
+                }
             }
         }
 
@@ -558,10 +569,22 @@ async function verificarElegibilidadMateria(materia, materiasCursadas) {
                 });
             }
         } else if (previa.tipo === 'examen_aprobado') {
-            // Para examen aprobado: puede estar cursada Y aprobada O puede rendir examen
-            // Por ahora, si no está cursada, puede rendir examen (siempre elegible)
-            console.log(`📝 Materia ${materiaRequerida?.codigo} requiere examen de ${previa.materiaRequerida}, puede rendir examen`);
-            // No agregamos a requisitos faltantes porque puede rendir examen
+            // Para examen aprobado: DEBE estar aprobada (ya sea por curso o por examen)
+            // En el contexto de elegibilidad, si no está cursada, no puede estar aprobada
+            if (!materiasCursadas.includes(previa.materiaRequerida.toString())) {
+                cumple = false;
+                requisitosFaltantes.push({
+                    materia: materiaRequerida?.nombre || 'Materia no encontrada',
+                    codigo: materiaRequerida?.codigo || 'N/A',
+                    tipo: 'examen_aprobado',
+                    tipoDescripcion: 'Examen Aprobado (obligatorio)',
+                    notaMinima: previa.notaMinima,
+                    causa: 'Debe estar aprobada (por curso o examen)'
+                });
+            } else {
+                // Si está cursada, asumimos que está aprobada (esto se maneja en el historial académico)
+                console.log(`✅ Materia ${materiaRequerida?.codigo} ya está cursada y aprobada`);
+            }
         }
     }
 
