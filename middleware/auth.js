@@ -5,7 +5,12 @@ const Usuario = require('../models/Usuario');
 const checkSession = async (req, res, next) => {
   try {
     console.log('🔍 Verificando sesión para:', req.path);
-    console.log('📋 Sesión actual:', req.session);
+    console.log('📋 Sesión actual:', {
+      exists: !!req.session,
+      userId: req.session?.userId,
+      sessionId: req.sessionID,
+      cookie: req.session?.cookie
+    });
     
     if (req.session && req.session.userId) {
       console.log('✅ Sesión encontrada, userId:', req.session.userId);
@@ -24,7 +29,7 @@ const checkSession = async (req, res, next) => {
         req.isAuthenticated = false;
       }
     } else {
-      console.log('⚠️ No hay sesión activa');
+      console.log('⚠️ No hay sesión activa - req.session:', !!req.session, 'userId:', req.session?.userId);
       req.isAuthenticated = false;
     }
     

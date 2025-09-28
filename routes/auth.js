@@ -273,6 +273,13 @@ router.post('/login',
         userRole: req.session.userRole
       });
       
+      console.log('🔧 Configuración de sesión:', {
+        sessionId: req.sessionID,
+        cookie: req.session.cookie,
+        secure: req.session.cookie.secure,
+        sameSite: req.session.cookie.sameSite
+      });
+      
       // Guardar la sesión explícitamente
       req.session.save((err) => {
         if (err) {
