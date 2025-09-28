@@ -5,7 +5,15 @@ const Previa = require('../models/Previa');
 
 // Configuración de conexión a MongoDB
 require('dotenv').config();
-const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tarea1_net';
+const mongoUri = process.env.MONGO_URI;
+
+if (!mongoUri) {
+  console.error('❌ Error: MONGO_URI no definida en el archivo .env');
+  console.log('💡 Crea un archivo .env con: MONGO_URI=tu_url_de_mongodb_aqui');
+  process.exit(1);
+}
+
+console.log('🔧 Usando MongoDB Atlas configurado en .env');
 
 // Datos de los semestres según el diagrama
 const semestresData = [
@@ -225,15 +233,15 @@ async function seedSemestres() {
   try {
     console.log('🌱 Iniciando seed de semestres...');
     
-    // Conectar a MongoDB
-    console.log('🔌 Conectando a MongoDB...');
-    await mongoose.connect(MONGODB_URI, {
+    // Conectar a MongoDB Atlas
+    console.log('🔌 Conectando a MongoDB Atlas...');
+    await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Timeout más corto
-      socketTimeoutMS: 45000,
+      dbName: 'tarea1_net'  // Forzar el uso de la base de datos tarea1_net
     });
-    console.log('✅ Conectado a MongoDB exitosamente');
+    console.log('✅ Conectado a MongoDB Atlas exitosamente');
+    console.log('✅ Usando base de datos: tarea1_net');
     
     // Limpiar colecciones existentes
     console.log('🧹 Limpiando colecciones existentes...');

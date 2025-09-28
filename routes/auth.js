@@ -157,8 +157,12 @@ router.post('/registro',
         });
       }
 
-      // Redirigir al login con mensaje de éxito
-      res.redirect('/auth/login?success=Usuario registrado exitosamente. Ya puedes iniciar sesión.');
+      // Verificar si el usuario necesita verificación
+      if (resultado.verificationRequired) {
+        res.redirect(`/auth/verificar-email?email=${resultado.usuario.email}&message=Ingresa el código de verificación que enviamos a tu correo`);
+      } else {
+        res.redirect('/auth/login?success=Usuario registrado exitosamente. Ya puedes iniciar sesión.');
+      }
     } catch (error) {
       console.error('Error en registro:', error);
       
@@ -171,6 +175,72 @@ router.post('/registro',
     }
   }
 );
+
+// GET /auth/verificar-email - Página de verificación de email
+router.get('/verificar-email', (req, res) => {
+  const { email, message } = req.query;
+  res.render('auth/verificar-email', { 
+    title: 'Verificar Email',
+    email: email || '',
+    message: message || ''
+  });
+});
+
+// POST /auth/verificar-email - Verificar código de email
+router.post('/verificar-email', async (req, res) => {
+  try {
+    const { email, codigo } = req.body;
+    
+    if (!email || !codigo) {
+      return res.render('auth/verificar-email', {
+        title: 'Verificar Email',
+        email: email || '',
+        error: 'Email y código son requeridos'
+      });
+    }
+
+    const resultado = await AuthService.verificarCodigoEmail(email, codigo);
+    
+    if (resultado.success) {
+      res.redirect('/auth/login?success=Email verificado exitosamente. Ya puedes iniciar sesión.');
+    } else {
+      res.render('auth/verificar-email', {
+        title: 'Verificar Email',
+        email,
+        error: resultado.message
+      });
+    }
+  } catch (error) {
+    console.error('Error verificando código:', error);
+    res.render('auth/verificar-email', {
+      title: 'Verificar Email',
+      email: req.body.email || '',
+      error: error.message
+    });
+  }
+});
+
+// POST /auth/reenviar-codigo - Reenviar código de verificación
+router.post('/reenviar-codigo', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.render('auth/verificar-email', {
+        title: 'Verificar Email',
+        email: '',
+        error: 'Email requerido'
+      });
+    }
+
+    const resultado = await AuthService.reenviarCodigoVerificacion(email);
+    
+    res.redirect(`/auth/verificar-email?email=${email}&success=Se ha enviado un nuevo código de verificación a tu correo`);
+  } catch (error) {
+    console.error('Error reenviando código:', error);
+    res.redirect(`/auth/verificar-email?email=${req.body.email}&error=${error.message}`);
+  }
+});
 
 // POST /auth/login - Iniciar sesión (con validación)
 router.post('/login', 

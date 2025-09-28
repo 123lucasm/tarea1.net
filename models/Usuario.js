@@ -62,6 +62,17 @@ const usuarioSchema = new mongoose.Schema({
   necesitaActualizarCedula: {
     type: Boolean,
     default: false
+  },
+  // Campos para verificación de email
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  verificationCode: {
+    type: String
+  },
+  codeExpiry: {
+    type: Date
   }
 }, {
   timestamps: true

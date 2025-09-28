@@ -61,8 +61,10 @@ function configurarEventosBotones() {
         
         // Botón Ver previas detalladas
         if (target.closest('.btn-ver-previas')) {
+            console.log('🎯 Event listener capturando clic en .btn-ver-previas');
             const button = target.closest('.btn-ver-previas');
             const materiaId = button.getAttribute('data-materia-id');
+            console.log('📋 Materia ID del botón:', materiaId);
             verPreviasDetalle(materiaId);
         }
         
@@ -723,43 +725,69 @@ function irAPagina(pagina) {
 }
 
 function verPreviasDetalle(materiaId) {
-    const previasData = document.querySelector(`[data-materia-id="${materiaId}"]`)?.getAttribute('data-previas');
-    if (!previasData) return;
+    console.log('🔍 Intentando mostrar previas para materia:', materiaId);
     
-    const previas = JSON.parse(previasData);
-    const modalDetalle = document.getElementById('modal-previas-detalle');
-    const detalleContent = document.getElementById('detalle-previas-content');
+    const button = document.querySelector(`[data-materia-id="${materiaId}"].btn-ver-previas`);
+    if (!button) {
+        console.log('❌ No se encontró el botón con data-materia-id:', materiaId);
+        return;
+    }
     
-    if (!modalDetalle || !detalleContent) return;
+    const previasData = button.getAttribute('data-previas');
+    if (!previasData) {
+        console.log('❌ No se encontraron datos de previas en el botón');
+        return;
+    }
     
-    detalleContent.innerHTML = previas.map(previa => `
-        <div class="bg-white border border-slate-200 rounded-lg p-4">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <h4 class="text-sm font-medium text-slate-900 mb-2">
-                        ${previa.materiaRequerida?.nombre || 'N/A'}
-                    </h4>
-                    <div class="space-y-1 text-xs text-slate-600">
-                        <p><strong>Código:</strong> ${previa.materiaRequerida?.codigo || 'N/A'}</p>
-                        <p><strong>Tipo:</strong> ${previa.tipo === 'curso_aprobado' ? 'Curso' : 'Examen'}</p>
-                        <p><strong>Nota mínima:</strong> ${previa.notaMinima || 'N/A'}</p>
-                        <p><strong>Semestre mínimo:</strong> ${previa.semestreMinimo || 'N/A'}</p>
-                        <p><strong>Créditos mínimos:</strong> ${previa.creditosMinimos || 'N/A'}</p>
+    console.log('📦 Datos de previas encontrados:', previasData);
+    
+    try {
+        const previas = JSON.parse(previasData);
+        const modalDetalle = document.getElementById('modal-previas-detalle');
+        const detalleContent = document.getElementById('previas-detalle-content');
+        
+        if (!modalDetalle) {
+            console.log('❌ No se encontró el modal con ID: modal-previas-detalle');
+            return;
+        }
+        if (!detalleContent) {
+            console.log('❌ No se encontró el contenido con ID: previas-detalle-content');
+            return;
+        }
+        
+        console.log('✅ Elementos del modal encontrados, mostrando previas:', previas);
+    
+        detalleContent.innerHTML = previas.map(previa => `
+            <div class="bg-white border border-slate-200 rounded-lg p-4">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h4 class="text-sm font-medium text-slate-900 mb-2">
+                            ${previa.materiaRequerida?.nombre || 'N/A'}
+                        </h4>
+                        <div class="space-y-1 text-xs text-slate-600">
+                            <p><strong>Código:</strong> ${previa.materiaRequerida?.codigo || 'N/A'}</p>
+                            <p><strong>Tipo:</strong> ${previa.tipo === 'curso_aprobado' ? 'Curso' : 'Examen'}</p>
+                        </div>
                     </div>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        previa.activa 
+                            ? 'bg-emerald-100 text-emerald-800' 
+                            : 'bg-red-100 text-red-800'
+                    }">
+                        <i class="fas fa-${previa.activa ? 'check-circle' : 'times-circle'} mr-1"></i>
+                        ${previa.activa ? 'Activa' : 'Inactiva'}
+                    </span>
                 </div>
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    previa.activa 
-                        ? 'bg-emerald-100 text-emerald-800' 
-                        : 'bg-red-100 text-red-800'
-                }">
-                    <i class="fas fa-${previa.activa ? 'check-circle' : 'times-circle'} mr-1"></i>
-                    ${previa.activa ? 'Activa' : 'Inactiva'}
-                </span>
             </div>
-        </div>
-    `).join('');
-    
-    modalDetalle.classList.remove('hidden');
+        `).join('');
+        
+        modalDetalle.classList.remove('hidden');
+        console.log('🎉 Modal mostrado correctamente');
+        
+    } catch (error) {
+        console.error('❌ Error al mostrar previas detalle:', error);
+        alert('Error al cargar las previas detalladas');
+    }
 }
 
 function cerrarModalPreviasDetalle() {
