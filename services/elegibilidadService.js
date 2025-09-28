@@ -11,22 +11,6 @@ class ElegibilidadService {
         throw new Error('Materia no encontrada');
       }
 
-      if (!materia.activa) {
-        return {
-          elegible: false,
-          causa: 'Materia inactiva',
-          materia: materia.nombre
-        };
-      }
-
-      if (!materia.hayCupo()) {
-        return {
-          elegible: false,
-          causa: 'Sin cupo disponible',
-          materia: materia.nombre
-        };
-      }
-
       // Verificar requisitos previos usando la entidad Previa
       const previas = await Previa.find({ 
         materia: materiaId, 
@@ -50,8 +34,7 @@ class ElegibilidadService {
       return {
         elegible: true,
         materia: materia.nombre,
-        creditos: materia.creditos,
-        horarios: materia.horarios
+        creditos: materia.creditos
       };
     } catch (error) {
       throw error;
@@ -167,7 +150,7 @@ class ElegibilidadService {
   // Obtener materias elegibles para un estudiante
   static async obtenerMateriasElegibles(estudianteId, semestre = null, anio = null) {
     try {
-      let filtro = { activa: true };
+      let filtro = {};
       
       if (semestre && anio) {
         filtro.semestre = semestre;
@@ -208,7 +191,7 @@ class ElegibilidadService {
   // Obtener materias elegibles basadas en materias cursadas específicas
   static async obtenerMateriasElegiblesPorCursadas(materiasCursadas, semestre = null, anio = null) {
     try {
-      let filtro = { activa: true };
+      let filtro = {};
       
       if (semestre && anio) {
         filtro.semestre = semestre;
@@ -267,22 +250,6 @@ class ElegibilidadService {
         throw new Error('Materia no encontrada');
       }
 
-      if (!materia.activa) {
-        return {
-          elegible: false,
-          causa: 'Materia inactiva',
-          materia: materia.nombre
-        };
-      }
-
-      if (!materia.hayCupo()) {
-        return {
-          elegible: false,
-          causa: 'Sin cupo disponible',
-          materia: materia.nombre
-        };
-      }
-
       // Verificar requisitos previos usando las materias cursadas proporcionadas
       const previas = await Previa.find({ 
         materia: materiaId, 
@@ -306,8 +273,7 @@ class ElegibilidadService {
       return {
         elegible: true,
         materia: materia.nombre,
-        creditos: materia.creditos,
-        horarios: materia.horarios
+        creditos: materia.creditos
       };
     } catch (error) {
       throw error;
@@ -353,77 +319,6 @@ class ElegibilidadService {
     };
   }
 
-  // Verificar conflictos de horario entre materias
-  static async verificarConflictosHorario(estudianteId, materiasSeleccionadas) {
-    try {
-      const conflictos = [];
-      
-      for (let i = 0; i < materiasSeleccionadas.length; i++) {
-        for (let j = i + 1; j < materiasSeleccionadas.length; j++) {
-          const materia1 = await Materia.findById(materiasSeleccionadas[i]);
-          const materia2 = await Materia.findById(materiasSeleccionadas[j]);
-          
-          if (materia1 && materia2 && materia1.tieneConflictoHorario(materia2)) {
-            conflictos.push({
-              materia1: materia1.nombre,
-              materia2: materia2.nombre,
-              tipo: 'Conflicto de horario'
-            });
-          }
-        }
-      }
-
-      return {
-        tieneConflictos: conflictos.length > 0,
-        conflictos
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Calcular carga horaria total
-  static async calcularCargaHoraria(materiasIds) {
-    try {
-      const materias = await Materia.find({ _id: { $in: materiasIds } });
-      
-      let cargaTotal = 0;
-      const horariosPorDia = {
-        lunes: [],
-        martes: [],
-        miércoles: [],
-        jueves: [],
-        viernes: [],
-        sábado: []
-      };
-
-      for (const materia of materias) {
-        for (const horario of materia.horarios) {
-          const inicio = new Date(`2000-01-01 ${horario.horaInicio}`);
-          const fin = new Date(`2000-01-01 ${horario.horaFin}`);
-          const duracion = (fin - inicio) / (1000 * 60 * 60); // Horas
-          
-          cargaTotal += duracion;
-          
-          horariosPorDia[horario.dia].push({
-            materia: materia.nombre,
-            inicio: horario.horaInicio,
-            fin: horario.horaFin,
-            tipo: horario.tipo,
-            aula: horario.aula
-          });
-        }
-      }
-
-      return {
-        cargaTotal: Math.round(cargaTotal * 100) / 100,
-        horariosPorDia,
-        materias: materias.map(m => ({ id: m._id, nombre: m.nombre, creditos: m.creditos }))
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
 
   // Obtener recomendaciones de materias
   static async obtenerRecomendaciones(estudianteId, limite = 5) {

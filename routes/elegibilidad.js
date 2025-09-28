@@ -43,51 +43,6 @@ router.post('/verificar', requireEstudianteOrAdmin, async (req, res) => {
     }
 });
 
-// GET /elegibilidad/conflictos - Verificar conflictos de horario
-router.get('/conflictos', requireEstudianteOrAdmin, async (req, res) => {
-    try {
-        const { materiasIds } = req.query;
-        const estudianteId = req.user.rol === 'estudiante' ? req.user._id : req.query.estudianteId;
-
-        if (!materiasIds || !estudianteId) {
-            return res.status(400).json({ error: 'IDs de materias y estudiante requeridos' });
-        }
-
-        const idsArray = materiasIds.split(',');
-        const conflictos = await ElegibilidadService.verificarConflictosHorario(idsArray);
-        
-        res.json({
-            materias: idsArray,
-            conflictos,
-            tieneConflictos: conflictos.length > 0
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Error al verificar conflictos' });
-    }
-});
-
-// GET /elegibilidad/carga-horaria - Calcular carga horaria
-router.get('/carga-horaria', requireEstudianteOrAdmin, async (req, res) => {
-    try {
-        const { materiasIds } = req.query;
-        const estudianteId = req.user.rol === 'estudiante' ? req.user._id : req.query.estudianteId;
-
-        if (!materiasIds || !estudianteId) {
-            return res.status(400).json({ error: 'IDs de materias y estudiante requeridos' });
-        }
-
-        const idsArray = materiasIds.split(',');
-        const cargaHoraria = await ElegibilidadService.calcularCargaHoraria(idsArray);
-        
-        res.json({
-            materias: idsArray,
-            cargaHoraria,
-            totalHoras: cargaHoraria.reduce((total, materia) => total + materia.horasSemana, 0)
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Error al calcular carga horaria' });
-    }
-});
 
 // GET /elegibilidad/recomendaciones - Obtener recomendaciones
 router.get('/recomendaciones', requireEstudianteOrAdmin, async (req, res) => {

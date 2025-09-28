@@ -115,42 +115,137 @@ router.get('/api/materias', requireAuth, async (req, res) => {
 // POST /api/materias-cursadas - Guardar materias cursadas del estudiante
 router.post('/api/materias-cursadas', requireAuth, async (req, res) => {
     try {
-        const { materiasCursadas, notas } = req.body;
+        const { materiasCursadas, notas, materiasConTipos } = req.body;
         const estudianteId = req.usuario._id;
 
         if (!Array.isArray(materiasCursadas)) {
             return res.status(400).json({ error: 'materiasCursadas debe ser un array' });
         }
 
-        // Eliminar historial académico existente del estudiante
-        await HistorialAcademico.deleteMany({ estudiante: estudianteId });
+        console.log('💾 Guardando materias cursadas:', materiasCursadas.length);
+        console.log('📊 Con tipos de aprobación:', materiasConTipos?.length || 0);
 
-        // Crear nuevo historial académico
+        // Obtener el historial actual del estudiante
+        const historialActual = await HistorialAcademico.find({ estudiante: estudianteId });
+        const materiasActuales = new Set(historialActual.map(h => h.materia.toString()));
+
+        // Materias a agregar (nuevas)
+        const materiasAAgregar = materiasCursadas.filter(id => !materiasActuales.has(id));
+        
+        // Materias a eliminar (ya no están seleccionadas)
+        const materiasAEliminar = Array.from(materiasActuales).filter(id => !materiasCursadas.includes(id));
+
+        console.log('➕ Materias a agregar:', materiasAAgregar.length);
+        console.log('➖ Materias a eliminar:', materiasAEliminar.length);
+
+        // Eliminar materias que ya no están seleccionadas
+        if (materiasAEliminar.length > 0) {
+            await HistorialAcademico.deleteMany({ 
+                estudiante: estudianteId, 
+                materia: { $in: materiasAEliminar } 
+            });
+            console.log('✅ Materias eliminadas del historial');
+        }
+
+        // Crear un mapa de tipos de aprobación para acceso rápido
+        const tiposMap = new Map();
+        if (materiasConTipos) {
+            materiasConTipos.forEach(item => {
+                tiposMap.set(item.materiaId, item);
+            });
+        }
+
+        // Agregar nuevas materias al historial
         const historialesCreados = [];
-
-        for (const materiaId of materiasCursadas) {
-            const nota = notas && notas[materiaId] ? notas[materiaId] : 4; // Nota por defecto 4
+        for (const materiaId of materiasAAgregar) {
+            // Obtener información de la materia para calcular créditos
+            const materia = await Materia.findById(materiaId);
+            const tipoInfo = tiposMap.get(materiaId);
+            
+            // Determinar el estado basado en el tipo de aprobación
+            let estado = 'aprobado';
+            let notaCurso = 4;
+            let notaExamen = null;
+            
+            if (tipoInfo) {
+                estado = tipoInfo.tipo === 'aprobado' ? 'aprobado' : 'cursado';
+                notaCurso = tipoInfo.notaCurso || (tipoInfo.tipo === 'aprobado' ? 4 : undefined);
+                notaExamen = tipoInfo.notaExamen || (tipoInfo.tipo === 'cursado' ? 3 : undefined);
+            }
+            
+            const nota = notas && notas[materiaId] ? notas[materiaId] : (estado === 'aprobado' ? 4 : 3);
             
             const historial = new HistorialAcademico({
                 estudiante: estudianteId,
                 materia: materiaId,
-                estado: 'aprobado',
-                notaCurso: nota,
-                notaExamen: nota,
+                estado: estado,
+                notaCurso: notaCurso,
+                notaExamen: notaExamen,
                 notaFinal: nota,
-                semestre: 1, // Se puede ajustar según necesidad
+                semestre: materia?.semestre?.numero || 1,
                 anio: new Date().getFullYear(),
                 fechaAprobacion: new Date(),
-                creditosObtenidos: 0 // Se calculará automáticamente
+                creditosObtenidos: materia?.creditos || 0
             });
 
             await historial.save();
             historialesCreados.push(historial);
         }
 
+        // Actualizar materias existentes con nuevos tipos si es necesario
+        if (materiasConTipos) {
+            console.log('Actualizando materias existentes con tipos:', materiasConTipos.length);
+            try {
+                for (const tipoInfo of materiasConTipos) {
+                    console.log('Procesando materia:', tipoInfo.materiaId, 'tipo:', tipoInfo.tipo);
+                    
+                    const historialExistente = await HistorialAcademico.findOne({
+                        estudiante: estudianteId,
+                        materia: tipoInfo.materiaId
+                    });
+                    
+                    if (historialExistente) {
+                        const estadoAnterior = historialExistente.estado;
+                        
+                    // Mapear correctamente el tipo
+                    let nuevoEstado;
+                    if (tipoInfo.tipo === 'aprobado') {
+                        nuevoEstado = 'aprobado';
+                    } else if (tipoInfo.tipo === 'cursado') {
+                        nuevoEstado = 'cursado';
+                    } else {
+                        nuevoEstado = 'aprobado'; // Por defecto
+                    }
+                        
+                        historialExistente.estado = nuevoEstado;
+                        
+                        // Solo actualizar notas si no son null
+                        if (tipoInfo.notaCurso !== undefined && tipoInfo.notaCurso !== null) {
+                            historialExistente.notaCurso = tipoInfo.notaCurso;
+                        }
+                        if (tipoInfo.notaExamen !== undefined && tipoInfo.notaExamen !== null) {
+                            historialExistente.notaExamen = tipoInfo.notaExamen;
+                        }
+                        
+                        await historialExistente.save();
+                        console.log(`Materia ${tipoInfo.materiaId} actualizada: ${estadoAnterior} -> ${historialExistente.estado}`);
+                    } else {
+                        console.log(`No se encontró historial para materia ${tipoInfo.materiaId}`);
+                    }
+                }
+            } catch (updateError) {
+                console.error('Error actualizando materias existentes:', updateError);
+                throw updateError;
+            }
+        }
+
+        console.log('✅ Historial académico actualizado exitosamente');
+
         res.json({
             mensaje: 'Materias cursadas guardadas exitosamente',
-            historialesCreados: historialesCreados.length
+            historialesCreados: historialesCreados.length,
+            materiasAgregadas: materiasAAgregar.length,
+            materiasEliminadas: materiasAEliminar.length
         });
 
     } catch (error) {
@@ -166,13 +261,99 @@ router.get('/api/materias-cursadas', requireAuth, async (req, res) => {
 
         const historial = await HistorialAcademico.find({ 
             estudiante: estudianteId,
-            estado: 'aprobado'
+            estado: { $in: ['aprobado', 'cursado', 'en_curso'] }
         }).populate('materia', 'codigo nombre creditos semestre');
 
+        // Devolver solo los IDs de las materias para compatibilidad con el frontend
         res.json(historial.map(h => h.materia._id));
 
     } catch (error) {
         console.error('Error obteniendo materias cursadas:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// GET /api/estados-materias - Obtener estados detallados de todas las materias del estudiante
+router.get('/api/estados-materias', requireAuth, async (req, res) => {
+    try {
+        const estudianteId = req.usuario._id;
+
+        const historial = await HistorialAcademico.find({ 
+            estudiante: estudianteId
+        }).populate('materia', 'codigo nombre creditos semestre');
+
+        // Devolver información detallada del historial
+        const estados = historial.map(h => ({
+            materia: h.materia._id,
+            estado: h.estado,
+            notaCurso: h.notaCurso,
+            notaExamen: h.notaExamen,
+            notaFinal: h.notaFinal,
+            semestre: h.semestre,
+            anio: h.anio,
+            fechaAprobacion: h.fechaAprobacion,
+            creditosObtenidos: h.creditosObtenidos
+        }));
+
+        res.json(estados);
+
+    } catch (error) {
+        console.error('Error obteniendo estados de materias:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// PUT /api/estado-materia - Actualizar estado de una materia específica
+router.put('/api/estado-materia', requireAuth, async (req, res) => {
+    try {
+        const { materiaId, estado, notaCurso, notaExamen } = req.body;
+        const estudianteId = req.usuario._id;
+
+        if (!materiaId || !estado) {
+            return res.status(400).json({ error: 'materiaId y estado son requeridos' });
+        }
+
+        console.log('🔄 Actualizando estado de materia:', materiaId, estado);
+
+        // Buscar o crear el historial académico
+        let historial = await HistorialAcademico.findOne({
+            estudiante: estudianteId,
+            materia: materiaId
+        });
+
+        if (historial) {
+            // Actualizar existente
+            historial.estado = estado;
+            if (notaCurso !== undefined) historial.notaCurso = notaCurso;
+            if (notaExamen !== undefined) historial.notaExamen = notaExamen;
+            await historial.save();
+            console.log('✅ Historial actualizado');
+        } else {
+            // Crear nuevo historial
+            const materia = await Materia.findById(materiaId);
+            historial = new HistorialAcademico({
+                estudiante: estudianteId,
+                materia: materiaId,
+                estado: estado,
+                notaCurso: notaCurso || (estado === 'aprobado' ? 4 : null),
+                notaExamen: notaExamen || (estado === 'cursado' ? 4 : null),
+                notaFinal: 4,
+                semestre: materia?.semestre?.numero || 1,
+                anio: new Date().getFullYear(),
+                fechaAprobacion: new Date(),
+                creditosObtenidos: materia?.creditos || 0
+            });
+            await historial.save();
+            console.log('✅ Nuevo historial creado');
+        }
+
+        res.json({
+            mensaje: 'Estado de materia actualizado exitosamente',
+            historial: historial
+        });
+
+    } catch (error) {
+        console.error('Error actualizando estado de materia:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
