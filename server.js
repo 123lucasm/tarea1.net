@@ -89,6 +89,18 @@ const passport = require('./config/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware para manejar sesiones manuales (no de Passport)
+app.use((req, res, next) => {
+  // Si hay una sesión manual (no de Passport), asegurar que persista
+  if (req.session && req.session.userId && !req.user) {
+    // La sesión manual está activa, continuar
+    next();
+  } else {
+    // No hay sesión manual, continuar con Passport
+    next();
+  }
+});
+
 // Configurar EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

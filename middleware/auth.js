@@ -12,8 +12,15 @@ const checkSession = async (req, res, next) => {
       cookie: req.session?.cookie
     });
     
-    if (req.session && req.session.userId) {
-      console.log('✅ Sesión encontrada, userId:', req.session.userId);
+    // Verificar si hay sesión de Passport primero
+    if (req.user) {
+      console.log('✅ Sesión de Passport encontrada:', req.user.email);
+      req.usuario = req.user;
+      req.isAuthenticated = true;
+    }
+    // Si no hay sesión de Passport, verificar sesión manual
+    else if (req.session && req.session.userId) {
+      console.log('✅ Sesión manual encontrada, userId:', req.session.userId);
       
       // Buscar usuario en la base de datos
       const usuario = await Usuario.findById(req.session.userId).select('-password');

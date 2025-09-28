@@ -418,9 +418,22 @@ router.post('/login-simple', async (req, res) => {
     
     console.log('📝 Sesión creada:', req.session);
     
-    // Redirigir según el rol del usuario
-    console.log('🔄 Redirigiendo según rol del usuario...');
-    res.redirect('/dashboard');
+    // Guardar la sesión explícitamente antes de redirigir
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Error al guardar sesión:', err);
+        return res.render('auth/login', { 
+          title: 'Iniciar Sesión',
+          error: 'Error al crear sesión'
+        });
+      }
+      
+      console.log('💾 Sesión guardada exitosamente');
+      
+      // Redirigir según el rol del usuario
+      console.log('🔄 Redirigiendo según rol del usuario...');
+      res.redirect('/dashboard');
+    });
     
   } catch (error) {
     console.error('❌ Error en login simple:', error);
@@ -676,60 +689,6 @@ router.get('/verificar', authenticateToken, (req, res) => {
     mensaje: 'Token válido',
     usuario: req.usuario
   });
-});
-
-// POST /auth/login-simple - Ruta completamente simple
-router.post('/login-simple', async (req, res) => {
-  try {
-    console.log('🚀 Login simple iniciando...');
-    const { email, password } = req.body;
-    
-    // Buscar usuario directamente
-    const Usuario = require('../models/Usuario');
-    const usuario = await Usuario.findOne({ email });
-    
-    if (!usuario) {
-      return res.render('auth/login', { 
-        title: 'Iniciar Sesión',
-        error: 'Credenciales inválidas'
-      });
-    }
-    
-    // Verificar contraseña
-    const passwordValida = await usuario.compararPassword(password);
-    if (!passwordValida) {
-      return res.render('auth/login', { 
-        title: 'Iniciar Sesión',
-        error: 'Credenciales inválidas'
-      });
-    }
-    
-    console.log('✅ Usuario autenticado:', usuario.nombre);
-    console.log('🔄 Llamando a actualizarUltimoAcceso...');
-    
-    // Actualizar último acceso del usuario
-    await actualizarUltimoAcceso(usuario._id, usuario.email);
-    console.log('✅ Función actualizarUltimoAcceso completada');
-    
-    // Crear sesión
-    req.session.userId = usuario._id;
-    req.session.userEmail = usuario.email;
-    req.session.userName = `${usuario.nombre} ${usuario.apellido}`;
-    req.session.userRole = usuario.rol;
-    
-    console.log('📝 Sesión creada:', req.session);
-    
-    // Redirigir según el rol del usuario
-    console.log('🔄 Redirigiendo según rol del usuario...');
-    res.redirect('/dashboard');
-    
-  } catch (error) {
-    console.error('❌ Error en login simple:', error);
-    res.render('auth/login', { 
-      title: 'Iniciar Sesión',
-      error: 'Error interno del servidor'
-    });
-  }
 });
 
 // Rutas de Google OAuth
