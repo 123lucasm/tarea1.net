@@ -410,13 +410,15 @@ router.post('/login-simple', async (req, res) => {
     await actualizarUltimoAcceso(usuario._id, usuario.email);
     console.log('✅ Función actualizarUltimoAcceso completada');
     
-    // Crear sesión
-    req.session.userId = usuario._id;
+    // Crear sesión - convertir ObjectId a string
+    req.session.userId = usuario._id.toString();
     req.session.userEmail = usuario.email;
     req.session.userName = `${usuario.nombre} ${usuario.apellido}`;
     req.session.userRole = usuario.rol;
     
     console.log('📝 Sesión creada:', req.session);
+    console.log('📝 Tipo de userId en sesión:', typeof req.session.userId);
+    console.log('📝 Valor de userId en sesión:', req.session.userId);
     
     // Guardar la sesión explícitamente antes de redirigir
     req.session.save((err) => {
@@ -429,6 +431,7 @@ router.post('/login-simple', async (req, res) => {
       }
       
       console.log('💾 Sesión guardada exitosamente');
+      console.log('💾 Sesión después de guardar:', JSON.stringify(req.session, null, 2));
       
       // Redirigir según el rol del usuario
       console.log('🔄 Redirigiendo según rol del usuario...');

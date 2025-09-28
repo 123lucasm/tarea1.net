@@ -72,13 +72,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Configuración de sesiones
 app.use(session({
   secret: process.env.SESSION_SECRET || 'matriculatec-secret-key',
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // Cambiar a true para forzar guardado
+  saveUninitialized: true, // Cambiar a true para guardar sesiones nuevas
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Cambiar a false para desarrollo local
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 horas
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    sameSite: 'lax' // Cambiar a 'lax' para desarrollo local
   },
   // Configuración adicional para Render
   name: 'matriculatec.sid'

@@ -8,9 +8,11 @@ const checkSession = async (req, res, next) => {
     console.log('📋 Sesión actual:', {
       exists: !!req.session,
       userId: req.session?.userId,
+      userIdType: typeof req.session?.userId,
       sessionId: req.sessionID,
       cookie: req.session?.cookie
     });
+    console.log('🔍 Contenido completo de req.session:', JSON.stringify(req.session, null, 2));
     
     // Verificar si hay sesión de Passport primero
     if (req.user) {
