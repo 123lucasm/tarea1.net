@@ -268,7 +268,7 @@ router.get('/api/materias', async (req, res) => {
 // API: Crear nueva materia
 router.post('/api/materias', async (req, res) => {
   try {
-    const { nombre, codigo, creditos, semestre, descripcion, cupoMaximo, activa } = req.body;
+    const { nombre, codigo, creditos, semestre, descripcion, cupoMaximo, activa, horarios } = req.body;
     
     const nuevaMateria = new Materia({
       nombre,
@@ -278,7 +278,8 @@ router.post('/api/materias', async (req, res) => {
       descripcion,
       cupoMaximo: cupoMaximo || 50,
       cupoDisponible: cupoMaximo || 50,
-      activa: activa !== undefined ? activa : true
+      activa: activa !== undefined ? activa : true,
+      horarios: horarios || []
     });
     
     await nuevaMateria.save();
@@ -322,7 +323,7 @@ router.get('/api/materias/:id', async (req, res) => {
 // API: Actualizar materia
 router.put('/api/materias/:id', async (req, res) => {
   try {
-    const { nombre, codigo, creditos, semestre, descripcion, cupoMaximo, activa } = req.body;
+    const { nombre, codigo, creditos, semestre, descripcion, cupoMaximo, activa, horarios } = req.body;
     
     // Obtener la materia original para comparar cambios
     const materiaOriginal = await Materia.findById(req.params.id);
@@ -336,7 +337,8 @@ router.put('/api/materias/:id', async (req, res) => {
         semestre,
         descripcion,
         cupoMaximo,
-        activa
+        activa,
+        horarios: horarios || []
       },
       { new: true, runValidators: true }
     ).populate('semestre', 'nombre numero orden');

@@ -4,24 +4,339 @@ let materiasElegibles = [];
 let materiasNoElegibles = [];
 let semestresAbiertos = new Set();
 let estadosMaterias = new Map(); // Para almacenar el estado de cada materia
+let materiasElegibilidad = new Map(); // Para almacenar la elegibilidad de cada materia
+let debounceTimer = null; // Para evitar múltiples actualizaciones rápidas
 
-// Función para toggle de materia cursada
-function toggleMateriaCursada(materiaId) {
+// Función para verificar previas de una materia
+async function verificarPreviasMateria(materiaId) {
+    try {
+        const response = await fetch('/materias-cursadas/elegibilidad/verificar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                materiaId: materiaId,
+                materiasCursadas: Array.from(materiasCursadas)
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al verificar previas');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error verificando previas:', error);
+        return { elegible: false, causa: 'Error al verificar previas' };
+    }
+}
+
+// Función para pre-cargar la elegibilidad de todas las materias
+async function precargarElegibilidadMaterias() {
+    console.log('🔄 Pre-cargando elegibilidad de materias...');
+    
+    // Mostrar indicador de carga inicial
+    mostrarIndicadorCarga('Cargando materias y verificando elegibilidad...');
+    
+    try {
+        const response = await fetch('/materias-cursadas/elegibilidad/materias', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                materiasCursadas: Array.from(materiasCursadas)
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al pre-cargar elegibilidad');
+        }
+
+        const data = await response.json();
+        
+        // Almacenar elegibilidad de materias elegibles
+        if (data.materiasElegibles) {
+            data.materiasElegibles.forEach(materia => {
+                materiasElegibilidad.set(materia._id, {
+                    elegible: true,
+                    materia: materia
+                });
+            });
+        }
+        
+        // Almacenar elegibilidad de materias no elegibles
+        if (data.materiasNoElegibles) {
+            data.materiasNoElegibles.forEach(materia => {
+                materiasElegibilidad.set(materia._id, {
+                    elegible: false,
+                    materia: materia,
+                    elegibilidad: materia.elegibilidad
+                });
+            });
+        }
+        
+        console.log('✅ Elegibilidad pre-cargada para', materiasElegibilidad.size, 'materias');
+        
+        // Re-renderizar para mostrar el estado visual
+        renderizarMateriasCursadas();
+        
+    } catch (error) {
+        console.error('Error pre-cargando elegibilidad:', error);
+        // Mostrar error en la interfaz
+        const container = document.getElementById('semestresContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                        <p class="text-red-600 font-medium">Error al cargar elegibilidad</p>
+                        <p class="text-gray-500 text-sm">Intenta recargar la página</p>
+                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            Recargar Página
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// Función para mostrar indicador de carga
+function mostrarIndicadorCarga(mensaje = 'Verificando elegibilidad...') {
+    const container = document.getElementById('semestresContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="flex items-center justify-center py-12">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                    </div>
+                    <p class="text-gray-600 font-medium">${mensaje}</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Función de debounce para optimizar actualizaciones
+function debounce(func, delay) {
+    return function(...args) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// Función optimizada para actualizar elegibilidad con debounce
+const actualizarElegibilidadDebounced = debounce(async function() {
+    await actualizarElegibilidadMaterias();
+    renderizarMateriasCursadas();
+    actualizarEstadisticas();
+}, 500); // 500ms de delay
+
+// Función para actualizar la elegibilidad de todas las materias
+async function actualizarElegibilidadMaterias() {
+    console.log('🔄 Actualizando elegibilidad de materias...');
+    
+    // Mostrar indicador de carga
+    mostrarIndicadorCarga('Verificando elegibilidad de materias...');
+    
+    try {
+        const response = await fetch('/materias-cursadas/elegibilidad/materias', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                materiasCursadas: Array.from(materiasCursadas)
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al actualizar elegibilidad');
+        }
+
+        const data = await response.json();
+        
+        // Limpiar caché anterior
+        materiasElegibilidad.clear();
+        
+        // Almacenar elegibilidad de materias elegibles
+        if (data.materiasElegibles) {
+            data.materiasElegibles.forEach(materia => {
+                materiasElegibilidad.set(materia._id, {
+                    elegible: true,
+                    materia: materia
+                });
+            });
+        }
+        
+        // Almacenar elegibilidad de materias no elegibles
+        if (data.materiasNoElegibles) {
+            data.materiasNoElegibles.forEach(materia => {
+                materiasElegibilidad.set(materia._id, {
+                    elegible: false,
+                    materia: materia,
+                    elegibilidad: materia.elegibilidad
+                });
+            });
+        }
+        
+        console.log('✅ Elegibilidad actualizada para', materiasElegibilidad.size, 'materias');
+        
+    } catch (error) {
+        console.error('Error actualizando elegibilidad:', error);
+        // Mostrar error en la interfaz
+        const container = document.getElementById('semestresContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                        <p class="text-red-600 font-medium">Error al verificar elegibilidad</p>
+                        <p class="text-gray-500 text-sm">Intenta recargar la página</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// Función para mostrar mensaje de error de previas
+async function mostrarErrorPrevias(elegibilidad) {
+    if (typeof Swal !== 'undefined') {
+        let htmlContent = '';
+        
+        if (elegibilidad.requisitosFaltantes && elegibilidad.requisitosFaltantes.length > 0) {
+            htmlContent = `
+                <div class="text-left">
+                    <p class="mb-4 text-gray-700">No puedes seleccionar esta materia porque faltan las siguientes previas:</p>
+                    <div class="space-y-2">
+                        ${elegibilidad.requisitosFaltantes.map(req => `
+                            <div class="flex items-center space-x-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-red-900">${req.materia}</div>
+                                    <div class="text-sm text-red-700">${req.codigo} - ${req.tipoDescripcion}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            htmlContent = `
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-times text-red-600 text-2xl"></i>
+                    </div>
+                    <p class="text-gray-700">${elegibilidad.causa || 'No cumple con los requisitos previos'}</p>
+                </div>
+            `;
+        }
+        
+        await Swal.fire({
+            title: 'No puedes seleccionar esta materia',
+            html: htmlContent,
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'swal2-popup-modern',
+                title: 'swal2-title-modern',
+                content: 'swal2-content-modern'
+            }
+        });
+    } else {
+        // Fallback a alert nativo
+        let mensaje = `No puedes seleccionar esta materia porque:\n\n`;
+        
+        if (elegibilidad.requisitosFaltantes && elegibilidad.requisitosFaltantes.length > 0) {
+            mensaje += `Faltan las siguientes previas:\n`;
+            elegibilidad.requisitosFaltantes.forEach(req => {
+                mensaje += `• ${req.materia} (${req.codigo}) - ${req.tipoDescripcion}\n`;
+            });
+        } else {
+            mensaje += elegibilidad.causa || 'No cumple con los requisitos previos';
+        }
+        
+        alert(mensaje);
+    }
+}
+
+// Función para toggle de materia cursada (optimizada)
+async function toggleMateriaCursada(materiaId) {
     console.log('Toggle materia:', materiaId);
     console.log('Estado actual:', materiasCursadas.has(materiaId));
     
     if (materiasCursadas.has(materiaId)) {
+        // Si ya está cursada, simplemente la removemos
         materiasCursadas.delete(materiaId);
         console.log('Materia removida de cursadas');
+        
+        // Actualizar elegibilidad después de remover (con debounce)
+        actualizarElegibilidadDebounced();
     } else {
+        // Verificar si la materia es elegible usando el caché
+        const elegibilidadCache = materiasElegibilidad.get(materiaId);
+        
+        if (elegibilidadCache && !elegibilidadCache.elegible) {
+            // Mostrar mensaje de error usando la información en caché (instantáneo)
+            await mostrarErrorPrevias(elegibilidadCache.elegibilidad);
+            return; // No agregar la materia
+        }
+        
+        // Si no está en caché, mostrar mensaje de que se está verificando
+        if (!elegibilidadCache) {
+            console.log('Verificando previas para materia:', materiaId);
+            
+            // Mostrar indicador de carga para esta materia específica
+            const materiaElement = document.querySelector(`[data-materia-id="${materiaId}"]`);
+            if (materiaElement) {
+                const originalContent = materiaElement.innerHTML;
+                materiaElement.innerHTML = `
+                    <div class="flex items-center space-x-4 p-4 rounded-xl border-2 border-blue-200 bg-blue-50">
+                        <div class="w-6 h-6 rounded-lg border-2 border-blue-300 flex items-center justify-center">
+                            <i class="fas fa-spinner fa-spin text-blue-600 text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-sm font-mono text-blue-600 bg-blue-100 px-2 py-1 rounded">Verificando...</span>
+                            </div>
+                            <h4 class="font-medium text-gray-900 mb-1">Verificando elegibilidad...</h4>
+                        </div>
+                    </div>
+                `;
+                
+                // Restaurar contenido original después de un tiempo
+                setTimeout(() => {
+                    materiaElement.innerHTML = originalContent;
+                }, 2000);
+            }
+            
+            const elegibilidad = await verificarPreviasMateria(materiaId);
+            
+            if (!elegibilidad.elegible) {
+                await mostrarErrorPrevias(elegibilidad);
+                return; // No agregar la materia
+            }
+        }
+        
+        // Si es elegible, agregarla
         materiasCursadas.add(materiaId);
         console.log('Materia agregada a cursadas');
+        
+        // Actualizar elegibilidad después de agregar (con debounce)
+        actualizarElegibilidadDebounced();
     }
-    
-    console.log('Total materias cursadas:', materiasCursadas.size);
-    
-    renderizarMateriasCursadas();
-    actualizarEstadisticas();
 }
 
 // Función para cambiar el tipo de aprobación de una materia
@@ -68,6 +383,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await cargarMaterias();
     await cargarMateriasCursadas();
     await cargarEstadosMaterias();
+    await precargarElegibilidadMaterias();
     asignarEventosBotones();
 });
 
@@ -364,9 +680,28 @@ function renderizarMateriasCursadas() {
                                 const estadoColor = estado ? getEstadoColor(estado.estado) : '#6b7280';
                                 const isChecked = materiasCursadas.has(materia._id);
                                 
+                                // Verificar elegibilidad
+                                const elegibilidad = materiasElegibilidad.get(materia._id);
+                                const esElegible = elegibilidad ? elegibilidad.elegible : true; // Por defecto elegible si no se ha verificado
+                                const tienePreviasFaltantes = elegibilidad && !elegibilidad.elegible && elegibilidad.elegibilidad && elegibilidad.elegibilidad.requisitosFaltantes;
+                                
+                                // Clases CSS basadas en elegibilidad
+                                let containerClasses = 'checkbox-container flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-300';
+                                let cursorClass = 'cursor-pointer hover:shadow-md';
+                                
+                                if (isChecked) {
+                                    containerClasses += ' border-green-300 bg-green-50';
+                                } else if (!esElegible) {
+                                    containerClasses += ' border-red-200 bg-red-50 opacity-60';
+                                    cursorClass = 'cursor-not-allowed';
+                                } else {
+                                    containerClasses += ' border-gray-200 hover:border-blue-300';
+                                }
+                                
                                 return `
-                                <div class="checkbox-container flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-md ${isChecked ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:border-blue-300'}" 
-                                     data-materia-id="${materia._id}">
+                                <div class="${containerClasses} ${cursorClass}" 
+                                     data-materia-id="${materia._id}"
+                                     ${!esElegible ? 'title="No puedes seleccionar esta materia - faltan previas"' : ''}>
                                     <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${isChecked ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-blue-500'}">
                                         ${isChecked ? '<i class="fas fa-check text-white text-sm"></i>' : ''}
                                     </div>
@@ -379,6 +714,12 @@ function renderizarMateriasCursadas() {
                                         <div class="flex items-center space-x-2 text-xs">
                                             <div class="w-2 h-2 rounded-full" style="background-color: ${estadoColor}"></div>
                                             <span style="color: ${estadoColor}">${estadoTexto}</span>
+                                            ${!esElegible && tienePreviasFaltantes ? `
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    Faltan ${tienePreviasFaltantes.length} previa${tienePreviasFaltantes.length > 1 ? 's' : ''}
+                                                </span>
+                                            ` : ''}
                                         </div>
                                         ${isChecked ? `
                                             <div class="mt-3 space-y-3">
@@ -502,6 +843,15 @@ function asignarEventosCheckboxes() {
         newCheckbox.addEventListener('click', function(e) {
             // No procesar clicks en los radio buttons
             if (e.target.type === 'radio' || e.target.closest('.materia-tipo-aprobacion')) {
+                return;
+            }
+            
+            // Verificar si la materia es elegible antes de procesar el click
+            const elegibilidad = materiasElegibilidad.get(materiaId);
+            if (elegibilidad && !elegibilidad.elegible) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🚫 Click bloqueado en materia no elegible:', materiaId);
                 return;
             }
             

@@ -264,6 +264,21 @@ function mostrarMaterias(materias) {
                 ${materia.semestre?.nombre || 'Sin semestre'}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <div class="space-y-1">
+                    ${materia.horarios && materia.horarios.length > 0 
+                        ? materia.horarios.map(horario => `
+                            <div class="flex items-center space-x-2 text-xs">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800 font-medium">
+                                    ${horario.dia.charAt(0).toUpperCase() + horario.dia.slice(1)}
+                                </span>
+                                <span class="text-slate-600">${horario.horaInicio} - ${horario.horaFin}</span>
+                            </div>
+                        `).join('')
+                        : '<span class="text-slate-400 italic">Sin horarios</span>'
+                    }
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                 <div class="flex items-center">
                     <span class="text-slate-600">${materia.cupoDisponible || 0}/${materia.cupoMaximo || 50}</span>
                     <div class="ml-2 w-16 bg-slate-200 rounded-full h-2">
@@ -637,10 +652,18 @@ function configurarFormulario() {
     const form = document.getElementById('materia-form');
     if (!form) return;
     
+    // Configurar botón de agregar horario
+    const btnAgregarHorario = document.getElementById('btn-agregar-horario');
+    if (btnAgregarHorario) {
+        btnAgregarHorario.addEventListener('click', agregarHorario);
+    }
+    
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(form);
+        const horarios = obtenerHorariosDelFormulario();
+        
         const materiaData = {
             nombre: formData.get('nombre'),
             codigo: formData.get('codigo'),
@@ -648,7 +671,8 @@ function configurarFormulario() {
             semestre: formData.get('semestre'),
             descripcion: formData.get('descripcion'),
             cupoMaximo: parseInt(formData.get('cupoMaximo')),
-            activa: formData.get('activa') === 'true'
+            activa: formData.get('activa') === 'true',
+            horarios: horarios
         };
         
         const materiaId = form.dataset.materiaId;
@@ -712,6 +736,10 @@ function mostrarFormularioCrear() {
         materiaForm.reset();
         delete materiaForm.dataset.materiaId; // Limpiar ID de edición
     }
+    
+    // Limpiar horarios
+    cargarHorariosEnFormulario([]);
+    
     if (materiaModal) materiaModal.classList.remove('hidden');
 }
 
@@ -742,6 +770,9 @@ async function editarMateria(id) {
             if (materiaDescripcion) materiaDescripcion.value = materia.descripcion || '';
             if (materiaCupoMaximo) materiaCupoMaximo.value = materia.cupoMaximo || 50;
             if (materiaActiva) materiaActiva.value = materia.activa.toString();
+            
+            // Cargar horarios existentes
+            cargarHorariosEnFormulario(materia.horarios || []);
             
             // Mostrar modal
             if (materiaModal) materiaModal.classList.remove('hidden');
@@ -921,7 +952,7 @@ function mostrarError(titulo, mensaje) {
     
     tbody.innerHTML = `
         <tr>
-            <td colspan="7" class="px-6 py-12 text-center">
+            <td colspan="8" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center">
                     <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
                     <p class="text-red-500">${titulo}</p>
@@ -930,4 +961,148 @@ function mostrarError(titulo, mensaje) {
             </td>
         </tr>
     `;
+}
+
+// ===== FUNCIONES PARA MANEJAR HORARIOS =====
+
+let contadorHorarios = 0;
+
+function agregarHorario() {
+    contadorHorarios++;
+    
+    const horariosContainer = document.getElementById('horarios-container');
+    const sinHorarios = document.getElementById('sin-horarios');
+    
+    if (!horariosContainer) return;
+    
+    // Ocultar mensaje de sin horarios
+    if (sinHorarios) {
+        sinHorarios.classList.add('hidden');
+    }
+    
+    const horarioElement = document.createElement('div');
+    horarioElement.className = 'horario-item bg-gray-50 border border-gray-200 rounded-xl p-4';
+    horarioElement.dataset.horarioId = contadorHorarios;
+    
+    horarioElement.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <h5 class="text-sm font-semibold text-gray-700 flex items-center">
+                <i class="fas fa-clock mr-2 text-emerald-500"></i>
+                Horario ${contadorHorarios}
+            </h5>
+            <button type="button" class="btn-eliminar-horario text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors" data-horario-id="${contadorHorarios}">
+                <i class="fas fa-trash text-sm"></i>
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Día *</label>
+                <select name="horario-dia-${contadorHorarios}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-sm">
+                    <option value="">Seleccionar día</option>
+                    <option value="lunes">Lunes</option>
+                    <option value="martes">Martes</option>
+                    <option value="miércoles">Miércoles</option>
+                    <option value="jueves">Jueves</option>
+                    <option value="viernes">Viernes</option>
+                    <option value="sábado">Sábado</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Hora Inicio *</label>
+                <input type="time" name="horario-hora-inicio-${contadorHorarios}" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-sm">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Hora Fin *</label>
+                <input type="time" name="horario-hora-fin-${contadorHorarios}" required 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-sm">
+            </div>
+        </div>
+    `;
+    
+    horariosContainer.appendChild(horarioElement);
+    
+    // Agregar event listener para el botón de eliminar
+    const btnEliminar = horarioElement.querySelector('.btn-eliminar-horario');
+    if (btnEliminar) {
+        btnEliminar.addEventListener('click', () => {
+            eliminarHorario(contadorHorarios);
+        });
+    }
+}
+
+function eliminarHorario(horarioId) {
+    const horarioElement = document.querySelector(`[data-horario-id="${horarioId}"]`);
+    if (horarioElement) {
+        horarioElement.remove();
+        
+        // Mostrar mensaje de sin horarios si no quedan horarios
+        const horariosContainer = document.getElementById('horarios-container');
+        const sinHorarios = document.getElementById('sin-horarios');
+        
+        if (horariosContainer && horariosContainer.children.length === 0 && sinHorarios) {
+            sinHorarios.classList.remove('hidden');
+        }
+    }
+}
+
+function obtenerHorariosDelFormulario() {
+    const horarios = [];
+    const horariosElements = document.querySelectorAll('.horario-item');
+    
+    horariosElements.forEach(element => {
+        const horarioId = element.dataset.horarioId;
+        
+        const dia = element.querySelector(`[name="horario-dia-${horarioId}"]`)?.value;
+        const horaInicio = element.querySelector(`[name="horario-hora-inicio-${horarioId}"]`)?.value;
+        const horaFin = element.querySelector(`[name="horario-hora-fin-${horarioId}"]`)?.value;
+        
+        if (dia && horaInicio && horaFin) {
+            horarios.push({
+                dia: dia,
+                horaInicio: horaInicio,
+                horaFin: horaFin
+            });
+        }
+    });
+    
+    return horarios;
+}
+
+function cargarHorariosEnFormulario(horarios) {
+    const horariosContainer = document.getElementById('horarios-container');
+    const sinHorarios = document.getElementById('sin-horarios');
+    
+    if (!horariosContainer) return;
+    
+    // Limpiar horarios existentes
+    horariosContainer.innerHTML = '';
+    
+    if (horarios && horarios.length > 0) {
+        // Ocultar mensaje de sin horarios
+        if (sinHorarios) {
+            sinHorarios.classList.add('hidden');
+        }
+        
+        // Cargar cada horario
+        horarios.forEach((horario, index) => {
+            contadorHorarios = index + 1;
+            agregarHorario();
+            
+            const horarioElement = document.querySelector(`[data-horario-id="${contadorHorarios}"]`);
+            if (horarioElement) {
+                horarioElement.querySelector(`[name="horario-dia-${contadorHorarios}"]`).value = horario.dia;
+                horarioElement.querySelector(`[name="horario-hora-inicio-${contadorHorarios}"]`).value = horario.horaInicio;
+                horarioElement.querySelector(`[name="horario-hora-fin-${contadorHorarios}"]`).value = horario.horaFin;
+            }
+        });
+    } else {
+        // Mostrar mensaje de sin horarios
+        if (sinHorarios) {
+            sinHorarios.classList.remove('hidden');
+        }
+    }
 }
