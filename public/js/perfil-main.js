@@ -59,6 +59,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelPasswordBtn = document.getElementById('cancel-password-btn');
     const passwordForm = document.getElementById('password-form');
     const newPasswordInput = document.getElementById('new-password');
+    
+    // Debug logs
+    console.log('🔍 Elementos encontrados:');
+    console.log('🔑 changePasswordBtn:', changePasswordBtn);
+    console.log('🔑 cancelPasswordBtn:', cancelPasswordBtn);
+    console.log('🔑 passwordForm:', passwordForm);
+    console.log('🔑 newPasswordInput:', newPasswordInput);
 
     // Obtener references to all forms
     const profileFormElement = document.getElementById('profile-form');
@@ -153,20 +160,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cambiar contraseña /password change
     if (changePasswordBtn) {
+        console.log('🔑 Botón de cambiar contraseña encontrado');
         changePasswordBtn.addEventListener('click', function() {
+            console.log('🔑 Botón de cambiar contraseña clickeado');
             if (passwordForm) {
-                if (passwordForm.style.display === 'none' || passwordForm.style.display === '') {
-                    passwordForm.style.display = 'block';
+                console.log('🔑 Formulario de contraseña encontrado');
+                if (passwordForm.classList.contains('hidden')) {
+                    console.log('🔑 Mostrando formulario de contraseña');
+                    passwordForm.classList.remove('hidden');
                     passwordForm.classList.add('form-slide-down');
                 } else {
+                    console.log('🔑 Ocultando formulario de contraseña');
                     passwordForm.classList.add('form-slide-up');
                     setTimeout(() => {
-                        passwordForm.style.display = 'none';
+                        passwordForm.classList.add('hidden');
                         passwordForm.classList.remove('form-slide-up');
                     }, 300);
                 }
+            } else {
+                console.log('❌ Formulario de contraseña no encontrado');
             }
         });
+    } else {
+        console.log('❌ Botón de cambiar contraseña no encontrado');
     }
 
     // Cancelar cambio de contraseña
@@ -175,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (passwordForm) {
                 passwordForm.classList.add('form-slide-up');
                 setTimeout(() => {
-                    passwordForm.style.display = 'none';
+                    passwordForm.classList.add('hidden');
                     passwordForm.classList.remove('form-slide-up');
                     const passwordFormElement = document.getElementById('password-form');
                     if (passwordFormElement) passwordFormElement.reset();
@@ -336,7 +352,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ currentPassword, newPassword })
+                    body: JSON.stringify({ 
+                        passwordActual: currentPassword, 
+                        passwordNueva: newPassword 
+                    })
                 });
                 
                 const result = await response.json();

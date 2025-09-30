@@ -45,19 +45,30 @@ document.addEventListener('click', function(e) {
 
 // Función para alternar visibilidad de contraseña
 function togglePassword(inputId) {
+    console.log('👁️ togglePassword llamado para:', inputId);
     const input = document.getElementById(inputId);
-    const icon = input.nextElementSibling.querySelector('i');
+    
+    console.log('👁️ Input encontrado:', input);
     
     if (input.type === 'password') {
+        console.log('👁️ Cambiando a texto visible');
         input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
     } else {
+        console.log('👁️ Cambiando a contraseña oculta');
         input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
     }
 }
+
+// Event listeners para botones de toggle password
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-password-btn');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            togglePassword(targetId);
+        });
+    });
+});
 
 // Función para validar contraseña
 function validatePassword(password) {

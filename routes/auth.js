@@ -113,6 +113,8 @@ const validacionesCambioPassword = [
 const manejarErroresValidacion = (req, res, next) => {
   const errores = validationResult(req);
   if (!errores.isEmpty()) {
+    console.log('❌ Errores de validación:', errores.array());
+    console.log('❌ Body recibido:', req.body);
     return res.status(400).json({
       error: 'Datos de entrada inválidos',
       detalles: errores.array()
@@ -624,12 +626,13 @@ router.post('/actualizar-perfil',
 
 // POST /auth/cambiar-password - Cambiar contraseña
 router.post('/cambiar-password', 
+  checkSession,
   validacionesCambioPassword,
   manejarErroresValidacion,
   async (req, res) => {
     try {
-      // Verificar sesión
-      if (!req.session || !req.session.userId) {
+      // Verificar autenticación
+      if (!req.isAuthenticated || !req.usuario) {
         return res.status(401).json({
           error: 'Debes iniciar sesión para cambiar tu contraseña'
         });
@@ -637,8 +640,16 @@ router.post('/cambiar-password',
 
       const { passwordActual, passwordNueva } = req.body;
       
+      console.log('🔑 Cambio de contraseña - Datos recibidos:', {
+        userId: req.usuario._id,
+        hasPasswordActual: !!passwordActual,
+        hasPasswordNueva: !!passwordNueva,
+        passwordActualLength: passwordActual ? passwordActual.length : 0,
+        passwordNuevaLength: passwordNueva ? passwordNueva.length : 0
+      });
+      
       await AuthService.cambiarPassword(
-        req.session.userId,
+        req.usuario._id,
         passwordActual,
         passwordNueva
       );
