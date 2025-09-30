@@ -7,52 +7,129 @@
     
     <!-- Tailwind CSS Local -->
     <link rel="stylesheet" href="/css/tailwind.css">
-    <!-- Admin CSS Personalizado -->
-    <link rel="stylesheet" href="/css/admin.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
 </head>
-<body class="bg-utec-light font-inter">
+
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter">
     <!-- Navigation -->
-    <nav class="admin-nav">
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <div class="nav-brand">
-                    <div class="brand-icon">
-                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+            <div class="flex justify-between items-center h-16 md:h-20">
+                <!-- Logo -->
+                <a href="/admin" class="flex items-center space-x-2 md:space-x-3 hover:opacity-80 transition-opacity duration-200">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-shield-alt text-white text-lg md:text-xl"></i>
                     </div>
-                    <div class="brand-text">
-                        <h1>Panel Admin</h1>
-                        <p>MATRICULATEC</p>
+                    <div class="hidden sm:block">
+                        <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                            Panel Admin
+                        </h1>
+                        <p class="text-xs md:text-sm text-gray-600 font-medium">MATRICULATEC</p>
+                    </div>
+                    <div class="block sm:hidden">
+                        <h1 class="text-lg font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                            Admin
+                        </h1>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden lg:flex items-center space-x-6">
+                    <!-- Connection Status -->
+                    <div class="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse" id="status-indicator"></div>
+                        <span class="text-sm font-medium text-gray-700" id="status-text">Conectado</span>
+                    </div>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-gray-900"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                            <p class="text-xs text-gray-500">Administrador</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex items-center space-x-2">
+                        <a href="/admin/perfil" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200" title="Mi Perfil">
+                            <i class="fas fa-user-cog text-lg"></i>
+                        </a>
+                        <a href="/auth/logout" class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200" title="Cerrar Sesión">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="nav-user">
-                    <div class="user-info">
-                        <p class="user-name"><%= usuario.nombre %> <%= usuario.apellido %></p>
-                        <p class="user-role">Administrador</p>
+
+                <!-- Mobile Menu Button -->
+                <div class="lg:hidden flex items-center space-x-3">
+                    <!-- Connection Status (Mobile) -->
+                    <div class="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse" id="status-indicator-mobile"></div>
+                        <span class="text-xs font-medium text-gray-700" id="status-text-mobile">Online</span>
                     </div>
-                    <div class="nav-actions">
-                        <div class="connection-status" id="connection-status">
-                            <div class="status-indicator" id="status-indicator"></div>
-                            <span id="status-text">Conectando...</span>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-button" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="lg:hidden hidden bg-white border-t border-gray-200 shadow-lg">
+                <div class="px-4 py-6 space-y-4">
+                    <!-- User Profile (Mobile) -->
+                    <div class="flex items-center space-x-3 pb-4 border-b border-gray-200">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
                         </div>
-                        <a href="/admin" class="active">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                            <p class="text-xs text-gray-500">Administrador</p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="space-y-2">
+                        <a href="/admin/usuarios" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-users text-lg"></i>
+                            <span>Gestión de Usuarios</span>
                         </a>
-                        <a href="/admin/perfil">
-                            <i class="fas fa-user-cog"></i>
+                        <a href="/admin/materias" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-book text-lg"></i>
+                            <span>Gestión de Materias</span>
+                        </a>
+                        <a href="/admin/previas" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-link text-lg"></i>
+                            <span>Gestión de Previas</span>
+                        </a>
+                        <a href="/admin/semestres" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-university text-lg"></i>
+                            <span>Gestión de Semestres</span>
+                        </a>
+                    </div>
+
+                    <!-- Quick Actions (Mobile) -->
+                    <div class="pt-4 border-t border-gray-200 space-y-2">
+                        <a href="/admin/perfil" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-user-cog text-lg"></i>
                             <span>Mi Perfil</span>
                         </a>
-                        <a href="/auth/logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Salir</span>
+                        <a href="/auth/logout" class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                            <span>Cerrar Sesión</span>
                         </a>
                     </div>
                 </div>
@@ -61,299 +138,391 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <div class="welcome-section">
-                <div class="welcome-content">
-                    <h1 class="welcome-title">
-                        ¡Bienvenido, <%= usuario.nombre %>! 👋
-                    </h1>
-                    <p class="welcome-subtitle">
-                        Gestiona el sistema académico con herramientas profesionales
-                    </p>
-                    <div class="welcome-info">
-                        <div class="welcome-info-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span id="current-date"></span>
+    <div class="pt-20 md:pt-24 px-4 sm:px-6 lg:px-8 pb-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Welcome Section -->
+            <div class="mb-12" data-aos="fade-down">
+                <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-8 text-white shadow-2xl">
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="text-4xl lg:text-5xl font-bold mb-4">
+                                    ¡Bienvenido, <%= usuario.nombre %>! 👋
+                                </h1>
+                                <p class="text-xl text-blue-100 mb-6">
+                                    Gestiona el sistema académico con herramientas profesionales
+                                </p>
+                                <div class="flex items-center space-x-6">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-calendar-alt text-blue-200"></i>
+                                        <span id="current-date" class="font-medium"></span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-clock text-blue-200"></i>
+                                        <span id="current-time" class="font-medium"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden lg:block">
+                                <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-6xl text-white/80"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="welcome-info-item">
-                            <i class="fas fa-clock"></i>
-                            <span id="current-time"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" data-aos="fade-up">
+                <!-- Total Usuarios -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="total-usuarios">
+                                    <span class="animate-pulse">-</span>
+                                </p>
+                                <p class="text-sm text-gray-500 font-medium">usuarios</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Total Usuarios</h3>
+                        <p class="text-sm text-gray-600 mb-3">Estudiantes y administradores</p>
+                        <div class="flex items-center text-sm text-green-600 font-semibold">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            <span>+12% este mes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Materias -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-book text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="total-materias">
+                                    <span class="animate-pulse">-</span>
+                                </p>
+                                <p class="text-sm text-gray-500 font-medium">materias</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Total Materias</h3>
+                        <p class="text-sm text-gray-600">Catálogo académico</p>
+                    </div>
+                </div>
+
+                <!-- Total Previas -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-link text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="total-previas">
+                                    <span class="animate-pulse">-</span>
+                                </p>
+                                <p class="text-sm text-gray-500 font-medium">previas</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Total Previas</h3>
+                        <p class="text-sm text-gray-600">Requisitos académicos</p>
+                    </div>
+                </div>
+
+                <!-- Usuarios Activos -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-user-check text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="usuarios-activos">
+                                    <span class="animate-pulse">-</span>
+                                </p>
+                                <p class="text-sm text-gray-500 font-medium">activos</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Usuarios Activos</h3>
+                        <p class="text-sm text-gray-600 mb-3">En línea ahora</p>
+                        <div class="flex items-center text-sm text-emerald-600 font-semibold">
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
+                            <span>En tiempo real</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Total Usuarios -->
-            <div class="stat-card indigo">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon indigo">
-                        <i class="fas fa-users text-white text-xl"></i>
+            <!-- Charts and Analytics -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12" data-aos="fade-up" data-aos-delay="200">
+                <!-- Chart 1: Usuarios por Rol -->
+                <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900">Distribución de Usuarios</h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600">Por rol</span>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="total-usuarios">
-                            <span class="animate-pulse">-</span>
-                        </p>
-                        <p class="stat-label">usuarios</p>
+                    <div class="h-64">
+                        <canvas id="usersChart"></canvas>
                     </div>
                 </div>
-                <h3 class="stat-title">Total Usuarios</h3>
-                <p class="stat-description">Estudiantes y administradores</p>
-                <div class="stat-trend positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+12% este mes</span>
+
+            </div>
+
+            <!-- Management Sections -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" data-aos="fade-up" data-aos-delay="400">
+                <!-- Gestión de Usuarios -->
+                <a href="/admin/usuarios" class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Usuarios</h3>
+                                <p class="text-sm text-gray-600">Gestiona usuarios</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-indigo-600 font-semibold group-hover:text-indigo-700">
+                            <span class="mr-2">Ver todos</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Gestión de Materias -->
+                <a href="/admin/materias" class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-book text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Materias</h3>
+                                <p class="text-sm text-gray-600">Administra el catálogo</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-emerald-600 font-semibold group-hover:text-emerald-700">
+                            <span class="mr-2">Ver todas</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Gestión de Previas -->
+                <a href="/admin/previas" class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-link text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Previas</h3>
+                                <p class="text-sm text-gray-600">Configura requisitos</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-amber-600 font-semibold group-hover:text-amber-700">
+                            <span class="mr-2">Ver todas</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Gestión de Semestres -->
+                <a href="/admin/semestres" class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-university text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Semestres</h3>
+                                <p class="text-sm text-gray-600">Administra semestres</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-violet-600 font-semibold group-hover:text-violet-700">
+                            <span class="mr-2">Ver todos</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8" data-aos="fade-up" data-aos-delay="600">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-clock text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Actividad Reciente</h3>
+                            <p class="text-sm text-gray-600">Últimas acciones en el sistema</p>
+                        </div>
+                    </div>
+                    <button class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2" onclick="cargarActividadReciente()">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+                <div id="actividad-reciente" class="space-y-6">
+                    <div class="group relative overflow-hidden bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-6 border border-indigo-200 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <i class="fas fa-user-plus text-white text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-lg font-bold text-gray-900">Nuevo usuario registrado</h4>
+                                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-bold rounded-full">Nuevo</span>
+                                </div>
+                                <p class="text-gray-700 mb-2">Juan Pérez se registró en el sistema</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    <span>Hace 2 horas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group relative overflow-hidden bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <i class="fas fa-book text-white text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-lg font-bold text-gray-900">Nueva materia creada</h4>
+                                    <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Materia</span>
+                                </div>
+                                <p class="text-gray-700 mb-2">Programación Avanzada fue agregada al catálogo</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    <span>Hace 4 horas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group relative overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <i class="fas fa-link text-white text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-lg font-bold text-gray-900">Nueva previa configurada</h4>
+                                    <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">Previa</span>
+                                </div>
+                                <p class="text-gray-700 mb-2">Base de Datos requiere Programación I como prerrequisito</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    <span>Hace 6 horas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Total Materias -->
-            <div class="stat-card emerald">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon emerald">
-                        <i class="fas fa-book text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="total-materias">
-                            <span class="animate-pulse">-</span>
-                        </p>
-                        <p class="stat-label">materias</p>
-                    </div>
-                </div>
-                <h3 class="stat-title">Total Materias</h3>
-                <p class="stat-description">Catálogo académico</p>
-                <div class="stat-trend positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+5 nuevas</span>
-                </div>
-            </div>
-
-            <!-- Total Previas -->
-            <div class="stat-card amber">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon amber">
-                        <i class="fas fa-link text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="total-previas">
-                            <span class="animate-pulse">-</span>
-                        </p>
-                        <p class="stat-label">previas</p>
-                    </div>
-                </div>
-                <h3 class="stat-title">Total Previas</h3>
-                <p class="stat-description">Requisitos académicos</p>
-                <div class="stat-trend positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+3 nuevas</span>
-                </div>
-            </div>
-
-            <!-- Usuarios Activos -->
-            <div class="stat-card violet">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon violet">
-                        <i class="fas fa-user-check text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="usuarios-activos">
-                            <span class="animate-pulse">-</span>
-                        </p>
-                        <p class="stat-label">activos</p>
-                    </div>
-                </div>
-                <h3 class="stat-title">Usuarios Activos</h3>
-                <p class="stat-description">En línea ahora</p>
-                <div class="stat-trend live">
-                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span>En tiempo real</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts and Analytics -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <!-- Chart 1: Usuarios por Rol -->
-            <div class="card-utec">
+            <!-- Últimos Accesos de Usuarios -->
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-200" data-aos="fade-up" data-aos-delay="800">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-2xl font-bold text-slate-800">Distribución de Usuarios</h3>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 bg-emerald-600 rounded-full"></div>
-                        <span class="text-sm text-slate-600">Por rol</span>
-                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-user-clock mr-3 text-purple-600"></i>
+                        Últimos Accesos
+                    </h3>
+                    <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-colors duration-200" onclick="cargarUltimosAccesos()">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Actualizar
+                    </button>
                 </div>
-                <div class="h-64">
-                    <canvas id="usersChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Chart 2: Actividad Mensual -->
-            <div class="card-utec">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-2xl font-bold text-slate-800">Actividad Mensual</h3>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 bg-emerald-600 rounded-full"></div>
-                        <span class="text-sm text-slate-600">Últimos 6 meses</span>
+                <div id="ultimos-accesos">
+                    <div class="text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <p class="text-gray-500">Cargando últimos accesos...</p>
                     </div>
-                </div>
-                <div class="h-64">
-                    <canvas id="actividadMensualChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Management Sections -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Gestión de Usuarios -->
-            <div class="management-section indigo">
-                <div class="management-header">
-                    <div class="management-icon indigo">
-                        <i class="fas fa-users text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="management-title">Usuarios</h3>
-                        <p class="management-description">Gestiona usuarios</p>
-                    </div>
-                </div>
-                <div class="management-actions">
-                    <a href="/admin/usuarios" class="w-full btn-primary block text-center">
-                        <i class="fas fa-list"></i>
-                        Ver Todos los Usuarios
-                    </a>
-                </div>
-            </div>
-
-            <!-- Gestión de Materias -->
-            <div class="management-section emerald">
-                <div class="management-header">
-                    <div class="management-icon emerald">
-                        <i class="fas fa-book text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="management-title">Materias</h3>
-                        <p class="management-description">Administra el catálogo de materias</p>
-                    </div>
-                </div>
-                <div class="management-actions">
-                    <a href="/admin/materias" class="w-full btn-primary block text-center">
-                        <i class="fas fa-list"></i>
-                        Ver Todas las Materias
-                    </a>
-                </div>
-            </div>
-
-            <!-- Gestión de Previas -->
-            <div class="management-section amber">
-                <div class="management-header">
-                    <div class="management-icon amber">
-                        <i class="fas fa-link text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="management-title">Previas</h3>
-                        <p class="management-description">Configura requisitos de materias</p>
-                    </div>
-                </div>
-                <div class="management-actions">
-                    <a href="/admin/previas" class="w-full btn-primary block text-center">
-                        <i class="fas fa-list"></i>
-                        Ver Todas las Previas
-                    </a>
-                </div>
-            </div>
-
-            <!-- Gestión de Semestres -->
-            <div class="management-section violet">
-                <div class="management-header">
-                    <div class="management-icon violet">
-                        <i class="fas fa-university text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="management-title">Semestres</h3>
-                        <p class="management-description">Administra semestres académicos</p>
-                    </div>
-                </div>
-                <div class="management-actions">
-                    <a href="/admin/semestres" class="w-full btn-primary block text-center">
-                        <i class="fas fa-list"></i>
-                        Ver Todos los Semestres
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="card-utec">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold text-slate-800">
-                    <i class="fas fa-clock mr-3"></i>
-                    Actividad Reciente
-                </h3>
-                <button class="btn-secondary" onclick="cargarActividadReciente()">
-                    <i class="fas fa-sync-alt"></i>
-                    Actualizar
-                </button>
-            </div>
-            <div id="actividad-reciente">
-                <div class="activity-item indigo">
-                    <div class="activity-icon indigo">
-                        <i class="fas fa-user-plus text-white"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p class="activity-title">Nuevo usuario registrado</p>
-                        <p class="activity-description">Juan Pérez se registró en el sistema</p>
-                        <p class="activity-time">Hace 2 horas</p>
-                    </div>
-                    <span class="activity-badge indigo">Nuevo</span>
-                </div>
-                <div class="activity-item emerald">
-                    <div class="activity-icon emerald">
-                        <i class="fas fa-book text-white"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p class="activity-title">Nueva materia creada</p>
-                        <p class="activity-description">Programación Avanzada fue agregada</p>
-                        <p class="activity-time">Hace 4 horas</p>
-                    </div>
-                    <span class="activity-badge emerald">Materia</span>
-                </div>
-                <div class="activity-item amber">
-                    <div class="activity-icon amber">
-                        <i class="fas fa-link text-white"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p class="activity-title">Nueva previa configurada</p>
-                        <p class="activity-description">Base de Datos requiere Programación I</p>
-                        <p class="activity-time">Hace 6 horas</p>
-                    </div>
-                    <span class="activity-badge amber">Previa</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Últimos Accesos de Usuarios -->
-        <div class="card-utec">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold text-slate-800">
-                    <i class="fas fa-user-clock mr-3"></i>
-                    Últimos Accesos
-                </h3>
-                <button class="btn-secondary" onclick="cargarUltimosAccesos()">
-                    <i class="fas fa-sync-alt"></i>
-                    Actualizar
-                </button>
-            </div>
-            <div id="ultimos-accesos">
-                <div class="text-center py-8">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p class="text-slate-500">Cargando últimos accesos...</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- AOS Animation Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <!-- Custom JavaScript for Admin Dashboard -->
     <script src="/js/admin-dashboard.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const statusIndicatorMobile = document.getElementById('status-indicator-mobile');
+            const statusTextMobile = document.getElementById('status-text-mobile');
+
+            // Toggle mobile menu
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Change icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-lg';
+                    } else {
+                        icon.className = 'fas fa-times text-lg';
+                    }
+                });
+            }
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (mobileMenu && !mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.classList.add('hidden');
+                    const icon = mobileMenuButton.querySelector('i');
+                    icon.className = 'fas fa-bars text-lg';
+                }
+            });
+
+            // Sync status indicators
+            function updateStatusIndicators(className, text) {
+                if (statusIndicator) statusIndicator.className = `w-2 h-2 ${className} rounded-full animate-pulse`;
+                if (statusText) statusText.textContent = text;
+                if (statusIndicatorMobile) statusIndicatorMobile.className = `w-2 h-2 ${className} rounded-full animate-pulse`;
+                if (statusTextMobile) statusTextMobile.textContent = text;
+            }
+
+            // Make updateStatusIndicators available globally
+            window.updateStatusIndicators = updateStatusIndicators;
+        });
+    </script>
 </body>
 </html>

@@ -30,14 +30,14 @@
                 </a>
 
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
+                <div class="hidden lg:flex items-center space-x-8">
                     <a href="#inicio" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">Inicio</a>
                     <a href="#caracteristicas" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">Características</a>
                     <a href="#como-funciona" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">Cómo Funciona</a>
                 </div>
 
-                <!-- Auth Buttons -->
-                <div class="flex items-center space-x-4">
+                <!-- Desktop Auth Buttons -->
+                <div class="hidden lg:flex items-center space-x-4">
                     <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
                         <div class="relative group">
                             <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors duration-200">
@@ -76,10 +76,75 @@
                 </div>
 
                 <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button type="button" class="text-gray-600 hover:text-blue-600 focus:outline-none focus:text-blue-600">
+                <div class="lg:hidden">
+                    <button id="mobile-menu-button" type="button" class="text-gray-600 hover:text-blue-600 focus:outline-none focus:text-blue-600 p-2">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="lg:hidden hidden bg-white border-t border-gray-200 shadow-lg">
+                <div class="px-4 py-6 space-y-4">
+                    <!-- Navigation Links -->
+                    <div class="space-y-2">
+                        <a href="#inicio" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-home text-lg mr-3"></i>
+                            <span>Inicio</span>
+                        </a>
+                        <a href="#caracteristicas" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-star text-lg mr-3"></i>
+                            <span>Características</span>
+                        </a>
+                        <a href="#como-funciona" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-cogs text-lg mr-3"></i>
+                            <span>Cómo Funciona</span>
+                        </a>
+                    </div>
+
+                    <!-- Auth Section -->
+                    <div class="pt-4 border-t border-gray-200">
+                        <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                            <!-- User Profile (Mobile) -->
+                            <div class="flex items-center space-x-3 pb-4 mb-4 border-b border-gray-200">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900"><%= usuario.nombre %></p>
+                                    <p class="text-xs text-gray-500">Estudiante</p>
+                                </div>
+                            </div>
+                            
+                            <!-- User Actions (Mobile) -->
+                            <div class="space-y-2">
+                                <a href="/dashboard" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                                    <i class="fas fa-home text-lg mr-3"></i>
+                                    <span>Mi Dashboard</span>
+                                </a>
+                                <a href="/auth/perfil" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                                    <i class="fas fa-user-edit text-lg mr-3"></i>
+                                    <span>Mi Perfil</span>
+                                </a>
+                                <a href="/auth/logout" class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200">
+                                    <i class="fas fa-sign-out-alt text-lg mr-3"></i>
+                                    <span>Cerrar Sesión</span>
+                                </a>
+                            </div>
+                        <% } else { %>
+                            <!-- Guest Actions (Mobile) -->
+                            <div class="space-y-3">
+                                <a href="/auth/login" class="flex items-center justify-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                                    <i class="fas fa-sign-in-alt text-lg mr-3"></i>
+                                    <span>Iniciar Sesión</span>
+                                </a>
+                                <a href="/auth/registro" class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-800 transition-all duration-200">
+                                    <i class="fas fa-user-plus text-lg mr-3"></i>
+                                    <span>Registrarse</span>
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -538,6 +603,45 @@
             });
             observer.observe(statsSection);
         }
+
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Change icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-xl';
+                    } else {
+                        icon.className = 'fas fa-times text-xl';
+                    }
+                });
+
+                // Close mobile menu when clicking on a link
+                const mobileLinks = mobileMenu.querySelectorAll('a');
+                mobileLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenu.classList.add('hidden');
+                        const icon = mobileMenuButton.querySelector('i');
+                        icon.className = 'fas fa-bars text-xl';
+                    });
+                });
+
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = mobileMenuButton.querySelector('i');
+                        icon.className = 'fas fa-bars text-xl';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

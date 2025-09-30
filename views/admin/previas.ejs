@@ -7,59 +7,62 @@
     
     <!-- Tailwind CSS Local -->
     <link rel="stylesheet" href="/css/tailwind.css">
-    <!-- Admin CSS Personalizado -->
-    <link rel="stylesheet" href="/css/admin.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
-
-    <!-- CSS personalizado para previas -->
-    <link rel="stylesheet" href="/css/previas.css">
 </head>
-<body class="bg-utec-light font-inter">
+
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter">
     <!-- Navigation -->
-    <nav class="admin-nav">
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
-                <div class="nav-brand">
-                    <div class="brand-icon">
-                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                <!-- Logo -->
+                <a href="/admin" class="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-shield-alt text-white text-xl"></i>
                     </div>
-                    <div class="brand-text">
-                        <h1>Panel Admin</h1>
-                        <p>MATRICULATEC</p>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                            Panel Admin
+                        </h1>
+                        <p class="text-sm text-gray-600 font-medium">MATRICULATEC</p>
                     </div>
-                </div>
-                <div class="nav-user">
-                    <div class="user-info">
-                        <p class="user-name"><%= usuario.nombre %> <%= usuario.apellido %></p>
-                        <p class="user-role">Administrador</p>
-                    </div>
-                    <div class="nav-actions">
-                        <div class="connection-status" id="connection-status">
-                            <div class="status-indicator" id="status-indicator"></div>
-                            <span id="status-text">Conectando...</span>
+                </a>
+
+                <!-- User Info & Actions -->
+                <div class="flex items-center space-x-6">
+                    <!-- User Profile -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
                         </div>
-                        <a href="/admin">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-gray-900"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                            <p class="text-xs text-gray-500">Administrador</p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="flex items-center space-x-2">
+                        <a href="/admin" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200" title="Dashboard">
+                            <i class="fas fa-tachometer-alt text-lg"></i>
                         </a>
-                        <a href="/admin/usuarios">
-                            <i class="fas fa-users"></i>
-                            <span>Usuarios</span>
+                        <a href="/admin/usuarios" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200" title="Usuarios">
+                            <i class="fas fa-users text-lg"></i>
                         </a>
-                        <a href="/admin/materias">
-                            <i class="fas fa-book"></i>
-                            <span>Materias</span>
+                        <a href="/admin/materias" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200" title="Materias">
+                            <i class="fas fa-book text-lg"></i>
                         </a>
-                        <a href="/auth/logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Salir</span>
+                        <a href="/auth/logout" class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200" title="Cerrar Sesión">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
                         </a>
                     </div>
                 </div>
@@ -68,115 +71,136 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header Section -->
-        <div class="mb-8">
-            <div class="welcome-section">
-                <div class="welcome-content">
-                    <h1 class="welcome-title">
-                        <i class="fas fa-link mr-4"></i>
-                        Gestión de Previas
-                    </h1>
-                    <p class="welcome-subtitle">
-                        Administra los requisitos académicos y prerrequisitos de las materias
-                    </p>
-                    <div class="welcome-info">
-                        <div class="welcome-info-item">
-                            <i class="fas fa-link"></i>
-                            <span id="total-previas">0 materias con previas</span>
+    <div class="pt-24 px-4 sm:px-6 lg:px-8 pb-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-12" data-aos="fade-down">
+                <div class="relative overflow-hidden bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 rounded-3xl p-8 text-white shadow-2xl">
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="text-4xl lg:text-5xl font-bold mb-4 flex items-center">
+                                    <i class="fas fa-link mr-4 text-4xl"></i>
+                                    Gestión de Previas
+                                </h1>
+                                <p class="text-xl text-amber-100 mb-6">
+                                    Administra los requisitos académicos y prerrequisitos de las materias
+                                </p>
+                                <div class="flex items-center space-x-6">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-link text-amber-200"></i>
+                                        <span class="font-medium" id="total-previas">0 materias con previas</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden lg:block">
+                                <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-link text-6xl text-white/80"></i>
+                                </div>
+                            </div>
                         </div>
-
-
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <!-- Total Materias con Previas -->
-            <div class="stat-card amber">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon amber">
-                        <i class="fas fa-link text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="total-previas-count">0</p>
-                        <p class="stat-label">materias</p>
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-aos="fade-up">
+                <!-- Total Materias con Previas -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-link text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="total-previas-count">0</p>
+                                <p class="text-sm text-gray-500 font-medium">materias</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Materias con Previas</h3>
+                        <p class="text-sm text-gray-600">Total de materias que requieren previas</p>
                     </div>
                 </div>
-                <h3 class="stat-title">Materias con Previas</h3>
-                <p class="stat-description">Total de materias que requieren previas</p>
-            </div>
 
-            <!-- Materias con Previas Activas -->
-            <div class="stat-card emerald">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon emerald">
-                        <i class="fas fa-check-circle text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="previas-activas-count">0</p>
-                        <p class="stat-label">activas</p>
+                <!-- Materias con Previas Activas -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-check-circle text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="previas-activas-count">0</p>
+                                <p class="text-sm text-gray-500 font-medium">activas</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Materias Activas</h3>
+                        <p class="text-sm text-gray-600">Materias con previas vigentes</p>
                     </div>
                 </div>
-                <h3 class="stat-title">Materias Activas</h3>
-                <p class="stat-description">Materias con previas vigentes</p>
-            </div>
 
-            <!-- Previas por Curso -->
-            <div class="stat-card indigo">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon indigo">
-                        <i class="fas fa-graduation-cap text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="previas-curso-count">0</p>
-                        <p class="stat-label">requisitos</p>
+                <!-- Previas por Curso -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-graduation-cap text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="previas-curso-count">0</p>
+                                <p class="text-sm text-gray-500 font-medium">requisitos</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Requisitos por Curso</h3>
+                        <p class="text-sm text-gray-600">Total de previas tipo curso</p>
                     </div>
                 </div>
-                <h3 class="stat-title">Requisitos por Curso</h3>
-                <p class="stat-description">Total de previas tipo curso</p>
-            </div>
 
-            <!-- Previas por Examen -->
-            <div class="stat-card violet">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="stat-icon violet">
-                        <i class="fas fa-file-alt text-white text-xl"></i>
-                    </div>
-                    <div class="text-right">
-                        <p class="stat-number" id="previas-examen-count">0</p>
-                        <p class="stat-label">requisitos</p>
+                <!-- Previas por Examen -->
+                <div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-gray-900" id="previas-examen-count">0</p>
+                                <p class="text-sm text-gray-500 font-medium">requisitos</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Requisitos por Examen</h3>
+                        <p class="text-sm text-gray-600">Total de previas tipo examen</p>
                     </div>
                 </div>
-                <h3 class="stat-title">Requisitos por Examen</h3>
-                <p class="stat-description">Total de previas tipo examen</p>
             </div>
-        </div>
 
-        <!-- Filters and Search -->
-            <div class="card-utec mb-8">
-                <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <!-- Filters and Search -->
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex flex-col lg:flex-row gap-6 items-center justify-between">
                     <div class="flex flex-col sm:flex-row gap-4 flex-1">
                         <!-- Search -->
                         <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-slate-400"></i>
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
                             </div>
                             <input type="text" id="search-previas" placeholder="Buscar por materia, código o previa requerida..." 
-                                   class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                                   class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                         </div>
                         
                         <!-- Filter by Type -->
-                        <select id="filter-tipo" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <select id="filter-tipo" class="px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                             <option value="">Todos los tipos</option>
                             <option value="curso_aprobado">Curso Aprobado</option>
                             <option value="examen_aprobado">Examen Aprobado</option>
                         </select>
                         
                         <!-- Filter by Status -->
-                        <select id="filter-estado" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <select id="filter-estado" class="px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                             <option value="">Todos los estados</option>
                             <option value="true">Solo activas</option>
                             <option value="false">Solo inactivas</option>
@@ -185,166 +209,212 @@
                     
                     <!-- Actions -->
                     <div class="flex gap-3">
-                        <button id="limpiar-filtros" class="btn-secondary">
+                        <button id="limpiar-filtros" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors duration-200 flex items-center space-x-2">
                             <i class="fas fa-times"></i>
-                            Limpiar
+                            <span>Limpiar</span>
                         </button>
-                        <button class="btn-nueva-previa btn-success">
-                            <i class="fas fa-plus mr-2"></i>
-                            Nueva Previa
+                        <button class="btn-nueva-previa px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Nueva Previa</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-        <!-- Previas Table -->
-        <div class="card-utec">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 previas-table">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-book mr-2"></i>
-                                    <span>Materia</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-link mr-2"></i>
-                                    <span>Previas Requeridas</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-tag mr-2"></i>
-                                    <span>Tipos</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-toggle-on mr-2"></i>
-                                    <span>Estado</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-alt mr-2"></i>
-                                    <span>Semestre</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-cog mr-2"></i>
-                                    <span>Acciones</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="previas-tbody" class="bg-white divide-y divide-slate-200">
-                        <!-- Loading state -->
-                        <tr id="loading-row">
-                            <td colspan="6" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center">
-                                    <i class="fas fa-spinner fa-spin text-4xl text-slate-400 mb-4"></i>
-                                    <p class="text-slate-500">Cargando previas...</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination Controls -->
-            <div id="pagination-container" class="px-6 py-4 border-t border-slate-200 bg-slate-50">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center text-sm text-slate-700">
-                        <span id="pagination-info">Mostrando 0 de 0 previas</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button id="prev-page" class="px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed btn-pagina-prev">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        
-                        <div id="page-numbers" class="flex space-x-1">
-                            <!-- Page numbers will be generated here -->
+            <!-- Previas Table -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden" data-aos="fade-up" data-aos-delay="400">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-book text-amber-500"></i>
+                                        <span>Materia</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-link text-amber-500"></i>
+                                        <span>Previas Requeridas</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-tag text-amber-500"></i>
+                                        <span>Tipos</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-toggle-on text-amber-500"></i>
+                                        <span>Estado</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-calendar-alt text-amber-500"></i>
+                                        <span>Semestre</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-cog text-amber-500"></i>
+                                        <span>Acciones</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="previas-tbody" class="bg-white divide-y divide-gray-200">
+                            <!-- Loading state -->
+                            <tr id="loading-row">
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
+                                        <p class="text-gray-500 font-medium">Cargando previas...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div id="pagination-container" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center text-sm text-gray-700">
+                            <span id="pagination-info">Mostrando 0 de 0 previas</span>
                         </div>
-                        
-                        <button id="next-page" class="px-3 py-1 text-sm bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed btn-pagina-next">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button id="prev-page" class="px-4 py-2 text-sm bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 btn-pagina-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            
+                            <div id="page-numbers" class="flex space-x-1">
+                                <!-- Page numbers will be generated here -->
+                            </div>
+                            
+                            <button id="next-page" class="px-4 py-2 text-sm bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 btn-pagina-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
     <!-- Modal Crear/Editar Previa -->
-    <div id="modal-previa" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Nueva Previa</h3>
-                <button class="modal-close btn-cerrar-modal-previa">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="form-previa" class="modal-body">
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label class="form-label">Materia</label>
-                        <select id="materia" name="materia" class="form-select" required>
-                            <option value="">Seleccionar materia</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Materias Requeridas</label>
-                        <div id="materias-container" class="space-y-3 max-h-60 overflow-y-auto border border-gray-300 rounded-lg p-4">
-                            <p class="text-sm text-gray-500">Selecciona las materias y su tipo de requisito:</p>
-                            <!-- Las materias se agregarán dinámicamente aquí -->
+    <div id="modal-previa" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-link text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900" id="modal-title">Nueva Previa</h3>
+                                <p class="text-sm text-gray-600">Configura los requisitos de la materia</p>
+                            </div>
                         </div>
+                        <button class="btn-cerrar-modal-previa p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
                     </div>
+                    
+                    <form id="form-previa" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-book mr-2 text-amber-500"></i>Materia *
+                            </label>
+                            <select id="materia" name="materia" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white" required>
+                                <option value="">Seleccionar materia</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-link mr-2 text-amber-500"></i>Materias Requeridas
+                            </label>
+                            <div id="materias-container" class="space-y-3 max-h-60 overflow-y-auto border-2 border-gray-200 rounded-2xl p-4 bg-gray-50">
+                                <p class="text-sm text-gray-500">Selecciona las materias y su tipo de requisito:</p>
+                                <!-- Las materias se agregarán dinámicamente aquí -->
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="activa" name="activa" class="w-5 h-5 text-amber-600 border-2 border-gray-300 rounded focus:ring-amber-500" checked>
+                            <label for="activa" class="text-sm font-semibold text-gray-700">Previa activa</label>
+                        </div>
+                        
+                        <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                            <button type="button" class="btn-cerrar-modal-previa px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors duration-200 flex items-center space-x-2">
+                                <i class="fas fa-times"></i>
+                                <span>Cancelar</span>
+                            </button>
+                            <button type="submit" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2">
+                                <i class="fas fa-save"></i>
+                                <span>Guardar</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="flex items-center space-x-2 mt-4">
-                    <input type="checkbox" id="activa" name="activa" class="form-checkbox" checked>
-                    <label for="activa" class="form-label-checkbox">Previa activa</label>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary btn-cerrar-modal-previa">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-save mr-2"></i>
-                        Guardar
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <!-- Modal para ver previas detalladas -->
-    <div id="modal-previas-detalle" class="modal hidden">
-        <div class="modal-content max-w-4xl">
-            <div class="modal-header">
-                <h3 class="text-lg font-semibold text-slate-900" id="modal-previas-titulo">
-                    Previas Requeridas
-                </h3>
-                <button class="modal-close btn-cerrar-modal-detalle">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="previas-detalle-content" class="space-y-4">
-                    <!-- El contenido se generará dinámicamente -->
+    <div id="modal-previas-detalle" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-link text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900" id="modal-previas-titulo">
+                                    Previas Requeridas
+                                </h3>
+                                <p class="text-sm text-gray-600">Detalles de los requisitos académicos</p>
+                            </div>
+                        </div>
+                        <button class="btn-cerrar-modal-detalle p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="previas-detalle-content" class="space-y-4">
+                        <!-- El contenido se generará dinámicamente -->
+                    </div>
+                    
+                    <div class="flex justify-end pt-6 border-t border-gray-200">
+                        <button class="btn-cerrar-modal-detalle px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors duration-200 flex items-center space-x-2">
+                            <i class="fas fa-times"></i>
+                            <span>Cerrar</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-secondary btn-cerrar-modal-detalle">
-                    Cerrar
-                </button>
             </div>
         </div>
     </div>
 
+    <!-- AOS Animation Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <!-- JavaScript personalizado para previas -->
     <script src="/js/previas.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
 </body>
-</html> 
+</html>

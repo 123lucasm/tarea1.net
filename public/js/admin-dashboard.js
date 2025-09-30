@@ -12,8 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar últimos accesos
     cargarUltimosAccesos();
     
-    // Cargar estadísticas mensuales
-    cargarEstadisticasMensuales();
     
     // Actualizar fecha y hora
     actualizarFechaHora();
@@ -130,12 +128,27 @@ function configurarSocketEvents() {
 }
 
 function actualizarEstadoConexion(estado, texto) {
-    const indicator = document.getElementById('status-indicator');
-    const statusText = document.getElementById('status-text');
+    // Mapear estados a clases de Tailwind
+    const estadoMap = {
+        'connected': 'bg-green-500',
+        'disconnected': 'bg-red-500',
+        'error': 'bg-yellow-500'
+    };
     
-    if (indicator && statusText) {
-        indicator.className = `status-indicator ${estado}`;
-        statusText.textContent = texto;
+    const className = estadoMap[estado] || 'bg-gray-500';
+    
+    // Usar la función global si está disponible
+    if (window.updateStatusIndicators) {
+        window.updateStatusIndicators(className, texto);
+    } else {
+        // Fallback para compatibilidad
+        const indicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        
+        if (indicator && statusText) {
+            indicator.className = `w-2 h-2 ${className} rounded-full animate-pulse`;
+            statusText.textContent = texto;
+        }
     }
 }
 
@@ -247,15 +260,15 @@ async function cargarEstadisticas() {
                 // Manejar tanto la nueva estructura con paginación como la antigua
                 const totalMaterias = data.pagination ? data.pagination.totalMaterias : data.length;
                 const totalMateriasElement = document.getElementById('total-materias');
-                if (totalMateriasElement) totalMateriasElement.textContent = totalMaterias;
+                if (totalMateriasElement) totalMateriasElement.innerHTML = `<span class="animate-pulse">${totalMaterias}</span>`;
             } else {
                 const totalMateriasElement = document.getElementById('total-materias');
-                if (totalMateriasElement) totalMateriasElement.textContent = '0';
+                if (totalMateriasElement) totalMateriasElement.innerHTML = '<span class="animate-pulse">0</span>';
             }
         } catch (e) {
             console.log('Error cargando materias:', e);
             const totalMateriasElement = document.getElementById('total-materias');
-            if (totalMateriasElement) totalMateriasElement.textContent = '0';
+            if (totalMateriasElement) totalMateriasElement.innerHTML = '<span class="animate-pulse">0</span>';
         }
         
         try {
@@ -267,15 +280,15 @@ async function cargarEstadisticas() {
                 // Manejar tanto la nueva estructura con paginación como la antigua
                 const totalPrevias = data.pagination ? data.pagination.totalPrevias : data.length;
                 const totalPreviasElement = document.getElementById('total-previas');
-                if (totalPreviasElement) totalPreviasElement.textContent = totalPrevias;
+                if (totalPreviasElement) totalPreviasElement.innerHTML = `<span class="animate-pulse">${totalPrevias}</span>`;
             } else {
                 const totalPreviasElement = document.getElementById('total-previas');
-                if (totalPreviasElement) totalPreviasElement.textContent = '0';
+                if (totalPreviasElement) totalPreviasElement.innerHTML = '<span class="animate-pulse">0</span>';
             }
         } catch (e) {
             console.log('Error cargando previas:', e);
             const totalPreviasElement = document.getElementById('total-previas');
-            if (totalPreviasElement) totalPreviasElement.textContent = '0';
+            if (totalPreviasElement) totalPreviasElement.innerHTML = '<span class="animate-pulse">0</span>';
         }
         
         // Actualizar gráfico de distribución
@@ -293,8 +306,8 @@ async function cargarEstadisticas() {
         const usuariosActivosElement = document.getElementById('usuarios-activos');
         
         if (totalUsuariosElement) totalUsuariosElement.textContent = '0';
-        if (totalMateriasElement) totalMateriasElement.textContent = '0';
-        if (totalPreviasElement) totalPreviasElement.textContent = '0';
+        if (totalMateriasElement) totalMateriasElement.innerHTML = '<span class="animate-pulse">0</span>';
+        if (totalPreviasElement) totalPreviasElement.innerHTML = '<span class="animate-pulse">0</span>';
         if (usuariosActivosElement) usuariosActivosElement.textContent = '0';
         
         // Mostrar notificación de error
@@ -340,18 +353,54 @@ async function cargarActividadReciente() {
         actividades.forEach(actividad => {
             const tiempoTranscurrido = calcularTiempoTranscurrido(actividad.fecha);
             
+            // Determinar colores basados en el tipo de actividad
+            let bgColor, borderColor, iconBg, badgeColor, badgeText;
+            
+            switch(actividad.tipo) {
+                case 'usuario':
+                    bgColor = 'bg-gradient-to-r from-indigo-50 to-blue-50';
+                    borderColor = 'border-indigo-200';
+                    iconBg = 'bg-gradient-to-br from-indigo-500 to-blue-600';
+                    badgeColor = 'bg-indigo-100 text-indigo-800';
+                    break;
+                case 'materia':
+                    bgColor = 'bg-gradient-to-r from-emerald-50 to-teal-50';
+                    borderColor = 'border-emerald-200';
+                    iconBg = 'bg-gradient-to-br from-emerald-500 to-teal-600';
+                    badgeColor = 'bg-emerald-100 text-emerald-800';
+                    break;
+                case 'previa':
+                    bgColor = 'bg-gradient-to-r from-amber-50 to-orange-50';
+                    borderColor = 'border-amber-200';
+                    iconBg = 'bg-gradient-to-br from-amber-500 to-orange-600';
+                    badgeColor = 'bg-amber-100 text-amber-800';
+                    break;
+                default:
+                    bgColor = 'bg-gradient-to-r from-gray-50 to-slate-50';
+                    borderColor = 'border-gray-200';
+                    iconBg = 'bg-gradient-to-br from-gray-500 to-slate-600';
+                    badgeColor = 'bg-gray-100 text-gray-800';
+            }
+            
             const actividadElement = document.createElement('div');
-            actividadElement.className = `activity-item ${actividad.color}`;
+            actividadElement.className = `group relative overflow-hidden ${bgColor} rounded-2xl p-6 border ${borderColor} hover:shadow-lg transition-all duration-300`;
             actividadElement.innerHTML = `
-                <div class="activity-icon ${actividad.color}">
-                    <i class="fas fa-${actividad.icono} text-white"></i>
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 ${iconBg} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-${actividad.icono} text-white text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-lg font-bold text-gray-900">${actividad.titulo}</h4>
+                            <span class="px-3 py-1 ${badgeColor} text-xs font-bold rounded-full">${actividad.tipo}</span>
+                        </div>
+                        <p class="text-gray-700 mb-2">${actividad.descripcion}</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>${tiempoTranscurrido}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="activity-content">
-                    <p class="activity-title">${actividad.titulo}</p>
-                    <p class="activity-description">${actividad.descripcion}</p>
-                    <p class="activity-time">${tiempoTranscurrido}</p>
-                </div>
-                <span class="activity-badge ${actividad.color}">${actividad.tipo}</span>
             `;
             
             container.appendChild(actividadElement);
@@ -550,19 +599,19 @@ function mostrarUltimosAccesos(ultimosAccesos) {
     
     const html = ultimosAccesos.map(acceso => `
         <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors ${acceso.esReciente ? 'bg-green-50 border-green-200' : ''}">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <i class="fas fa-user text-indigo-600"></i>
                 </div>
-                <div>
-                    <p class="font-medium text-slate-900">${acceso.nombre}</p>
-                    <p class="text-sm text-slate-500">${acceso.email}</p>
+                <div class="min-w-0 flex-1">
+                    <p class="font-medium text-slate-900 truncate">${acceso.nombre}</p>
+                    <p class="text-sm text-slate-500 truncate" title="${acceso.email}">${acceso.email}</p>
                     <p class="text-xs text-slate-400 capitalize">${acceso.rol}</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="text-sm font-medium ${acceso.esReciente ? 'text-green-600' : 'text-slate-600'}">${acceso.tiempoTranscurrido}</p>
-                ${acceso.esReciente ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">En línea</span>' : ''}
+            <div class="text-right flex-shrink-0 ml-4">
+                <p class="text-sm font-medium ${acceso.esReciente ? 'text-green-600' : 'text-slate-600'} whitespace-nowrap">${acceso.tiempoTranscurrido}</p>
+                ${acceso.esReciente ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">En línea</span>' : ''}
             </div>
         </div>
     `).join('');
@@ -587,263 +636,5 @@ function mostrarErrorUltimosAccesos(mensaje) {
     `;
 }
 
-// Función para cargar estadísticas mensuales
-async function cargarEstadisticasMensuales() {
-    try {
-        console.log('📊 Cargando estadísticas mensuales...');
-        
-        const response = await fetch('/admin/api/dashboard-actividad', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        console.log('📊 Respuesta del servidor:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('📊 Estadísticas mensuales recibidas:', data);
-        console.log('📊 Datos históricos:', data.historico);
-        
-        // Actualizar las tarjetas de estadísticas con datos mensuales
-        actualizarEstadisticasMensuales(data);
-        
-        // Crear gráfico de actividad mensual
-        crearGraficoActividadMensual(data.historico);
-        
-    } catch (error) {
-        console.error('❌ Error cargando estadísticas mensuales:', error);
-        console.log('📊 Creando gráfico de ejemplo debido al error...');
-        
-        // Crear gráfico de ejemplo en caso de error
-        const ctx = document.getElementById('actividadMensualChart');
-        if (ctx) {
-            crearGraficoEjemplo(ctx);
-        }
-    }
-}
 
-// Función para actualizar las tarjetas de estadísticas con datos mensuales
-function actualizarEstadisticasMensuales(data) {
-    const { mesActual, tendencias } = data;
-    
-    // Actualizar tarjeta de usuarios con tendencia
-    const totalUsuariosElement = document.getElementById('total-usuarios');
-    if (totalUsuariosElement && mesActual.estadisticas) {
-        const usuarios = mesActual.estadisticas.totalUsuariosActivos || 0;
-        const cambio = tendencias.usuarios.cambio || 0;
-        
-        totalUsuariosElement.innerHTML = `
-            <span class="animate-pulse">${usuarios}</span>
-            ${cambio !== 0 ? `
-                <div class="stat-trend ${cambio > 0 ? 'positive' : 'negative'}">
-                    <i class="fas fa-arrow-${cambio > 0 ? 'up' : 'down'}"></i>
-                    <span>${Math.abs(cambio)}% vs mes anterior</span>
-                </div>
-            ` : ''}
-        `;
-    }
-    
-    // Actualizar tarjeta de materias con tendencia
-    const totalMateriasElement = document.getElementById('total-materias');
-    if (totalMateriasElement && mesActual.estadisticas) {
-        const materias = mesActual.estadisticas.actividadesPorTipo?.materiasConsultadas || 0;
-        
-        totalMateriasElement.innerHTML = `
-            <span class="animate-pulse">${materias}</span>
-            <div class="stat-trend positive">
-                <i class="fas fa-eye"></i>
-                <span>consultas este mes</span>
-            </div>
-        `;
-    }
-    
-    // Actualizar tarjeta de previas con tendencia
-    const totalPreviasElement = document.getElementById('total-previas');
-    if (totalPreviasElement && mesActual.estadisticas) {
-        const previas = mesActual.estadisticas.actividadesPorTipo?.previasConsultadas || 0;
-        
-        totalPreviasElement.innerHTML = `
-            <span class="animate-pulse">${previas}</span>
-            <div class="stat-trend positive">
-                <i class="fas fa-link"></i>
-                <span>consultas este mes</span>
-            </div>
-        `;
-    }
-    
-    // Actualizar tarjeta de semestres con tendencia
-    const totalSemestresElement = document.getElementById('total-semestres');
-    if (totalSemestresElement && mesActual.estadisticas) {
-        const semestres = mesActual.estadisticas.actividadesPorTipo?.semestresConsultados || 0;
-        
-        totalSemestresElement.innerHTML = `
-            <span class="animate-pulse">${semestres}</span>
-            <div class="stat-trend positive">
-                <i class="fas fa-graduation-cap"></i>
-                <span>consultas este mes</span>
-            </div>
-        `;
-    }
-}
 
-// Función para crear gráfico de actividad mensual
-function crearGraficoActividadMensual(datosHistoricos) {
-    const ctx = document.getElementById('actividadMensualChart');
-    console.log('📊 Creando gráfico de actividad mensual...');
-    console.log('📊 Canvas encontrado:', !!ctx);
-    console.log('📊 Datos históricos:', datosHistoricos);
-    
-    if (!ctx) {
-        console.error('❌ No se encontró el canvas con ID: actividadMensualChart');
-        return;
-    }
-    
-    if (!datosHistoricos || datosHistoricos.length === 0) {
-        console.log('📊 No hay datos históricos, creando gráfico de ejemplo');
-        crearGraficoEjemplo(ctx);
-        return;
-    }
-    
-    // Preparar datos para el gráfico
-    const labels = datosHistoricos.map(dato => {
-        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        return `${meses[dato.mes - 1]} ${dato.año}`;
-    });
-    
-    const usuariosData = datosHistoricos.map(dato => dato.totalUsuariosActivos || 0);
-    const actividadesData = datosHistoricos.map(dato => dato.totalActividades || 0);
-    
-    // Destruir gráfico existente si existe
-    if (window.actividadMensualChart) {
-        window.actividadMensualChart.destroy();
-    }
-    
-    // Crear nuevo gráfico
-    window.actividadMensualChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Usuarios Activos',
-                    data: usuariosData,
-                    borderColor: '#4f46e5',
-                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'Total Actividades',
-                    data: actividadesData,
-                    borderColor: '#059669',
-                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Actividad Mensual - Últimos 6 Meses',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                },
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    });
-    
-    console.log('📊 Gráfico de actividad mensual creado');
-}
-
-// Función para crear gráfico de ejemplo cuando no hay datos
-function crearGraficoEjemplo(ctx) {
-    console.log('📊 Creando gráfico de ejemplo...');
-    
-    // Destruir gráfico existente si existe
-    if (window.actividadMensualChart) {
-        window.actividadMensualChart.destroy();
-    }
-    
-    // Crear gráfico de ejemplo con datos ficticios
-    window.actividadMensualChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-            datasets: [
-                {
-                    label: 'Usuarios Activos',
-                    data: [0, 0, 0, 0, 0, 0],
-                    borderColor: '#4f46e5',
-                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: 'Total Actividades',
-                    data: [0, 0, 0, 0, 0, 0],
-                    borderColor: '#059669',
-                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Actividad Mensual - Sin datos disponibles',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                },
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    });
-    
-    console.log('📊 Gráfico de ejemplo creado');
-}

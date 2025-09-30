@@ -7,45 +7,131 @@
     
     <!-- Tailwind CSS Local -->
     <link rel="stylesheet" href="/css/tailwind.css">
-    <!-- Admin CSS Personalizado -->
-    <link rel="stylesheet" href="/css/admin.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- CSS personalizado para usuarios -->
-    <link rel="stylesheet" href="/css/usuarios.css">
 </head>
-<body class="bg-utec-light font-inter">
+
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter">
     <!-- Navigation -->
-    <nav class="admin-nav">
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <div class="nav-brand">
-                    <div class="brand-icon">
-                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+            <div class="flex justify-between items-center h-16 md:h-20">
+                <!-- Logo -->
+                <a href="/admin" class="flex items-center space-x-2 md:space-x-3 hover:opacity-80 transition-opacity duration-200">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-shield-alt text-white text-lg md:text-xl"></i>
                     </div>
-                    <div class="brand-text">
-                        <h1>Panel Admin</h1>
-                        <p>MATRICULATEC</p>
+                    <div class="hidden sm:block">
+                        <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                            Panel Admin
+                        </h1>
+                        <p class="text-xs md:text-sm text-gray-600 font-medium">MATRICULATEC</p>
+                    </div>
+                    <div class="block sm:hidden">
+                        <h1 class="text-lg font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+                            Admin
+                        </h1>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden lg:flex items-center space-x-6">
+                    <!-- Connection Status -->
+                    <div class="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse" id="status-indicator"></div>
+                        <span class="text-sm font-medium text-gray-700" id="status-text">Conectado</span>
+                    </div>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-gray-900"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                            <p class="text-xs text-gray-500">Administrador</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex items-center space-x-2">
+                        <a href="/admin/perfil" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200" title="Mi Perfil">
+                            <i class="fas fa-user-cog text-lg"></i>
+                        </a>
+                        <a href="/auth/logout" class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200" title="Cerrar Sesión">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="nav-user">
-                    <div class="nav-actions">
-                        <a href="/admin">
-                            <i class="fas fa-home"></i>
-                            <span>Inicio</span>
-                        </a>
-                        <a href="/dashboard">
-                            <i class="fas fa-tachometer-alt"></i>
+
+                <!-- Mobile Menu Button -->
+                <div class="lg:hidden flex items-center space-x-3">
+                    <!-- Connection Status (Mobile) -->
+                    <div class="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse" id="status-indicator-mobile"></div>
+                        <span class="text-xs font-medium text-gray-700" id="status-text-mobile">Online</span>
+                    </div>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-button" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="lg:hidden hidden bg-white border-t border-gray-200 shadow-lg">
+                <div class="px-4 py-6 space-y-4">
+                    <!-- User Profile (Mobile) -->
+                    <div class="flex items-center space-x-3 pb-4 border-b border-gray-200">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900"><%= usuario.nombre %> <%= usuario.apellido %></p>
+                            <p class="text-xs text-gray-500">Administrador</p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="space-y-2">
+                        <a href="/admin" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-home text-lg"></i>
                             <span>Dashboard</span>
                         </a>
-                        <a href="/auth/logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Salir</span>
+                        <a href="/admin/usuarios" class="flex items-center space-x-3 px-4 py-3 text-blue-600 bg-blue-50 rounded-xl">
+                            <i class="fas fa-users text-lg"></i>
+                            <span>Gestión de Usuarios</span>
+                        </a>
+                        <a href="/admin/materias" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-book text-lg"></i>
+                            <span>Gestión de Materias</span>
+                        </a>
+                        <a href="/admin/previas" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-link text-lg"></i>
+                            <span>Gestión de Previas</span>
+                        </a>
+                        <a href="/admin/semestres" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-university text-lg"></i>
+                            <span>Gestión de Semestres</span>
+                        </a>
+                    </div>
+
+                    <!-- Quick Actions (Mobile) -->
+                    <div class="pt-4 border-t border-gray-200 space-y-2">
+                        <a href="/admin/perfil" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200">
+                            <i class="fas fa-user-cog text-lg"></i>
+                            <span>Mi Perfil</span>
+                        </a>
+                        <a href="/auth/logout" class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                            <span>Cerrar Sesión</span>
                         </a>
                     </div>
                 </div>
@@ -54,196 +140,214 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="welcome-section mb-8">
-            <div class="welcome-content">
-                <h1 class="welcome-title">
-                    <i class="fas fa-users mr-4"></i>
-                    Gestión de Usuarios
-                </h1>
-                <p class="welcome-subtitle">
-                    Administra y gestiona todos los usuarios del sistema
-                </p>
-                <div class="welcome-info">
-                    <div class="welcome-info-item">
-                        <i class="fas fa-users"></i>
-                        <span>Total de usuarios</span>
-                    </div>
-                    <div class="welcome-info-item">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>Estudiantes activos</span>
-                    </div>
-                    <div class="welcome-info-item">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Administradores</span>
+    <div class="pt-20 md:pt-24 px-4 sm:px-6 lg:px-8 pb-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-12" data-aos="fade-down">
+                <div class="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="text-4xl lg:text-5xl font-bold mb-4 flex items-center">
+                                    <i class="fas fa-users mr-4 text-4xl"></i>
+                                    Gestión de Usuarios
+                                </h1>
+                                <p class="text-xl text-indigo-100 mb-6">
+                                    Administra y gestiona todos los usuarios del sistema
+                                </p>
+                                <div class="flex items-center space-x-6">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-users text-indigo-200"></i>
+                                        <span class="font-medium">Total de usuarios</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-user-graduate text-indigo-200"></i>
+                                        <span class="font-medium">Estudiantes activos</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-user-shield text-indigo-200"></i>
+                                        <span class="font-medium">Administradores</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden lg:block">
+                                <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-users text-6xl text-white/80"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Action Bar -->
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-4">
-                <div class="stat-card indigo">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon indigo">
+            <!-- Stats and Action Bar -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8" data-aos="fade-up">
+                <!-- Stats Card -->
+                <div class="bg-white rounded-3xl p-6 shadow-lg border border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                             <i class="fas fa-users text-white text-xl"></i>
                         </div>
                         <div>
-                            <p class="stat-number" id="total-users">-</p>
-                            <p class="stat-label">Total Usuarios</p>
+                            <p class="text-3xl font-bold text-gray-900" id="total-users">-</p>
+                            <p class="text-sm text-gray-500 font-medium">Total Usuarios</p>
                         </div>
                     </div>
                 </div>
-            </div>
-            <button id="nuevo-usuario-btn" class="btn-success">
-                <i class="fas fa-user-plus"></i>
-                Nuevo Usuario
-            </button>
-        </div>
 
-        <!-- Filters and Search -->
-        <div class="stat-card mb-6">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="stat-icon indigo">
-                    <i class="fas fa-filter text-white text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="stat-title">Filtros y Búsqueda</h3>
-                    <p class="stat-description">Busca y filtra usuarios por diferentes criterios</p>
-                </div>
+                <!-- Action Button -->
+                <button id="nuevo-usuario-btn" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Nuevo Usuario</span>
+                </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        <i class="fas fa-search mr-2"></i>Buscar
-                    </label>
-                    <input type="text" id="search-input" placeholder="Nombre, email o cédula..." 
-                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        <i class="fas fa-user-tag mr-2"></i>Rol
-                    </label>
-                    <select id="rol-filter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                        <option value="">Todos los roles</option>
-                        <option value="estudiante">Estudiante</option>
-                        <option value="administrador">Administrador</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        <i class="fas fa-toggle-on mr-2"></i>Estado
-                    </label>
-                    <select id="estado-filter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                        <option value="">Todos los estados</option>
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button id="clear-filters" class="btn-secondary w-full">
-                        <i class="fas fa-times"></i>
-                        Limpiar
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Users Table -->
-        <div class="stat-card">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="stat-icon emerald">
-                    <i class="fas fa-table text-white text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="stat-title">Lista de Usuarios</h3>
-                    <p class="stat-description">Gestiona todos los usuarios del sistema</p>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-user mr-2"></i>
-                                    <span>Usuario</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-envelope mr-2"></i>
-                                    <span>Email</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-id-card mr-2"></i>
-                                    <span>Cédula</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-user-tag mr-2"></i>
-                                    <span>Rol</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-toggle-on mr-2"></i>
-                                    <span>Estado</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-clock mr-2"></i>
-                                    <span>Último Acceso</span>
-                                </div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-cogs mr-2"></i>
-                                    <span>Acciones</span>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="usuarios-table" class="bg-white divide-y divide-slate-200">
-                        <!-- Los usuarios se cargarán aquí dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-slate-200 sm:px-6 mt-4">
-                <div class="flex-1 flex justify-between sm:hidden">
-                    <button class="relative inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
-                        Anterior
-                    </button>
-                    <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
-                        Siguiente
-                    </button>
-                </div>
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-slate-700">
-                            Mostrando <span class="font-medium">1</span> a <span class="font-medium">10</span> de <span class="font-medium">97</span> resultados
-                        </p>
+            <!-- Filters and Search -->
+            <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 mb-8" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-filter text-white text-lg"></i>
                     </div>
                     <div>
-                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button class="relative inline-flex items-center px-4 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50">
-                                1
-                            </button>
-                            <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </nav>
+                        <h3 class="text-xl font-bold text-gray-900">Filtros y Búsqueda</h3>
+                        <p class="text-sm text-gray-600">Busca y filtra usuarios por diferentes criterios</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-search mr-2 text-indigo-500"></i>Buscar
+                        </label>
+                        <input type="text" id="search-input" placeholder="Nombre, email o cédula..." 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user-tag mr-2 text-indigo-500"></i>Rol
+                        </label>
+                        <select id="rol-filter" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
+                            <option value="">Todos los roles</option>
+                            <option value="estudiante">Estudiante</option>
+                            <option value="administrador">Administrador</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-toggle-on mr-2 text-indigo-500"></i>Estado
+                        </label>
+                        <select id="estado-filter" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
+                            <option value="">Todos los estados</option>
+                            <option value="activo">Activo</option>
+                            <option value="inactivo">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="clear-filters" class="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors duration-200 flex items-center justify-center space-x-2">
+                            <i class="fas fa-times"></i>
+                            <span>Limpiar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden" data-aos="fade-up" data-aos-delay="400">
+                <div class="p-8 border-b border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-table text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Lista de Usuarios</h3>
+                            <p class="text-sm text-gray-600">Gestiona todos los usuarios del sistema</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-user text-indigo-500"></i>
+                                        <span>Usuario</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-envelope text-indigo-500"></i>
+                                        <span>Email</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-id-card text-indigo-500"></i>
+                                        <span>Cédula</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-user-tag text-indigo-500"></i>
+                                        <span>Rol</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-toggle-on text-indigo-500"></i>
+                                        <span>Estado</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-clock text-indigo-500"></i>
+                                        <span>Último Acceso</span>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-cogs text-indigo-500"></i>
+                                        <span>Acciones</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuarios-table" class="bg-white divide-y divide-gray-200">
+                            <!-- Los usuarios se cargarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="bg-white px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                            Anterior
+                        </button>
+                        <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                            Siguiente
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Mostrando <span class="font-semibold">1</span> a <span class="font-semibold">10</span> de <span class="font-semibold">97</span> resultados
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px">
+                                <button class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    1
+                                </button>
+                                <button class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -251,20 +355,20 @@
     </div>
 
     <!-- Modal para ver detalles del usuario -->
-    <div id="user-modal" class="fixed inset-0 bg-slate-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-10 mx-auto p-0 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-2xl bg-white overflow-hidden">
-            <div class="stat-card">
+    <div id="user-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-0 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-3xl bg-white overflow-hidden">
+            <div class="p-8">
                 <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon indigo">
-                            <i class="fas fa-user text-white text-xl"></i>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-user text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="stat-title">Detalles del Usuario</h3>
-                            <p class="stat-description">Información completa del usuario</p>
+                            <h3 class="text-xl font-bold text-gray-900">Detalles del Usuario</h3>
+                            <p class="text-sm text-gray-600">Información completa del usuario</p>
                         </div>
                     </div>
-                    <button id="close-modal" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <button id="close-modal" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -276,20 +380,20 @@
     </div>
 
     <!-- Modal para crear nuevo usuario -->
-    <div id="nuevo-usuario-modal" class="fixed inset-0 bg-slate-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-10 mx-auto p-0 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-2xl bg-white overflow-hidden">
-            <div class="stat-card">
+    <div id="nuevo-usuario-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-0 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-3xl bg-white overflow-hidden">
+            <div class="p-8">
                 <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon emerald">
-                            <i class="fas fa-user-plus text-white text-xl"></i>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-user-plus text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="stat-title">Crear Nuevo Usuario</h3>
-                            <p class="stat-description">Registra un nuevo usuario en el sistema</p>
+                            <h3 class="text-xl font-bold text-gray-900">Crear Nuevo Usuario</h3>
+                            <p class="text-sm text-gray-600">Registra un nuevo usuario en el sistema</p>
                         </div>
                     </div>
-                    <button id="close-nuevo-modal" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <button id="close-nuevo-modal" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -298,21 +402,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Nombre -->
                         <div>
-                            <label for="nombre" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-user mr-2"></i>Nombre *
+                            <label for="nombre" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-emerald-500"></i>Nombre *
                             </label>
                             <input type="text" id="nombre" name="nombre" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Ingresa el nombre">
                         </div>
                         
                         <!-- Apellido -->
                         <div>
-                            <label for="apellido" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-user mr-2"></i>Apellido *
+                            <label for="apellido" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-emerald-500"></i>Apellido *
                             </label>
                             <input type="text" id="apellido" name="apellido" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Ingresa el apellido">
                         </div>
                     </div>
@@ -320,21 +424,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Email -->
                         <div>
-                            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-envelope mr-2"></i>Email *
+                            <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-envelope mr-2 text-emerald-500"></i>Email *
                             </label>
                             <input type="email" id="email" name="email" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="usuario@ejemplo.com">
                         </div>
                         
                         <!-- Cédula -->
                         <div>
-                            <label for="cedula" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-id-card mr-2"></i>Cédula
+                            <label for="cedula" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-id-card mr-2 text-emerald-500"></i>Cédula
                             </label>
                             <input type="text" id="cedula" name="cedula"
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="12345678">
                         </div>
                     </div>
@@ -342,21 +446,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Contraseña -->
                         <div>
-                            <label for="password" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-lock mr-2"></i>Contraseña *
+                            <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-emerald-500"></i>Contraseña *
                             </label>
                             <input type="password" id="password" name="password" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Mínimo 6 caracteres">
                         </div>
                         
                         <!-- Confirmar Contraseña -->
                         <div>
-                            <label for="confirmPassword" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-lock mr-2"></i>Confirmar Contraseña *
+                            <label for="confirmPassword" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-emerald-500"></i>Confirmar Contraseña *
                             </label>
                             <input type="password" id="confirmPassword" name="confirmPassword" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Repite la contraseña">
                         </div>
                     </div>
@@ -364,11 +468,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Rol -->
                         <div>
-                            <label for="rol" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-user-tag mr-2"></i>Rol *
+                            <label for="rol" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user-tag mr-2 text-emerald-500"></i>Rol *
                             </label>
                             <select id="rol" name="rol" required
-                                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                                 <option value="">Selecciona un rol</option>
                                 <option value="estudiante">Estudiante</option>
                                 <option value="administrador">Administrador</option>
@@ -377,11 +481,11 @@
                         
                         <!-- Estado -->
                         <div>
-                            <label for="activo" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-toggle-on mr-2"></i>Estado *
+                            <label for="activo" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-toggle-on mr-2 text-emerald-500"></i>Estado *
                             </label>
                             <select id="activo" name="activo" required
-                                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                                 <option value="true">Activo</option>
                                 <option value="false">Inactivo</option>
                             </select>
@@ -389,7 +493,7 @@
                     </div>
                     
                     <!-- Mensaje de error -->
-                    <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    <div id="error-message" class="hidden bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl">
                         <div class="flex items-center">
                             <i class="fas fa-exclamation-circle mr-2"></i>
                             <span id="error-text"></span>
@@ -397,7 +501,7 @@
                     </div>
                     
                     <!-- Mensaje de éxito -->
-                    <div id="success-message" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg">
+                    <div id="success-message" class="hidden bg-emerald-50 border-2 border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl">
                         <div class="flex items-center">
                             <i class="fas fa-check-circle mr-2"></i>
                             <span id="success-text"></span>
@@ -405,14 +509,14 @@
                     </div>
                     
                     <!-- Botones -->
-                    <div class="flex justify-end gap-4 pt-4 border-t border-slate-200">
-                        <button type="button" id="cancelar-nuevo" class="btn-secondary">
-                            <i class="fas fa-times mr-2"></i>
-                            Cancelar
+                    <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                        <button type="button" id="cancelar-nuevo" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors duration-200 flex items-center space-x-2">
+                            <i class="fas fa-times"></i>
+                            <span>Cancelar</span>
                         </button>
-                        <button type="submit" id="crear-usuario-btn" class="btn-success">
-                            <i class="fas fa-user-plus mr-2"></i>
-                            Crear Usuario
+                        <button type="submit" id="crear-usuario-btn" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Crear Usuario</span>
                         </button>
                     </div>
                 </form>
@@ -421,20 +525,20 @@
     </div>
 
     <!-- Modal para editar usuario -->
-    <div id="editar-usuario-modal" class="fixed inset-0 bg-slate-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-10 mx-auto p-0 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-2xl bg-white overflow-hidden">
-            <div class="stat-card">
+    <div id="editar-usuario-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-0 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-2/5 shadow-2xl rounded-3xl bg-white overflow-hidden">
+            <div class="p-8">
                 <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-4">
-                        <div class="stat-icon amber">
-                            <i class="fas fa-user-edit text-white text-xl"></i>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-user-edit text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="stat-title">Editar Usuario</h3>
-                            <p class="stat-description">Modifica la información del usuario</p>
+                            <h3 class="text-xl font-bold text-gray-900">Editar Usuario</h3>
+                            <p class="text-sm text-gray-600">Modifica la información del usuario</p>
                         </div>
                     </div>
-                    <button id="close-editar-modal" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <button id="close-editar-modal" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -445,21 +549,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Nombre -->
                         <div>
-                            <label for="editar-nombre" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-user mr-2"></i>Nombre *
+                            <label for="editar-nombre" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-amber-500"></i>Nombre *
                             </label>
                             <input type="text" id="editar-nombre" name="nombre" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Ingresa el nombre">
                         </div>
                         
                         <!-- Apellido -->
                         <div>
-                            <label for="editar-apellido" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-user mr-2"></i>Apellido *
+                            <label for="editar-apellido" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-amber-500"></i>Apellido *
                             </label>
                             <input type="text" id="editar-apellido" name="apellido" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Ingresa el apellido">
                         </div>
                     </div>
@@ -467,21 +571,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Email -->
                         <div>
-                            <label for="editar-email" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-envelope mr-2"></i>Email *
+                            <label for="editar-email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-envelope mr-2 text-amber-500"></i>Email *
                             </label>
                             <input type="email" id="editar-email" name="email" required
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="usuario@ejemplo.com">
                         </div>
                         
                         <!-- Cédula -->
                         <div>
-                            <label for="editar-cedula" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-id-card mr-2"></i>Cédula
+                            <label for="editar-cedula" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-id-card mr-2 text-amber-500"></i>Cédula
                             </label>
                             <input type="text" id="editar-cedula" name="cedula"
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="12345678">
                         </div>
                     </div>
@@ -489,22 +593,22 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Contraseña -->
                         <div>
-                            <label for="editar-password" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-lock mr-2"></i>Nueva Contraseña
+                            <label for="editar-password" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-amber-500"></i>Nueva Contraseña
                             </label>
                             <input type="password" id="editar-password" name="password"
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Dejar vacío para mantener la actual">
-                            <p class="text-xs text-slate-500 mt-1">Deja vacío si no quieres cambiar la contraseña</p>
+                            <p class="text-xs text-gray-500 mt-1">Deja vacío si no quieres cambiar la contraseña</p>
                         </div>
                         
                         <!-- Confirmar Contraseña -->
                         <div>
-                            <label for="editar-confirmPassword" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-lock mr-2"></i>Confirmar Nueva Contraseña
+                            <label for="editar-confirmPassword" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-lock mr-2 text-amber-500"></i>Confirmar Nueva Contraseña
                             </label>
                             <input type="password" id="editar-confirmPassword" name="confirmPassword"
-                                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white"
                                    placeholder="Repite la nueva contraseña">
                         </div>
                     </div>
@@ -512,11 +616,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Rol -->
                         <div>
-                            <label for="editar-rol" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-user-tag mr-2"></i>Rol *
+                            <label for="editar-rol" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user-tag mr-2 text-amber-500"></i>Rol *
                             </label>
                             <select id="editar-rol" name="rol" required
-                                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                                 <option value="">Selecciona un rol</option>
                                 <option value="estudiante">Estudiante</option>
                                 <option value="administrador">Administrador</option>
@@ -525,11 +629,11 @@
                         
                         <!-- Estado -->
                         <div>
-                            <label for="editar-activo" class="block text-sm font-medium text-slate-700 mb-2">
-                                <i class="fas fa-toggle-on mr-2"></i>Estado *
+                            <label for="editar-activo" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-toggle-on mr-2 text-amber-500"></i>Estado *
                             </label>
                             <select id="editar-activo" name="activo" required
-                                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 transition-all duration-300 bg-gray-50 focus:bg-white">
                                 <option value="true">Activo</option>
                                 <option value="false">Inactivo</option>
                             </select>
@@ -537,7 +641,7 @@
                     </div>
                     
                     <!-- Mensaje de error -->
-                    <div id="editar-error-message" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    <div id="editar-error-message" class="hidden bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl">
                         <div class="flex items-center">
                             <i class="fas fa-exclamation-circle mr-2"></i>
                             <span id="editar-error-text"></span>
@@ -545,7 +649,7 @@
                     </div>
                     
                     <!-- Mensaje de éxito -->
-                    <div id="editar-success-message" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg">
+                    <div id="editar-success-message" class="hidden bg-emerald-50 border-2 border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl">
                         <div class="flex items-center">
                             <i class="fas fa-check-circle mr-2"></i>
                             <span id="editar-success-text"></span>
@@ -553,14 +657,14 @@
                     </div>
                     
                     <!-- Botones -->
-                    <div class="flex justify-end gap-4 pt-4 border-t border-slate-200">
-                        <button type="button" id="cancelar-editar" class="btn-secondary">
-                            <i class="fas fa-times mr-2"></i>
-                            Cancelar
+                    <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                        <button type="button" id="cancelar-editar" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-colors duration-200 flex items-center space-x-2">
+                            <i class="fas fa-times"></i>
+                            <span>Cancelar</span>
                         </button>
-                        <button type="submit" id="actualizar-usuario-btn" class="btn-warning">
-                            <i class="fas fa-save mr-2"></i>
-                            Actualizar Usuario
+                        <button type="submit" id="actualizar-usuario-btn" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2">
+                            <i class="fas fa-save"></i>
+                            <span>Actualizar Usuario</span>
                         </button>
                     </div>
                 </form>
@@ -568,7 +672,64 @@
         </div>
     </div>
 
+    <!-- AOS Animation Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <!-- JavaScript personalizado para usuarios -->
     <script src="/js/usuarios.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const statusIndicatorMobile = document.getElementById('status-indicator-mobile');
+            const statusTextMobile = document.getElementById('status-text-mobile');
+
+            // Toggle mobile menu
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Change icon
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.className = 'fas fa-bars text-lg';
+                    } else {
+                        icon.className = 'fas fa-times text-lg';
+                    }
+                });
+            }
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (mobileMenu && !mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.classList.add('hidden');
+                    const icon = mobileMenuButton.querySelector('i');
+                    icon.className = 'fas fa-bars text-lg';
+                }
+            });
+
+            // Sync status indicators
+            function updateStatusIndicators(className, text) {
+                if (statusIndicator) statusIndicator.className = `w-2 h-2 ${className} rounded-full animate-pulse`;
+                if (statusText) statusText.textContent = text;
+                if (statusIndicatorMobile) statusIndicatorMobile.className = `w-2 h-2 ${className} rounded-full animate-pulse`;
+                if (statusTextMobile) statusTextMobile.textContent = text;
+            }
+
+            // Make updateStatusIndicators available globally
+            window.updateStatusIndicators = updateStatusIndicators;
+        });
+    </script>
 </body>
 </html>
