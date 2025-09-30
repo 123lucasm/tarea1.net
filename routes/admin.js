@@ -324,6 +324,9 @@ router.put('/api/materias/:id', async (req, res) => {
   try {
     const { nombre, codigo, creditos, semestre, descripcion, cupoMaximo, activa } = req.body;
     
+    // Obtener la materia original para comparar cambios
+    const materiaOriginal = await Materia.findById(req.params.id);
+    
     const materia = await Materia.findByIdAndUpdate(
       req.params.id,
       {
@@ -340,6 +343,35 @@ router.put('/api/materias/:id', async (req, res) => {
     
     if (!materia) {
       return res.status(404).json({ error: 'Materia no encontrada' });
+    }
+
+    // Registrar actividad para todos los usuarios (actualización global)
+    const ActividadService = require('../services/actividadService');
+    const Usuario = require('../models/Usuario');
+    
+    // Obtener todos los usuarios para registrar la actividad
+    const usuarios = await Usuario.find({}, '_id');
+    
+    for (const usuario of usuarios) {
+      try {
+        await ActividadService.registrarActualizacionMateria(
+          materia._id,
+          usuario._id,
+          {
+            nombre: materia.nombre,
+            codigo: materia.codigo,
+            creditos: materia.creditos,
+            cambios: {
+              nombre: materiaOriginal?.nombre !== nombre ? { anterior: materiaOriginal?.nombre, nuevo: nombre } : null,
+              codigo: materiaOriginal?.codigo !== codigo ? { anterior: materiaOriginal?.codigo, nuevo: codigo } : null,
+              creditos: materiaOriginal?.creditos !== creditos ? { anterior: materiaOriginal?.creditos, nuevo: creditos } : null
+            }
+          },
+          req
+        );
+      } catch (error) {
+        console.error('Error registrando actividad para usuario:', usuario._id, error);
+      }
     }
     
     res.json(materia);

@@ -25,6 +25,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.0.0",
     "aos": "^2.3.4",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "bootstrap": "^5.3.8",
     "class-variance-authority": "^0.7.1",

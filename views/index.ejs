@@ -7,99 +7,181 @@
     
     <!-- Tailwind CSS Local -->
     <link rel="stylesheet" href="/css/tailwind.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- AOS Animations -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS for Index Page -->
-    <link rel="stylesheet" href="/css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body style="padding-top: 80px;">
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-graduation-cap me-2"></i>
-                <strong>MATRICULATEC</strong>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-togg-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#inicio">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#caracteristicas">Características</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#como-funciona">Cómo Funciona</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto" style="margin-right: 1rem;">
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                        MATRICULATEC
+                    </span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#inicio" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">Inicio</a>
+                    <a href="#caracteristicas" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">Características</a>
+                    <a href="#como-funciona" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">Cómo Funciona</a>
+                </div>
+
+                <!-- Auth Buttons -->
+                <div class="flex items-center space-x-4">
                     <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user me-1"></i>
-                                <%= usuario.nombre %>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/dashboard">Mi Dashboard</a></li>
-                                <li><a class="dropdown-item" href="/auth/perfil">Mi Perfil</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/auth/logout">Cerrar Sesión</a></li>
-                            </ul>
-                        </li>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                                <span class="font-medium"><%= usuario.nombre %></span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <div class="py-2">
+                                    <a href="/dashboard" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                        <i class="fas fa-home w-4 h-4 mr-3"></i>
+                                        Mi Dashboard
+                                    </a>
+                                    <a href="/auth/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                        <i class="fas fa-user-edit w-4 h-4 mr-3"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <hr class="my-2">
+                                    <a href="/auth/logout" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                        <i class="fas fa-sign-out-alt w-4 h-4 mr-3"></i>
+                                        Cerrar Sesión
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     <% } else { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/auth/login">Iniciar Sesión</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn-register" href="/auth/registro">Registrarse</a>
-                        </li>
+                        <a href="/auth/login" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium">
+                            Iniciar Sesión
+                        </a>
+                        <a href="/auth/registro" class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-2 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                            Registrarse
+                        </a>
                     <% } %>
-                </ul>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button type="button" class="text-gray-600 hover:text-blue-600 focus:outline-none focus:text-blue-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section" id="inicio">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 hero-content" data-aos="fade-right">
-                    <h1 class="hero-title">MATRICULATEC - Tu Gestor Académico Inteligente</h1>
-                    <p class="hero-subtitle">
-                        Desarrollado por <strong>UTEC</strong> para transformar tu experiencia universitaria. 
-                        Gestiona tu progreso académico de manera inteligente, verifica requisitos previos 
-                        y optimiza tu trayectoria en la Universidad Tecnológica del Uruguay.
-                    </p>
-                    <div class="d-flex gap-3 flex-wrap">
+    <section id="inicio" class="pt-20 pb-16 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-200/30 to-indigo-300/30 rounded-full -translate-y-48 translate-x-48"></div>
+        <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-purple-200/30 to-pink-300/30 rounded-full translate-y-40 -translate-x-40"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Content -->
+                <div class="space-y-8" data-aos="fade-right">
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                            <i class="fas fa-graduation-cap mr-2"></i>
+                            Desarrollado por UTEC
+                        </div>
+                        <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                            Tu Gestor Académico
+                            <span class="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                                Inteligente
+                            </span>
+                        </h1>
+                        <p class="text-xl text-gray-600 leading-relaxed">
+                            Transforma tu experiencia universitaria con <strong>MATRICULATEC</strong>. 
+                            Gestiona tu progreso académico de manera inteligente, verifica requisitos previos 
+                            y optimiza tu trayectoria en la Universidad Tecnológica del Uruguay.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
                         <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-                            <a href="/dashboard" class="btn btn-hero">
-                                <i class="fas fa-home me-2"></i>
+                            <a href="/dashboard" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold rounded-2xl hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                <i class="fas fa-home mr-3"></i>
                                 Ir al Dashboard
                             </a>
                         <% } else { %>
-                            <a href="/auth/registro" class="btn btn-hero">
-                                <i class="fas fa-user-plus me-2"></i>
+                            <a href="/auth/registro" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold rounded-2xl hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                <i class="fas fa-user-plus mr-3"></i>
                                 Comenzar Ahora
                             </a>
                         <% } %>
-                        <a href="#como-funciona" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-play me-2"></i>
+                        <a href="#como-funciona" class="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-700 font-semibold rounded-2xl border-2 border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            <i class="fas fa-play mr-3"></i>
                             Ver Demo
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6" data-aos="fade-left">
-                    <div class="text-center">
-                        <i class="fas fa-chart-line" style="font-size: 15rem; opacity: 0.2;"></i>
+                
+                <!-- Visual -->
+                <div class="relative" data-aos="fade-left">
+                    <div class="relative z-10">
+                        <!-- Main Card -->
+                        <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
+                            <div class="space-y-6">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-chart-line text-white text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Dashboard</h3>
+                                            <p class="text-sm text-gray-500">Progreso Académico</p>
+                                        </div>
+                                    </div>
+                                    <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                </div>
+                                
+                                <!-- Stats -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4">
+                                        <div class="text-2xl font-bold text-blue-600">85%</div>
+                                        <div class="text-sm text-gray-600">Progreso</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4">
+                                        <div class="text-2xl font-bold text-green-600">12</div>
+                                        <div class="text-sm text-gray-600">Materias</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Semestre Actual</span>
+                                        <span class="font-semibold text-gray-900">4/6</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full" style="width: 67%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Floating Elements -->
+                        <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-trophy text-white text-2xl"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -107,85 +189,96 @@
     </section>
 
     <!-- Features Section -->
-    <section class="features-section" id="caracteristicas">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto" data-aos="fade-up">
-                                         <h2 class="display-4 fw-bold mb-3">Características Principales</h2>
-                     <p class="lead text-muted">
-                         Descubre cómo MATRICULATEC, desarrollado por UTEC, puede transformar tu experiencia académica
-                     </p>
-                </div>
+    <section id="caracteristicas" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                    Características
+                    <span class="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                        Principales
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Descubre cómo MATRICULATEC, desarrollado por UTEC, puede transformar tu experiencia académica
+                </p>
             </div>
             
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-check-circle"></i>
+            <!-- Features Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 h-full border border-blue-100 hover:border-blue-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-check-circle text-white text-2xl"></i>
                         </div>
-                        <h3 class="feature-title">Verificación Automática</h3>
-                        <p class="feature-description">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Verificación Automática</h3>
+                        <p class="text-gray-600 leading-relaxed">
                             Verifica automáticamente si cumples con los requisitos previos para cursar cualquier materia.
                         </p>
                     </div>
                 </div>
                 
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-calendar-alt"></i>
+                <!-- Feature 2 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 h-full border border-green-100 hover:border-green-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-calendar-alt text-white text-2xl"></i>
                         </div>
-                        <h3 class="feature-title">Planificación Inteligente</h3>
-                        <p class="feature-description">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Planificación Inteligente</h3>
+                        <p class="text-gray-600 leading-relaxed">
                             Planifica tu semestre de manera óptima basándote en tu progreso académico actual.
                         </p>
                     </div>
                 </div>
                 
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-bar"></i>
+                <!-- Feature 3 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 h-full border border-purple-100 hover:border-purple-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-chart-bar text-white text-2xl"></i>
                         </div>
-                        <h3 class="feature-title">Seguimiento de Progreso</h3>
-                        <p class="feature-description">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Seguimiento de Progreso</h3>
+                        <p class="text-gray-600 leading-relaxed">
                             Monitorea tu avance académico con estadísticas detalladas y visualizaciones claras.
                         </p>
                     </div>
                 </div>
                 
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
+                <!-- Feature 4 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="400">
+                    <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl p-8 h-full border border-red-100 hover:border-red-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-shield-alt text-white text-2xl"></i>
                         </div>
-                        <h3 class="feature-title">Seguridad Garantizada</h3>
-                        <p class="feature-description">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Seguridad Garantizada</h3>
+                        <p class="text-gray-600 leading-relaxed">
                             Tus datos académicos están protegidos con las más altas medidas de seguridad.
                         </p>
                     </div>
                 </div>
                 
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-mobile-alt"></i>
+                <!-- Feature 5 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="500">
+                    <div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-3xl p-8 h-full border border-teal-100 hover:border-teal-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-mobile-alt text-white text-2xl"></i>
                         </div>
-                        <h3 class="feature-title">Acceso Móvil</h3>
-                        <p class="feature-description">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Acceso Móvil</h3>
+                        <p class="text-gray-600 leading-relaxed">
                             Accede a tu información académica desde cualquier dispositivo, en cualquier momento.
                         </p>
                     </div>
                 </div>
                 
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-users"></i>
+                <!-- Feature 6 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="600">
+                    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-3xl p-8 h-full border border-indigo-100 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-users text-white text-2xl"></i>
                         </div>
-                        <h3 class="feature-title">Soporte Académico</h3>
-                        <p class="feature-description">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Soporte Académico</h3>
+                        <p class="text-gray-600 leading-relaxed">
                             Recibe orientación personalizada para optimizar tu trayectoria universitaria.
                         </p>
                     </div>
@@ -195,31 +288,41 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="6">0</div>
-                        <div class="stat-label">Semestres</div>
+    <section class="py-20 bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Stat 1 -->
+                <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                        <div class="text-4xl lg:text-5xl font-bold text-white mb-2" data-count="<%= stats.semestres %>">0</div>
+                        <div class="text-blue-100 font-medium">Semestres</div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="32">0</div>
-                        <div class="stat-label">Materias</div>
+                
+                <!-- Stat 2 -->
+                <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                        <div class="text-4xl lg:text-5xl font-bold text-white mb-2" data-count="<%= stats.materias %>">0</div>
+                        <div class="text-blue-100 font-medium">Materias</div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="77">0</div>
-                        <div class="stat-label">Previas</div>
+                
+                <!-- Stat 3 -->
+                <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                        <div class="text-4xl lg:text-5xl font-bold text-white mb-2" data-count="<%= stats.previas %>">0</div>
+                        <div class="text-blue-100 font-medium">Previas</div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="100">0</div>
-                        <div class="stat-label">% Confiable</div>
+                
+                <!-- Stat 4 -->
+                <div class="text-center" data-aos="fade-up" data-aos-delay="400">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                        <div class="text-4xl lg:text-5xl font-bold text-white mb-2" data-count="<%= stats.confiable %>">0</div>
+                        <div class="text-blue-100 font-medium">% Confiable</div>
                     </div>
                 </div>
             </div>
@@ -227,44 +330,70 @@
     </section>
 
     <!-- How It Works Section -->
-    <section class="how-it-works" id="como-funciona">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto" data-aos="fade-up">
-                                         <h2 class="display-4 fw-bold mb-3">¿Cómo Funciona?</h2>
-                     <p class="lead text-muted">
-                         Tres pasos simples para optimizar tu progreso académico en UTEC
-                     </p>
-                </div>
+    <section id="como-funciona" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                    ¿Cómo
+                    <span class="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                        Funciona?
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Tres pasos simples para optimizar tu progreso académico en UTEC
+                </p>
             </div>
             
-            <div class="row g-4">
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <h4 class="mb-3">Regístrate</h4>
-                        <p class="text-muted">
+            <!-- Steps -->
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="relative" data-aos="fade-up" data-aos-delay="100">
+                    <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl text-white text-2xl font-bold mb-6 mx-auto">
+                            1
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 text-center">Regístrate</h4>
+                        <p class="text-gray-600 text-center leading-relaxed">
                             Crea tu cuenta con tu información académica y accede al sistema.
                         </p>
                     </div>
-                </div>
-                
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <h4 class="mb-3">Verifica Elegibilidad</h4>
-                        <p class="text-muted">
-                            El sistema verifica automáticamente qué materias puedes cursar.
-                        </p>
+                    <!-- Arrow -->
+                    <div class="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-arrow-right text-white text-sm"></i>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <h4 class="mb-3">Planifica tu Semestre</h4>
-                        <p class="text-muted">
-                            Recibe recomendaciones personalizadas para optimizar tu carga académica.
+                <!-- Step 2 -->
+                <div class="relative" data-aos="fade-up" data-aos-delay="200">
+                    <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl text-white text-2xl font-bold mb-6 mx-auto">
+                            2
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 text-center">Verifica Elegibilidad</h4>
+                        <p class="text-gray-600 text-center leading-relaxed">
+                            El sistema verifica automáticamente qué materias puedes cursar.
+                        </p>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-arrow-right text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="relative" data-aos="fade-up" data-aos-delay="300">
+                    <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl text-white text-2xl font-bold mb-6 mx-auto">
+                            3
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-4 text-center">Planifica tu Semestre</h4>
+                        <p class="text-gray-600 text-center leading-relaxed">
+                            Organiza tu carga académica basándote en las materias que puedes cursar.
                         </p>
                     </div>
                 </div>
@@ -273,78 +402,143 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8 text-center" data-aos="fade-up">
-                                         <h2 class="display-5 fw-bold mb-4">¿Listo para Transformar tu Experiencia en UTEC?</h2>
-                     <p class="lead mb-4">
-                         Únete a cientos de estudiantes de UTEC que ya están aprovechando MATRICULATEC para optimizar su trayectoria académica
-                     </p>
-                    <div class="d-flex gap-3 justify-content-center flex-wrap">
-                        <a href="/auth/registro" class="btn btn-light btn-lg px-4">
-                            <i class="fas fa-rocket me-2"></i>
-                            Comenzar Ahora
-                        </a>
-                        <a href="/auth/login" class="btn btn-outline-light btn-lg px-4">
-                            <i class="fas fa-sign-in-alt me-2"></i>
-                            Ya tengo cuenta
-                        </a>
-                    </div>
+    <section class="py-20 bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+        <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/10 to-white/5 rounded-full translate-y-40 -translate-x-40"></div>
+        
+        <div class="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <div data-aos="fade-up">
+                <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6">
+                    ¿Listo para Transformar tu Experiencia en UTEC?
+                </h2>
+                <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                    Únete a cientos de estudiantes de UTEC que ya están aprovechando MATRICULATEC para optimizar su trayectoria académica
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/auth/registro" class="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-2xl hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fas fa-rocket mr-3"></i>
+                        Comenzar Ahora
+                    </a>
+                    <a href="/auth/login" class="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold rounded-2xl border-2 border-white hover:bg-white hover:text-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fas fa-sign-in-alt mr-3"></i>
+                        Ya tengo cuenta
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="row">
-                    <div class="col-lg-4 mb-4">
-                                             <h5 class="mb-3">
-                         <i class="fas fa-graduation-cap me-2"></i>
-                         <strong>UTEC</strong>
-                     </h5>
-                     <p class="text-muted">
-                         <strong>Universidad Tecnológica del Uruguay</strong><br>
-                         Fundada en 2012, transformamos la educación superior con tecnología e innovación. 
-                         Formamos profesionales preparados para los desafíos del futuro.
-                     </p>
-                    </div>
-                    <div class="col-lg-4 mb-4">
-                        <h6 class="mb-3">Enlaces Rápidos</h6>
-                        <ul class="list-unstyled">
-                            <li><a href="#inicio" class="text-muted text-decoration-none">Inicio</a></li>
-                            <li><a href="#caracteristicas" class="text-muted text-decoration-none">Características</a></li>
-                            <li><a href="#como-funciona" class="text-muted text-decoration-none">Cómo Funciona</a></li>
-                            <li><a href="/auth/login" class="text-muted text-decoration-none">Iniciar Sesión</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-4 mb-4">
-                        <h6 class="mb-3">Síguenos</h6>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-facebook"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-linkedin"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
+    <footer class="bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- UTEC Info -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-white text-lg"></i>
                         </div>
+                        <span class="text-2xl font-bold">UTEC</span>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed">
+                        <strong class="text-white">Universidad Tecnológica del Uruguay</strong><br>
+                        Fundada en 2012, transformamos la educación superior con tecnología e innovación. 
+                        Formamos profesionales preparados para los desafíos del futuro.
+                    </p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="space-y-4">
+                    <h6 class="text-lg font-semibold">Enlaces Rápidos</h6>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="text-gray-300 hover:text-white transition-colors duration-200">Inicio</a></li>
+                        <li><a href="#caracteristicas" class="text-gray-300 hover:text-white transition-colors duration-200">Características</a></li>
+                        <li><a href="#como-funciona" class="text-gray-300 hover:text-white transition-colors duration-200">Cómo Funciona</a></li>
+                        <li><a href="/auth/login" class="text-gray-300 hover:text-white transition-colors duration-200">Iniciar Sesión</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Social Links -->
+                <div class="space-y-4">
+                    <h6 class="text-lg font-semibold">Síguenos</h6>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-blue-600 transition-colors duration-200">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-blue-400 transition-colors duration-200">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-pink-600 transition-colors duration-200">
+                            <i class="fab fa-instagram"></i>
+                        </a>
                     </div>
                 </div>
             </div>
-                         <div class="footer-bottom">
-                 <p>&copy; 2024 <strong>UTEC</strong> - Universidad Tecnológica del Uruguay. Todos los derechos reservados.</p>
-                 <p class="mt-2"><small>MATRICULATEC - Sistema de Gestión Académica Inteligente</small></p>
-             </div>
+            
+            <!-- Bottom -->
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-400">
+                    &copy; 2025 <strong class="text-white">UTEC</strong> - Universidad Tecnológica del Uruguay. Todos los derechos reservados.
+                </p>
+                <p class="text-gray-500 mt-2 text-sm">
+                    MATRICULATEC - Sistema de Gestión Académica Inteligente
+                </p>
+            </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- AOS Animations -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Custom JavaScript for Index Page -->
     <script src="/js/index.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Counter animation for stats
+        function animateCounters() {
+            const counters = document.querySelectorAll('[data-count]');
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-count'));
+                const duration = 2000;
+                const increment = target / (duration / 16);
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    counter.textContent = Math.floor(current);
+                }, 16);
+            });
+        }
+        
+        // Trigger counter animation when stats section is visible
+        const statsSection = document.querySelector('section.bg-gradient-to-br');
+        if (statsSection) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounters();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            observer.observe(statsSection);
+        }
+    </script>
 </body>
 </html>
 

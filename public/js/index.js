@@ -123,62 +123,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Trigger counter animation when stats section is visible
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            animateCounters();
-            observer.unobserve(entry.target);
-        }
-    });
-});
-
-const statsSection = document.querySelector('.stats-section');
-if (statsSection) {
-    observer.observe(statsSection);
-}
-
-// Función para toggle del menú móvil
-function toggleMenu() {
-    const navbarCollapse = document.getElementById('navbarNav');
-    navbarCollapse.classList.toggle('show');
-}
-
-// Función para toggle del dropdown
-function toggleDropdown(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const dropdown = event.target.closest('.dropdown');
-    const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-    
-    // Cerrar todos los otros dropdowns
-    document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
-        if (menu !== dropdownMenu) {
-            menu.classList.remove('show');
-        }
-    });
-    
-    // Toggle del dropdown actual
-    dropdownMenu.classList.toggle('show');
-}
-
-// Cerrar dropdown al hacer clic fuera
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.dropdown')) {
-        document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
-            menu.classList.remove('show');
+document.addEventListener('DOMContentLoaded', function() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounters();
+                observer.unobserve(entry.target);
+            }
         });
-    }
-});
+    });
 
-// Navbar background change on scroll
-window.addEventListener('scroll', () => {
-    const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 50) {
-        navbar.style.background = 'rgba(30, 58, 138, 0.95)';
-        navbar.style.backdropFilter = 'blur(10px)';
-    } else {
-        navbar.style.background = 'linear-gradient(135deg, var(--utec-primary) 0%, var(--utec-secondary) 100%)';
-        navbar.style.backdropFilter = 'none';
+    const statsSection = document.querySelector('section.bg-gradient-to-br');
+    if (statsSection) {
+        observer.observe(statsSection);
     }
 });

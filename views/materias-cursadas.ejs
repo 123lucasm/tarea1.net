@@ -7,132 +7,200 @@
 
     <!-- Tailwind CSS Local -->
     <link rel="stylesheet" href="/css/tailwind.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Materias Cursadas CSS -->
-    <link rel="stylesheet" href="/css/materias-cursadas.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-graduation-cap me-2"></i>
-                <strong>MATRICULATEC</strong>
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/dashboard">
-                    <i class="fas fa-home me-1"></i>
-                    Dashboard
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                        MATRICULATEC
+                    </span>
                 </a>
-                <a class="nav-link" href="/materias">
-                    <i class="fas fa-book me-1"></i>
-                    Materias
-                </a>
-                <a class="nav-link" href="/elegibilidad">
-                    <i class="fas fa-check-circle me-1"></i>
-                    Elegibilidad
-                </a>
-                <a class="nav-link" href="/auth/logout">
-                    <i class="fas fa-sign-out-alt me-1"></i>
-                    Cerrar Sesión
-                </a>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/dashboard" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/materias-cursadas" class="text-blue-600 font-medium flex items-center space-x-2">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Mis Materias</span>
+                    </a>
+                </div>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <a href="/auth/logout" class="text-gray-600 hover:text-red-600 transition-colors duration-200 font-medium flex items-center space-x-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="main-content">
-        <div class="container">
+    <div class="pt-20 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Page Header -->
-            <div class="page-header text-center">
-                <h1 class="page-title">Mis Materias Cursadas</h1>
-                <p class="page-subtitle">Selecciona las materias que ya has cursado para ver tu elegibilidad</p>
+            <div class="text-center mb-12">
+                <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                    Mis Materias
+                    <span class="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                        Cursadas
+                    </span>
+                </h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Selecciona las materias que ya has cursado para ver tu elegibilidad
+                </p>
             </div>
 
             <!-- Instructions -->
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Instrucciones:</strong> Marca las materias que ya has cursado y aprobado. El sistema calculará automáticamente qué materias puedes cursar en el próximo semestre.
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="fas fa-info-circle text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-blue-900 mb-2">Instrucciones</h3>
+                        <p class="text-blue-800">
+                            Marca las materias que ya has cursado y aprobado. El sistema calculará automáticamente qué materias puedes cursar en el próximo semestre.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <!-- Stats -->
-            <div class="stats-grid" id="statsContainer">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalMaterias">0</div>
-                    <div class="stat-label">Total Materias</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" id="statsContainer">
+                <div class="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Materias</p>
+                            <p class="text-3xl font-bold text-blue-600" id="totalMaterias">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-book text-white text-xl"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="materiasCursadas">0</div>
-                    <div class="stat-label">Cursadas</div>
+
+                <div class="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Cursadas</p>
+                            <p class="text-3xl font-bold text-green-600" id="materiasCursadas">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-white text-xl"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="materiasElegibles">0</div>
-                    <div class="stat-label">Elegibles</div>
+
+                <div class="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Elegibles</p>
+                            <p class="text-3xl font-bold text-purple-600" id="materiasElegibles">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-white text-xl"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="materiasNoElegibles">0</div>
-                    <div class="stat-label">No Elegibles</div>
+
+                <div class="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">No Elegibles</p>
+                            <p class="text-3xl font-bold text-red-600" id="materiasNoElegibles">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-times-circle text-white text-xl"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Materias Cursadas Selection -->
-            <div class="content-card">
-                <h3 class="mb-4">
-                    <i class="fas fa-check-square me-2"></i>
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 mb-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-check-square mr-3 text-blue-600"></i>
                     Selecciona las materias que has cursado
                 </h3>
                 <div id="semestresContainer">
-                    <div class="loading">
-                        <i class="fas fa-spinner"></i>
-                        <p>Cargando materias por semestre...</p>
+                    <div class="flex items-center justify-center py-12">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                            </div>
+                            <p class="text-gray-600 font-medium">Cargando materias por semestre...</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Materias Elegibles -->
-            <div class="content-card" id="materiasElegiblesContainer" style="display: none;">
-                <h3 class="mb-4">
-                    <i class="fas fa-check-circle me-2 text-success"></i>
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 mb-8 hidden" id="materiasElegiblesContainer">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-check-circle mr-3 text-green-600"></i>
                     Materias que puedes cursar
                 </h3>
-                <div class="materias-grid" id="materiasElegiblesList"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="materiasElegiblesList"></div>
             </div>
 
             <!-- Materias No Elegibles -->
-            <div class="content-card" id="materiasNoElegiblesContainer" style="display: none;">
-                <h3 class="mb-4">
-                    <i class="fas fa-times-circle me-2 text-danger"></i>
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 mb-8 hidden" id="materiasNoElegiblesContainer">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-times-circle mr-3 text-red-600"></i>
                     Materias que no puedes cursar aún
                 </h3>
-                <div class="materias-grid" id="materiasNoElegiblesList"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="materiasNoElegiblesList"></div>
             </div>
 
             <!-- Action Buttons -->
-            <div class="text-center mb-4">
-                <button class="btn btn-primary me-3" id="btnCalcularElegibilidad">
-                    <i class="fas fa-calculator me-2"></i>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold rounded-2xl hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1" id="btnCalcularElegibilidad">
+                    <i class="fas fa-calculator mr-3"></i>
                     Calcular Elegibilidad
                 </button>
-                <button class="btn btn-success me-3" id="btnGuardarCambios">
-                    <i class="fas fa-save me-2"></i>
+                <button class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-700 text-white font-semibold rounded-2xl hover:from-green-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1" id="btnGuardarCambios">
+                    <i class="fas fa-save mr-3"></i>
                     Guardar Cambios
                 </button>
-                <button class="btn btn-secondary me-3" id="btnLimpiarSeleccion">
-                    <i class="fas fa-eraser me-2"></i>
+                <button class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold rounded-2xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1" id="btnLimpiarSeleccion">
+                    <i class="fas fa-eraser mr-3"></i>
                     Limpiar Selección
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/materias-cursadas.js"></script>
+    
+    <script>
+        // Add hover effects to cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.hover\\:-translate-y-1');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const AuthService = require('../services/authService');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, checkSession } = require('../middleware/auth');
 const passport = require('passport');
 
 const router = express.Router();
@@ -524,6 +524,7 @@ router.get('/logout', (req, res) => {
 
 // POST /auth/actualizar-perfil - Actualizar perfil de usuario
 router.post('/actualizar-perfil', 
+  checkSession,
   [
     body('cedula')
       .optional()
@@ -551,7 +552,7 @@ router.post('/actualizar-perfil',
         });
       }
 
-      const { cedula, nombre, apellido, biografia, notificacionesEmail, modoOscuro } = req.body;
+      const { cedula, nombre, apellido, modoOscuro } = req.body;
       const userId = req.session.userId;
       const Usuario = require('../models/Usuario');
 
@@ -580,8 +581,6 @@ router.post('/actualizar-perfil',
       }
       if (nombre) datosActualizacion.nombre = nombre;
       if (apellido) datosActualizacion.apellido = apellido;
-      if (biografia !== undefined) datosActualizacion.biografia = biografia;
-      if (notificacionesEmail !== undefined) datosActualizacion.notificacionesEmail = notificacionesEmail === 'on';
       if (modoOscuro !== undefined) datosActualizacion.modoOscuro = modoOscuro === 'on';
 
       const usuarioActualizado = await Usuario.findByIdAndUpdate(
@@ -589,6 +588,22 @@ router.post('/actualizar-perfil',
         datosActualizacion,
         { new: true }
       ).select('-password -refreshToken');
+
+      // Registrar actividad de actualización de perfil
+      const ActividadService = require('../services/actividadService');
+      try {
+        await ActividadService.registrarActualizacionPerfil(
+          userId,
+          {
+            cedula: cedula ? { anterior: usuarioActualizado.cedula, nuevo: cedula } : null,
+            nombre: nombre ? { anterior: usuarioActualizado.nombre, nuevo: nombre } : null,
+            apellido: apellido ? { anterior: usuarioActualizado.apellido, nuevo: apellido } : null
+          },
+          req
+        );
+      } catch (error) {
+        console.error('Error registrando actividad de perfil:', error);
+      }
 
       // Actualizar datos de sesión
       req.session.userName = `${usuarioActualizado.nombre} ${usuarioActualizado.apellido}`;

@@ -7,102 +7,176 @@
     
     <!-- Tailwind CSS Local -->
     <link rel="stylesheet" href="/css/tailwind.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- AOS Animations -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS for Index Page like Perfil Navigation -->
-    <link rel="stylesheet" href="/css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="/dashboard">
-                <i class="fas fa-graduation-cap me-2"></i>
-                <strong>MATRICULATEC</strong>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-togg-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" style="margin-right: 1rem;">
-                    <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user me-1"></i>
-                                <%= usuario.nombre %>
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                        MATRICULATEC
+                    </span>
+                </a>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/dashboard" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/materias-cursadas" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium flex items-center space-x-2">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Mis Materias</span>
+                    </a>
+                </div>
+
+                <!-- User Menu -->
+                <div class="relative group">
+                    <button class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <span class="font-medium"><%= usuario.nombre %></span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <div class="py-2">
+                            <a href="/dashboard" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-home w-4 h-4 mr-3"></i>
+                                Mi Dashboard
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/dashboard">Mi Dashboard</a></li>
-                                <li><a class="dropdown-item" href="/auth/perfil">Mi Perfil</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/auth/logout">Cerrar Sesión</a></li>
-                            </ul>
-                        </li>
-                    <% } else { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/auth/login">Iniciar Sesión</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/auth/registro">Registrarse</a>
-                        </li>
-                    <% } %>
-                </ul>
+                            <a href="/auth/perfil" class="flex items-center px-4 py-2 text-sm text-blue-600 bg-blue-50">
+                                <i class="fas fa-user-edit w-4 h-4 mr-3"></i>
+                                Mi Perfil
+                            </a>
+                            <hr class="my-2">
+                            <a href="/auth/logout" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt w-4 h-4 mr-3"></i>
+                                Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content Container -->
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100" style="padding-top: 80px;">
-        <div class="container mx-auto px-4 py-8">
-    <!-- Header Section -->
-            <div class="bg-white rounded-2xl shadow-xl bg-gradient-to-r from-white to-blue-50 border border-blue-100 mb-8">
-                <div class="px-8 py-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-user-circle text-2xl text-white"></i>
+    <div class="pt-20 pb-8 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Hero Section con diseño moderno -->
+            <div class="relative mb-12">
+                <!-- Fondo con gradiente y formas geométricas -->
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl transform rotate-1"></div>
+                <div class="absolute inset-0 bg-gradient-to-tr from-blue-500 via-cyan-500 to-teal-500 rounded-3xl transform -rotate-1"></div>
+                
+                <!-- Contenido principal -->
+                <div class="relative bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl">
+                    <div class="flex flex-col lg:flex-row items-center justify-between">
+                        <!-- Información del usuario -->
+                        <div class="flex items-center space-x-6 mb-6 lg:mb-0">
+                            <!-- Avatar con efecto glassmorphism -->
+                            <div class="relative">
+                                <div class="w-24 h-24 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-xl">
+                                    <span class="text-4xl font-bold text-white" id="sidebar-initials">
+                                        <%= usuario ? usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toUpperCase() : 'U' %>
+                                    </span>
+                                </div>
+                                <!-- Indicador de estado -->
+                                <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-400 rounded-full border-4 border-white flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
                             </div>
-            <div>
-                                <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 bg-clip-text text-transparent">
-                    Mi Perfil
-                </h1>
-                                <p class="text-gray-600 mt-1">
-                    Gestiona tu información personal y configuración de cuenta
-                </p>
-            </div>
+                            
+                            <div>
+                                <h1 class="text-4xl lg:text-5xl font-bold text-white mb-2" id="sidebar-name">
+                                    <%= usuario ? usuario.nombre + ' ' + usuario.apellido : 'Usuario' %>
+                                </h1>
+                                <p class="text-white/80 text-lg mb-3" id="sidebar-email">
+                                    <%= usuario ? usuario.email : 'usuario@ejemplo.com' %>
+                                </p>
+                                <div class="flex items-center">
+                                    <span class="inline-flex items-center px-4 py-2 bg-yellow-400/90 text-yellow-900 rounded-full text-sm font-semibold backdrop-blur-sm" id="sidebar-role">
+                                        <i class="fas fa-user-graduate mr-2"></i>
+                                        <%= usuario ? (usuario.rol === 'estudiante' ? 'Estudiante' : 'Administrador') : 'Usuario' %>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>
-                        <button id="edit-profile-btn" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                            <i class="fas fa-edit mr-2"></i>
-                Editar Perfil
-            </button>
-                        <% } %>
-        </div>
-    </div>
 
-                <!-- Alerta de actualización obligatoria si aplica -->
+                        <!-- Botón de edición con efecto neón -->
+                        <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>
+                        <button id="edit-profile-btn" class="group relative bg-gradient-to-r from-pink-500 to-violet-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-2xl hover:shadow-pink-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-violet-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div class="relative flex items-center">
+                                <i class="fas fa-edit mr-3"></i>
+                                Editar Perfil
+                            </div>
+                        </button>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Alerta de actualización obligatoria con diseño moderno -->
                 <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>
-                <div class="bg-gradient-to-r from-yellow-400 to-orange-400 border-l-4 border-yellow-600 rounded-lg m-8" role="alert">
-                    <div class="flex items-center p-4">
-                        <i class="fas fa-exclamation-triangle text-2xl text-yellow-800 mr-4"></i>
-                        <div>
-                            <div class="text-lg font-bold text-yellow-800">Actualización obligatoria requerida:</div>
-                            <div class="text-yellow-700 mt-1">
-                                <% if (primeraVezGoogle) { %>
-                                Como primer usuario con Google, necesitas completar tu perfil estableciendo tu cédula real. No puedes continuar hasta que actualices esta información.
-                                <% } else { %>
-                                Necesitas actualizar tu información de perfil antes de continuar. Por favor, completa los campos requeridos.
-                                <% } %>
+                <div class="mt-8 relative overflow-hidden">
+                    <!-- Fondo con gradiente animado -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-3xl opacity-90"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-600 to-amber-600 rounded-3xl animate-pulse"></div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl">
+                        <div class="flex items-start space-x-6">
+                            <!-- Icono con animación -->
+                            <div class="flex-shrink-0">
+                                <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shadow-lg animate-bounce">
+                                    <i class="fas fa-exclamation-triangle text-white text-3xl"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Contenido de texto -->
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <h3 class="text-3xl font-bold text-white drop-shadow-lg">
+                                        ⚠️ Actualización Obligatoria
+                                    </h3>
+                                    <div class="px-4 py-1 bg-red-500/80 text-white text-sm font-bold rounded-full animate-pulse">
+                                        URGENTE
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white/10 rounded-2xl p-6 mb-6">
+                                    <p class="text-white/95 text-lg leading-relaxed font-medium">
+                                        <% if (primeraVezGoogle) { %>
+                                        🔐 <strong>Usuario Google detectado:</strong> Como primer usuario con Google, necesitas completar tu perfil estableciendo tu cédula real. No puedes continuar hasta que actualices esta información.
+                                        <% } else { %>
+                                        📝 <strong>Información incompleta:</strong> Necesitas actualizar tu información de perfil antes de continuar. Por favor, completa los campos requeridos.
+                                        <% } %>
+                                    </p>
+                                </div>
+                                
+                                <!-- Indicador de progreso -->
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-1 bg-white/20 rounded-full h-3 overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-yellow-400 to-red-500 rounded-full w-0 animate-pulse"></div>
+                                    </div>
+                                    <span class="text-white/80 text-sm font-semibold">Completa tu perfil</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -110,220 +184,310 @@
                 <% } %>
             </div>
 
-            <!-- Layout Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <!-- Sidebar de Navegación del Perfil -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                <!-- Información del Usuario -->
-                        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-center">
-                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                <span class="text-3xl font-bold text-blue-600" id="sidebar-initials">
-                                    <%= usuario ? usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toUpperCase() : 'U' %>
-                                </span>
+            <!-- Layout Grid con diseño asimétrico -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <!-- Sidebar de Navegación con diseño glassmorphism -->
+                <div class="xl:col-span-1">
+                    <div class="sticky top-24">
+                        <div class="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+                            <!-- Header del sidebar -->
+                            <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6">
+                                <h3 class="text-xl font-bold text-white flex items-center">
+                                    <i class="fas fa-cog mr-3 text-cyan-400"></i>
+                                    Configuración
+                                </h3>
+                                <p class="text-slate-300 text-sm mt-1">Gestiona tu cuenta</p>
                             </div>
-                            <h3 class="text-xl font-bold text-white mb-1" id="sidebar-name">
-                            <%= usuario ? usuario.nombre + ' ' + usuario.apellido : 'Usuario' %>
-                        </h3>
-                            <p class="text-blue-100 text-sm mb-3" id="sidebar-email">
-                            <%= usuario ? usuario.email : 'usuario@ejemplo.com' %>
-                        </p>
-                            <span class="inline-block bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-semibold" id="sidebar-role">
-                            <%= usuario ? (usuario.rol === 'estudiante' ? 'Estudiante' : 'Administrador') : 'Usuario' %>
-                        </span>
-                </div>
 
-                <!-- Menú de Navegación -->
-                        <div class="p-4">
-                            <h4 class="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Menú de Perfil</h4>
-                            <nav class="space-y-2">
-                                <a href="#informacion-personal" class="flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 profile-menu-item active" data-section="informacion-personal">
-                                    <i class="fas fa-user mr-3 text-blue-500"></i>
-                            Información Personal
-                        </a>
-                                <a href="#seguridad" class="flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 profile-menu-item" data-section="seguridad">
-                                    <i class="fas fa-shield-alt mr-3 text-blue-500"></i>
-                            Seguridad
-                        </a>
-                    </nav>
-                </div>
-            </div>
-        </div>
-
-        <!-- Contenido Principal -->
-        <div class="lg:col-span-3">
-            <!-- Sección: Información Personal -->
-            <div id="informacion-personal" class="profile-section">
-                <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-                        <h3 class="text-2xl font-bold text-white flex items-center">
-                            <i class="fas fa-user mr-3"></i>
-                            Información Personal
-                        </h3>
-                        <p class="text-blue-100 mt-1">Gestión de datos personales y contacto</p>
-                    </div>
-
-                    <form id="profile-form" class="p-8">
-                            <!-- Información Básica -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-user mr-2 text-blue-500"></i>
-                                    Nombre
-                                </label>
-                                <input type="text" 
-                                        id="nombre" 
-                                        name="nombre" 
-                                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50" 
-                                        value="<%= usuario ? usuario.nombre : '' %>" 
-                                        readonly>
-                                </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-user mr-2 text-blue-500"></i>
-                                    Apellido
-                                </label>
-                                <input type="text" 
-                                        id="apellido" 
-                                        name="apellido" 
-                                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50" 
-                                        value="<%= usuario ? usuario.apellido : '' %>" 
-                                        readonly>
-                            </div>
-                                </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-envelope mr-2 text-blue-500"></i>
-                                    Email
-                                </label>
-                                <input type="email" 
-                                        id="email" 
-                                        name="email" 
-                                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50" 
-                                        value="<%= usuario ? usuario.email : '' %>" 
-                                        readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-id-card mr-2 text-blue-500"></i>
-                                    Cédula
-                                    <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>
-                                    <span class="text-red-500 ml-1">*</span>
-                                    <% } %>
-                                </label>
-                                <input type="text" 
-                                        id="cedula" 
-                                        name="cedula"
-                                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>bg-gray-50<% } %>"
-                                        value="<%= usuario ? (usuario.cedula || '') : '' %>"
-                                        <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>readonly<% } %>
-                                        <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>required<% } %>
-                                        placeholder="<% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>Ingresa tu cédula real<% } %>"
-                                >
-                                <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>
-                                <small class="text-gray-500 mt-1 block">Campo obligatorio para usuarios nuevos con Google</small>
-                                <% } %>
+                            <!-- Menú de Navegación con diseño moderno -->
+                            <div class="p-6">
+                                <nav class="space-y-2">
+                                    <a href="#informacion-personal" class="group flex items-center px-4 py-4 rounded-2xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white transition-all duration-300 profile-menu-item active bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg" data-section="informacion-personal">
+                                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-300">
+                                            <i class="fas fa-user text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold">Información Personal</div>
+                                            <div class="text-xs opacity-75">Datos y contacto</div>
+                                        </div>
+                                    </a>
+                                    <a href="#seguridad" class="group flex items-center px-4 py-4 rounded-2xl text-gray-700 hover:bg-gradient-to-r hover:from-green-500 hover:to-teal-600 hover:text-white transition-all duration-300 profile-menu-item" data-section="seguridad">
+                                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4 group-hover:bg-white/30 transition-colors duration-300">
+                                            <i class="fas fa-shield-alt text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold">Seguridad</div>
+                                            <div class="text-xs opacity-75">Contraseña y privacidad</div>
+                                        </div>
+                                    </a>
+                                </nav>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Información Adicional -->
-                        <div class="mb-6">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-file-text mr-2 text-blue-500"></i>
-                                Biografía
-                            </label>
-                            <textarea id="biografia" 
-                                        name="biografia" 
-                                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50" 
-                                        rows="4" 
-                                        readonly
-                            ><%= usuario ? (usuario.biografia || '') : '' %></textarea>
-                            </div>
-
-                            <!-- Configuración de Cuenta -->
-                        <div class="border-t border-gray-200 pt-8 mb-6">
-                            <div class="bg-gray-50 rounded-xl p-6">
-                                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                    <i class="fas fa-cog mr-2 text-blue-500"></i>
-                                    Configuración de Cuenta
-                                </h4>
-                                
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200">
-                                        <div>
-                                            <h5 class="font-semibold text-gray-900">Notificaciones por Email</h5>
-                                            <p class="text-sm text-gray-600">Recibir notificaciones importantes por correo electrónico</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="notificaciones-email" class="sr-only peer" <%= usuario && usuario.notificacionesEmail ? 'checked' : '' %>>
-                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                                        </label>
+                <!-- Contenido Principal con diseño moderno -->
+                <div class="xl:col-span-2">
+                    <!-- Sección: Información Personal -->
+                    <div id="informacion-personal" class="profile-section">
+                        <div class="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+                            <!-- Header con gradiente moderno -->
+                            <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-8">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-white flex items-center mb-2">
+                                            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mr-4">
+                                                <i class="fas fa-user text-xl"></i>
+                                            </div>
+                                            Información Personal
+                                        </h3>
+                                        <p class="text-white/80 text-lg">Gestión de datos personales y contacto</p>
                                     </div>
-
-                                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200">
-                                        <div>
-                                            <h5 class="font-semibold text-gray-900">Modo Oscuro</h5>
-                                            <p class="text-sm text-gray-600">Cambiar el tema de la interfaz a modo oscuro</p>
+                                    <div class="hidden md:block">
+                                        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center">
+                                            <i class="fas fa-id-card text-white text-2xl"></i>
                                         </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="modo-oscuro" class="sr-only peer" <%= usuario && usuario.modoOscuro ? 'checked' : '' %>>
-                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                                        </label>
-                                    </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Botones de Acción -->
-                        <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                            <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>
-                            <button type="button" id="cancel-edit-btn" class="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-semibold transition-all duration-300" style="display: none;">
-                                    <i class="fas fa-times mr-2"></i>
-                                    Cancelar
-                                </button>
-                            <button type="submit" id="save-profile-btn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300" style="display: none;">
-                                    <i class="fas fa-save mr-2"></i>
-                                    Guardar Cambios
-                                </button>
-                            <% } else { %>
-                            <button type="submit" id="save-profile-btn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                                <i class="fas fa-save mr-2"></i>
-                                Guardar y Continuar
-                            </button>
-                            <% } %>
-                            </div>
+                            <!-- Formulario con diseño moderno -->
+                            <form id="profile-form" class="p-8">
+                                <!-- Información Básica con diseño moderno -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                    <div class="group">
+                                        <label class="block text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-user text-white text-sm"></i>
+                                            </div>
+                                            Nombre
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" 
+                                                    id="nombre" 
+                                                    name="nombre" 
+                                                    class="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-200/50 transition-all duration-300 bg-white/50 backdrop-blur-sm text-gray-800 font-medium" 
+                                                    value="<%= usuario ? usuario.nombre : '' %>" 
+                                                    readonly>
+                                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                                <i class="fas fa-lock text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="group">
+                                        <label class="block text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                            <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-user text-white text-sm"></i>
+                                            </div>
+                                            Apellido
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" 
+                                                    id="apellido" 
+                                                    name="apellido" 
+                                                    class="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-200/50 transition-all duration-300 bg-white/50 backdrop-blur-sm text-gray-800 font-medium" 
+                                                    value="<%= usuario ? usuario.apellido : '' %>" 
+                                                    readonly>
+                                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                                <i class="fas fa-lock text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Email y Cédula con diseño moderno -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                    <div class="group">
+                                        <label class="block text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-envelope text-white text-sm"></i>
+                                            </div>
+                                            Email
+                                        </label>
+                                        <div class="relative">
+                                            <input type="email" 
+                                                    id="email" 
+                                                    name="email" 
+                                                    class="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-200/50 transition-all duration-300 bg-white/50 backdrop-blur-sm text-gray-800 font-medium" 
+                                                    value="<%= usuario ? usuario.email : '' %>" 
+                                                    readonly>
+                                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                                <i class="fas fa-lock text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="group">
+                                        <label class="block text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                            <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-id-card text-white text-sm"></i>
+                                            </div>
+                                            Cédula
+                                            <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>
+                                            <span class="text-red-500 ml-2 text-lg">*</span>
+                                            <% } %>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" 
+                                                    id="cedula" 
+                                                    name="cedula"
+                                                    class="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-200/50 transition-all duration-300 <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>bg-white/50 backdrop-blur-sm<% } else { %>bg-white<% } %> text-gray-800 font-medium"
+                                                    value="<%= usuario ? (usuario.cedula || '') : '' %>"
+                                                    <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>readonly<% } %>
+                                                    <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>required<% } %>
+                                                    placeholder="<% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>Ingresa tu cédula real<% } %>"
+                                            >
+                                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                                <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>
+                                                <i class="fas fa-lock text-gray-400"></i>
+                                                <% } else { %>
+                                                <i class="fas fa-edit text-orange-500"></i>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <% if (typeof actualizacionObligatoria !== 'undefined' && actualizacionObligatoria) { %>
+                                        <div class="mt-2 flex items-center text-sm text-orange-600">
+                                            <i class="fas fa-info-circle mr-2"></i>
+                                            Campo obligatorio para usuarios nuevos con Google
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+
+                                <!-- Configuración de Cuenta con diseño moderno -->
+                                <div class="bg-gradient-to-br from-slate-50 to-gray-100 rounded-3xl p-8 mb-8 border border-gray-200">
+                                    <h4 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 rounded-2xl flex items-center justify-center mr-4">
+                                            <i class="fas fa-cog text-white"></i>
+                                        </div>
+                                        Configuración de Cuenta
+                                    </h4>
+                                    
+                                    <div class="space-y-6">
+
+                                        <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-4">
+                                                    <div class="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-800 rounded-2xl flex items-center justify-center">
+                                                        <i class="fas fa-moon text-white"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="text-lg font-bold text-gray-800">Modo Oscuro</h5>
+                                                        <p class="text-sm text-gray-600">Cambiar el tema de la interfaz a modo oscuro</p>
+                                                    </div>
+                                                </div>
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" id="modo-oscuro" class="sr-only peer" <%= usuario && usuario.modoOscuro ? 'checked' : '' %>>
+                                                    <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-slate-600 peer-checked:to-slate-800"></div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botones de Acción con diseño moderno -->
+                                <div class="flex justify-end gap-6 pt-8 border-t border-gray-200">
+                                    <% if (typeof actualizacionObligatoria === 'undefined' || !actualizacionObligatoria) { %>
+                                    <button type="button" id="cancel-edit-btn" class="group px-8 py-4 text-gray-700 bg-white border-2 border-gray-300 hover:border-gray-400 rounded-2xl font-bold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg" style="display: none;">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-times mr-3 group-hover:rotate-90 transition-transform duration-300"></i>
+                                            Cancelar
+                                        </div>
+                                    </button>
+                                    <button type="submit" id="save-profile-btn" class="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105" style="display: none;">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        <div class="relative flex items-center">
+                                            <i class="fas fa-save mr-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                            Guardar Cambios
+                                        </div>
+                                    </button>
+                                    <% } else { %>
+                                    <button type="submit" id="save-profile-btn" class="group relative px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-2xl font-bold shadow-2xl hover:shadow-green-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        <div class="relative flex items-center">
+                                            <i class="fas fa-check mr-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                            Guardar y Continuar
+                                        </div>
+                                    </button>
+                                    <% } %>
+                                </div>
                         </form>
                     </div>
                 </div>
 
 
-            <!-- Sección: Seguridad -->
-            <div id="seguridad" class="profile-section bg-white rounded-2xl shadow-xl border border-gray-200" style="display: none;">
-                <div class="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6">
-                    <h3 class="text-2xl font-bold text-white flex items-center">
-                        <i class="fas fa-shield-alt mr-3"></i>
-                            Seguridad
-                        </h3>
-                    <p class="text-red-100 mt-1">Protege tu cuenta con configuración de seguridad</p>
-                </div>
-                        
-                <div class="p-8">
-                    <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 mb-6">
-                        <div class="flex items-center justify-between p-6">
-                            <div>
-                                <h5 class="font-semibold text-gray-900">Cambiar Contraseña</h5>
-                                <p class="text-sm text-gray-600">Actualiza tu contraseña para mantener tu cuenta segura</p>
+                    <!-- Sección: Seguridad con diseño moderno -->
+                    <div id="seguridad" class="profile-section" style="display: none;">
+                        <div class="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+                            <!-- Header con gradiente moderno -->
+                            <div class="bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 px-8 py-8">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-white flex items-center mb-2">
+                                            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mr-4">
+                                                <i class="fas fa-shield-alt text-xl"></i>
+                                            </div>
+                                            Seguridad
+                                        </h3>
+                                        <p class="text-white/80 text-lg">Protege tu cuenta con configuración de seguridad</p>
+                                    </div>
+                                    <div class="hidden md:block">
+                                        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center">
+                                            <i class="fas fa-lock text-white text-2xl"></i>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <button id="change-password-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold transition-all duration-300 shadow-lg">
-                                <i class="fas fa-key mr-2"></i>
-                                Cambiar Contraseña
-                            </button>
-                        </div>
-                        </div>
+                            
+                            <!-- Contenido de seguridad con diseño moderno -->
+                            <div class="p-8">
+                                <% if (!usuario || !usuario.googleId) { %>
+                                <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-3xl border border-red-200 mb-8 p-8">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center">
+                                                <i class="fas fa-key text-white text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-xl font-bold text-gray-800">Cambiar Contraseña</h5>
+                                                <p class="text-gray-600">Actualiza tu contraseña para mantener tu cuenta segura</p>
+                                            </div>
+                                        </div>
+                                        <button id="change-password-btn" class="group relative bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-6 py-4 rounded-2xl font-bold shadow-xl hover:shadow-red-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div class="relative flex items-center">
+                                                <i class="fas fa-key mr-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                                Cambiar Contraseña
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <% } else { %>
+                                <!-- Mensaje para usuarios de Google -->
+                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border border-blue-200 mb-8 p-8">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+                                                <i class="fab fa-google text-white text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-xl font-bold text-gray-800">Cuenta de Google</h5>
+                                                <p class="text-gray-600">Tu cuenta está vinculada con Google</p>
+                                            </div>
+                                        </div>
+                                        <a href="https://myaccount.google.com/security" target="_blank" class="group relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-4 rounded-2xl font-bold shadow-xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div class="relative flex items-center">
+                                                <i class="fas fa-external-link-alt mr-3 group-hover:scale-110 transition-transform duration-300"></i>
+                                                Gestionar en Google
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <% } %>
 
-                    <form id="password-form" class="space-y-6 bg-gray-50 rounded-xl p-6" style="display: none;">
+                                <% if (!usuario || !usuario.googleId) { %>
+                                <form id="password-form" class="space-y-6 bg-white/50 backdrop-blur-sm rounded-3xl p-8 border border-gray-200" style="display: none;">
                             <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-lock mr-2 text-blue-500"></i>
@@ -382,36 +546,66 @@
                                     Cambiar Contraseña
                                 </button>
                             </div>
-                        </form>
+                                </form>
+                                <% } else { %>
+                                <!-- Mensaje para usuarios de Google -->
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200">
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                            <i class="fab fa-google text-white text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">Cuenta de Google</h3>
+                                        <p class="text-gray-600 leading-relaxed">
+                                            Tu cuenta está vinculada con Google. Para cambiar tu contraseña, 
+                                            <a href="https://myaccount.google.com/security" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold">
+                                                visita tu cuenta de Google
+                                            </a>.
+                                        </p>
+                                    </div>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
+            </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-8 mt-16">
-        <div class="container mx-auto px-4 text-center">
-            <div class="flex items-center justify-center mb-4">
-                <i class="fas fa-graduation-cap text-yellow-400 text-2xl mr-3"></i>
-                <span class="text-xl font-bold">MATRICULATEC</span>
-</div>
-            <p class="text-blue-100">
-                Sistema de Gestión Académica Inteligente de UTEC
-            </p>
-            <p class="text-blue-200 mt-2 text-sm">
-                &copy; 2024 UTEC - Universidad Tecnológica del Uruguay. Todos los derechos reservados.
-            </p>
-</div>
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold">MATRICULATEC</span>
+                </div>
+                <p class="text-gray-300 text-lg mb-4">
+                    Sistema de Gestión Académica Inteligente de UTEC
+                </p>
+                <p class="text-gray-400 text-sm">
+                    &copy; 2025 UTEC - Universidad Tecnológica del Uruguay. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
     </footer>
 
     <!-- External Files JS -->
     <!-- AOS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Main Scripts -->
     <script src="/js/perfil-manage.js"></script>
     <script src="/js/perfil-main.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
 </body>
 </html>

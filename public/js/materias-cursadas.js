@@ -91,6 +91,9 @@ function asignarEventosBotones() {
         btnGuardar.addEventListener('click', guardarMateriasCursadas);
     }
 
+    // Asignar eventos a los inputs de nota
+    asignarEventosNotas();
+
     // Botón probar checkbox
     const btnTest = document.getElementById('btnTestCheckbox');
     if (btnTest) {
@@ -98,6 +101,101 @@ function asignarEventosBotones() {
     }
 
     console.log('Eventos de botones asignados');
+}
+
+// Función para asignar eventos a los inputs de nota
+function asignarEventosNotas() {
+    // Asignar eventos a todos los inputs de nota existentes
+    const notaInputs = document.querySelectorAll('input[id^="nota-"]');
+    notaInputs.forEach(input => {
+        input.addEventListener('input', manejarCambioNota);
+        input.addEventListener('blur', validarNota);
+        input.addEventListener('click', prevenirPropagacion);
+        input.addEventListener('mousedown', prevenirPropagacion);
+    });
+    
+    console.log(`Eventos de notas asignados a ${notaInputs.length} inputs`);
+}
+
+// Función para prevenir la propagación del evento de clic
+function prevenirPropagacion(event) {
+    event.stopPropagation();
+}
+
+// Función para manejar cambios en las notas
+function manejarCambioNota(event) {
+    const input = event.target;
+    const materiaId = input.id.replace('nota-', '');
+    const nota = parseFloat(input.value);
+    
+    console.log(`Cambio de nota para materia ${materiaId}: ${nota}`);
+    
+    // Solo actualizar si la nota es válida
+    if (isNaN(nota) || nota < 1 || nota > 5) {
+        console.log('Nota inválida, no actualizando estado');
+        return;
+    }
+    
+    // Actualizar el estado de la materia
+    if (estadosMaterias.has(materiaId)) {
+        const estado = estadosMaterias.get(materiaId);
+        estado.notaFinal = nota;
+        estadosMaterias.set(materiaId, estado);
+    } else {
+        // Crear nuevo estado si no existe
+        estadosMaterias.set(materiaId, {
+            materia: materiaId,
+            estado: 'aprobado',
+            notaFinal: nota,
+            semestre: 1,
+            anio: new Date().getFullYear(),
+            fechaAprobacion: new Date(),
+            creditosObtenidos: 0
+        });
+    }
+    
+    console.log('Estado actualizado:', estadosMaterias.get(materiaId));
+}
+
+// Función para validar la nota
+function validarNota(event) {
+    const input = event.target;
+    const nota = parseFloat(input.value);
+    
+    if (isNaN(nota) || nota < 1 || nota > 5) {
+        input.classList.add('border-red-500', 'bg-red-50');
+        input.classList.remove('border-gray-300');
+        
+        // Mostrar mensaje de error temporal
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'text-red-500 text-xs mt-1';
+        errorMsg.textContent = 'La nota debe estar entre 1.0 y 5.0';
+        errorMsg.id = `error-${input.id}`;
+        
+        // Remover mensaje anterior si existe
+        const existingError = document.getElementById(`error-${input.id}`);
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        input.parentNode.appendChild(errorMsg);
+        
+        // Remover mensaje después de 3 segundos
+        setTimeout(() => {
+            if (errorMsg.parentNode) {
+                errorMsg.remove();
+            }
+        }, 3000);
+    } else {
+        input.classList.remove('border-red-500', 'bg-red-50');
+        input.classList.add('border-gray-300');
+        
+        // Remover mensaje de error si existe
+        const existingError = document.getElementById(`error-${input.id}`);
+        if (existingError) {
+            existingError.remove();
+        }
+    }
 }
 
 // Función para cargar materias cursadas guardadas
@@ -240,21 +338,26 @@ function renderizarMateriasCursadas() {
             const materiasCursadasEnSemestre = semestreData.materias.filter(m => materiasCursadas.has(m._id)).length;
             
             return `
-                <div class="semestre-container">
-                    <div class="semestre-header" data-semestre-id="${semestreId}">
-                        <div class="semestre-info">
-                            <div class="semestre-numero">${semestreNum}</div>
-                            <div class="semestre-details">
-                                <div class="semestre-nombre">${semestreData.semestre?.nombre || 'Sin semestre definido'}</div>
-                                <div class="semestre-stats">
-                                    ${materiasCursadasEnSemestre} de ${semestreData.materias.length} materias cursadas
+                <div class="bg-white rounded-2xl border border-gray-200 mb-4 overflow-hidden">
+                    <div class="semestre-header bg-gradient-to-r from-blue-50 to-indigo-50 p-6 cursor-pointer hover:from-blue-100 hover:to-indigo-100 transition-all duration-300" 
+                         data-semestre-id="${semestreId}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                    <span class="text-white font-bold text-lg">${semestreNum}</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">${semestreData.semestre?.nombre || 'Sin semestre definido'}</h3>
+                                    <p class="text-sm text-gray-600">
+                                        ${materiasCursadasEnSemestre} de ${semestreData.materias.length} materias cursadas
+                                    </p>
                                 </div>
                             </div>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300 semestre-toggle"></i>
                         </div>
-                        <i class="fas fa-chevron-down semestre-toggle"></i>
                     </div>
-                    <div class="semestre-content" id="${semestreId}">
-                        <div class="semestre-materias">
+                    <div class="semestre-content hidden" id="${semestreId}">
+                        <div class="p-6 space-y-3">
                             ${semestreData.materias.map(materia => {
                                 const estado = estadosMaterias.get(materia._id);
                                 const estadoTexto = estado ? getEstadoTexto(estado.estado) : 'No cursada';
@@ -262,31 +365,47 @@ function renderizarMateriasCursadas() {
                                 const isChecked = materiasCursadas.has(materia._id);
                                 
                                 return `
-                                <div class="checkbox-container ${isChecked ? 'checked' : ''}" 
+                                <div class="checkbox-container flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-md ${isChecked ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:border-blue-300'}" 
                                      data-materia-id="${materia._id}">
-                                    <div class="custom-checkbox ${isChecked ? 'checked' : ''}">
-                                        ${isChecked ? '<i class="fas fa-check"></i>' : ''}
+                                    <div class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${isChecked ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-blue-500'}">
+                                        ${isChecked ? '<i class="fas fa-check text-white text-sm"></i>' : ''}
                                     </div>
-                                    <div class="checkbox-label">
-                                        <span class="materia-codigo">${materia.codigo}</span>
-                                        <span class="materia-nombre">${materia.nombre}</span>
-                                        <span class="materia-creditos">${materia.creditos} créditos</span>
-                                        <div class="materia-estado" style="color: ${estadoColor}; font-size: 0.8rem; margin-top: 2px;">
-                                            <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 4px;"></i>
-                                            ${estadoTexto}
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="text-sm font-mono text-blue-600 bg-blue-100 px-2 py-1 rounded">${materia.codigo}</span>
+                                            <span class="text-sm text-gray-500">${materia.creditos} créditos</span>
+                                        </div>
+                                        <h4 class="font-medium text-gray-900 mb-1">${materia.nombre}</h4>
+                                        <div class="flex items-center space-x-2 text-xs">
+                                            <div class="w-2 h-2 rounded-full" style="background-color: ${estadoColor}"></div>
+                                            <span style="color: ${estadoColor}">${estadoTexto}</span>
                                         </div>
                                         ${isChecked ? `
-                                            <div class="materia-tipo-aprobacion mt-2">
-                                                <label class="form-check-label" style="font-size: 0.8rem; color: #6b7280;">
-                                                    <input type="radio" name="tipo-${materia._id}" value="curso" class="form-check-input me-1" 
-                                                           ${estado && estado.estado === 'aprobado' ? 'checked' : ''}>
-                                                    Curso Aprobado
-                                                </label>
-                                                <label class="form-check-label ms-3" style="font-size: 0.8rem; color: #6b7280;">
-                                                    <input type="radio" name="tipo-${materia._id}" value="examen" class="form-check-input me-1"
-                                                           ${estado && estado.estado === 'cursado' ? 'checked' : ''}>
-                                                    Examen
-                                                </label>
+                                            <div class="mt-3 space-y-3">
+                                                <div class="flex space-x-4">
+                                                    <label class="flex items-center space-x-2 text-sm text-gray-600">
+                                                        <input type="radio" name="tipo-${materia._id}" value="curso" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500" 
+                                                               ${estado && estado.estado === 'aprobado' ? 'checked' : ''}>
+                                                        <span>Curso Aprobado</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 text-sm text-gray-600">
+                                                        <input type="radio" name="tipo-${materia._id}" value="examen" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                                                               ${estado && estado.estado === 'cursado' ? 'checked' : ''}>
+                                                        <span>Examen</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-3">
+                                                    <label class="text-sm font-medium text-gray-700">Nota:</label>
+                                                    <input type="number" 
+                                                           id="nota-${materia._id}" 
+                                                           class="w-20 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                                           min="1" 
+                                                           max="5" 
+                                                           step="0.1" 
+                                                           value="${estado && estado.notaFinal ? estado.notaFinal : ''}" 
+                                                           placeholder="0.0">
+                                                    <span class="text-xs text-gray-500">(1.0 - 5.0)</span>
+                                                </div>
                                             </div>
                                         ` : ''}
                                     </div>
@@ -305,14 +424,15 @@ function renderizarMateriasCursadas() {
     asignarEventosSemestres();
     asignarEventosCheckboxes();
     asignarEventosTipoAprobacion();
+    asignarEventosNotas();
 
     // Restaurar estado abierto de semestres
     abiertosAntes.forEach(id => {
         const content = document.getElementById(id);
         const toggle = content?.previousElementSibling?.querySelector('.semestre-toggle');
-        if (content && !content.classList.contains('mostrar')) {
-            content.classList.add('mostrar');
-            toggle && toggle.classList.add('rotated');
+        if (content && content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            toggle && toggle.classList.add('rotate-180');
         }
         semestresAbiertos.add(id);
     });
@@ -344,20 +464,24 @@ function asignarEventosSemestres() {
 // Función para toggle de semestre
 function toggleSemestre(semestreId) {
     const content = document.getElementById(semestreId);
-    const toggle = content?.previousElementSibling?.querySelector('.semestre-toggle');
+    const header = document.querySelector(`[data-semestre-id="${semestreId}"]`);
+    const toggle = header?.querySelector('.semestre-toggle');
     
-    if (!content) return;
+    if (!content || !header) {
+        console.log('❌ No se encontró contenido o header para:', semestreId);
+        return;
+    }
 
-    if (content.classList.contains('mostrar')) {
-        content.classList.remove('mostrar');
-        toggle && toggle.classList.remove('rotated');
-        semestresAbiertos.delete(semestreId);
-        console.log('📤 Cerrando semestre:', semestreId);
-    } else {
-        content.classList.add('mostrar');
-        toggle && toggle.classList.add('rotated');
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        toggle && toggle.classList.add('rotate-180');
         semestresAbiertos.add(semestreId);
         console.log('📥 Abriendo semestre:', semestreId);
+    } else {
+        content.classList.add('hidden');
+        toggle && toggle.classList.remove('rotate-180');
+        semestresAbiertos.delete(semestreId);
+        console.log('📤 Cerrando semestre:', semestreId);
     }
 }
 
@@ -401,6 +525,8 @@ function asignarEventosTipoAprobacion() {
             console.log('🔄 Radio button cambiado:', materiaId, tipo);
             cambiarTipoAprobacion(materiaId, tipo);
         });
+        radio.addEventListener('click', prevenirPropagacion);
+        radio.addEventListener('mousedown', prevenirPropagacion);
     });
 }
 
@@ -409,45 +535,72 @@ async function guardarMateriasCursadas() {
     try {
         console.log('💾 Guardando materias cursadas...', Array.from(materiasCursadas));
 
-        // Preparar datos con tipos de aprobación
-        const materiasConTipos = Array.from(materiasCursadas).map(materiaId => {
-            const estado = estadosMaterias.get(materiaId);
-            
-            // Determinar el tipo correcto basado en el estado
-            let tipo;
-            if (estado) {
-                if (estado.estado === 'aprobado') {
-                    tipo = 'aprobado'; // Curso aprobado
-                } else if (estado.estado === 'cursado') {
-                    tipo = 'cursado'; // A examen
+        // Preparar datos con tipos de aprobación - filtrar solo materias con notas válidas
+        const materiasConTipos = Array.from(materiasCursadas)
+            .map(materiaId => {
+                const estado = estadosMaterias.get(materiaId);
+                
+                // Obtener la nota del input del DOM
+                const notaInput = document.getElementById(`nota-${materiaId}`);
+                const notaDelInput = notaInput ? parseFloat(notaInput.value) : null;
+                
+                // Determinar el tipo correcto basado en el estado
+                let tipo;
+                if (estado) {
+                    if (estado.estado === 'aprobado') {
+                        tipo = 'aprobado'; // Curso aprobado
+                    } else if (estado.estado === 'cursado') {
+                        tipo = 'cursado'; // A examen
+                    } else {
+                        tipo = 'aprobado'; // Por defecto
+                    }
                 } else {
                     tipo = 'aprobado'; // Por defecto
                 }
-            } else {
-                tipo = 'aprobado'; // Por defecto
-            }
-            
-            console.log(`Materia ${materiaId}: estado=${estado?.estado}, tipo=${tipo}`);
-            
-            return {
-                materiaId: materiaId,
-                tipo: tipo,
-                notaCurso: estado ? estado.notaCurso : (tipo === 'aprobado' ? 4 : undefined),
-                notaExamen: estado ? estado.notaExamen : (tipo === 'cursado' ? 3 : undefined),
-                notaFinal: estado ? estado.notaFinal : (tipo === 'aprobado' ? 4 : 3)
-            };
-        });
+                
+                // Usar la nota del input si está disponible y es válida, sino usar la del estado
+                let notaFinal;
+                if (notaDelInput && !isNaN(notaDelInput) && notaDelInput >= 1 && notaDelInput <= 5) {
+                    notaFinal = notaDelInput;
+                } else if (estado && estado.notaFinal && !isNaN(estado.notaFinal)) {
+                    notaFinal = estado.notaFinal;
+                } else {
+                    // No establecer nota por defecto - retornar null para filtrar después
+                    console.log(`⚠️ Materia ${materiaId} no tiene nota válida, será filtrada...`);
+                    return null;
+                }
+                
+                console.log(`Materia ${materiaId}: estado=${estado?.estado}, tipo=${tipo}, notaInput=${notaDelInput}, notaFinal=${notaFinal}`);
+                
+                return {
+                    materiaId: materiaId,
+                    tipo: tipo,
+                    notaCurso: estado ? estado.notaCurso : (tipo === 'aprobado' ? 4 : undefined),
+                    notaExamen: estado ? estado.notaExamen : (tipo === 'cursado' ? 3 : undefined),
+                    notaFinal: notaFinal
+                };
+            })
+            .filter(item => item !== null); // Filtrar materias sin nota válida
 
         console.log('Materias con tipos a guardar:', materiasConTipos);
         console.log('Estados en memoria:', Array.from(estadosMaterias.entries()));
 
+        // Verificar si hay materias válidas para guardar
+        if (materiasConTipos.length === 0) {
+            mostrarMensaje('No hay materias con notas válidas para guardar. Por favor, ingresa notas entre 1.0 y 5.0 para las materias cursadas.', 'warning');
+            return;
+        }
+
+        // Solo enviar materias que tienen notas válidas
+        const materiasCursadasValidas = materiasConTipos.map(item => item.materiaId);
+        
         const response = await fetch('/materias-cursadas/api/materias-cursadas', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                materiasCursadas: Array.from(materiasCursadas),
+                materiasCursadas: materiasCursadasValidas,
                 materiasConTipos: materiasConTipos
             })
         });
@@ -473,25 +626,88 @@ async function guardarMateriasCursadas() {
 function mostrarMensaje(mensaje, tipo) {
     // Crear elemento de mensaje
     const mensajeDiv = document.createElement('div');
-    mensajeDiv.className = `alert alert-${tipo === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-    mensajeDiv.style.position = 'fixed';
-    mensajeDiv.style.top = '20px';
-    mensajeDiv.style.right = '20px';
-    mensajeDiv.style.zIndex = '9999';
-    mensajeDiv.style.minWidth = '300px';
+    const isSuccess = tipo === 'success';
+    
+    mensajeDiv.className = `fixed top-4 right-4 z-50 max-w-sm transform transition-all duration-300 ease-in-out translate-x-0`;
+    mensajeDiv.style.animation = 'slideInRight 0.3s ease-out';
     
     mensajeDiv.innerHTML = `
-        <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
-        ${mensaje}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div class="p-4 flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 ${isSuccess ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center">
+                        <i class="fas fa-${isSuccess ? 'check-circle' : 'exclamation-triangle'} ${isSuccess ? 'text-green-600' : 'text-red-600'} text-lg"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold ${isSuccess ? 'text-green-800' : 'text-red-800'}">
+                        ${isSuccess ? '¡Éxito!' : 'Error'}
+                    </p>
+                    <p class="text-sm ${isSuccess ? 'text-green-700' : 'text-red-700'} mt-1">
+                        ${mensaje}
+                    </p>
+                </div>
+                <button onclick="this.closest('.fixed').remove()" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            <div class="h-1 bg-gray-200">
+                <div class="h-full ${isSuccess ? 'bg-green-500' : 'bg-red-500'} animate-progress"></div>
+            </div>
+        </div>
     `;
+    
+    // Agregar estilos CSS para las animaciones
+    if (!document.getElementById('notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            .animate-progress {
+                animation: progress 5s linear forwards;
+            }
+            @keyframes progress {
+                from {
+                    width: 100%;
+                }
+                to {
+                    width: 0%;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
     document.body.appendChild(mensajeDiv);
     
     // Auto-remover después de 5 segundos
     setTimeout(() => {
         if (mensajeDiv.parentNode) {
-            mensajeDiv.parentNode.removeChild(mensajeDiv);
+            mensajeDiv.style.animation = 'slideOutRight 0.3s ease-in forwards';
+            setTimeout(() => {
+                if (mensajeDiv.parentNode) {
+                    mensajeDiv.parentNode.removeChild(mensajeDiv);
+                }
+            }, 300);
         }
     }, 5000);
 }
@@ -587,65 +803,101 @@ function renderizarResultados() {
 
     // Asignar eventos a las flechas de expansión
     asignarEventosExpandibles();
+    
+    // Asignar eventos a los semestres
+    asignarEventosSemestres();
 }
 
 // Función para crear tarjeta de materia
 function crearMateriaCard(materia, tipo) {
     const badgeIcon = tipo === 'elegible' ? 'fa-check-circle' : 'fa-times-circle';
-    const badgeColor = tipo === 'elegible' ? 'var(--utec-success)' : 'var(--utec-danger)';
+    const badgeColor = tipo === 'elegible' ? 'text-green-500' : 'text-red-500';
+    const bgColor = tipo === 'elegible' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
     const uniqueId = `materia-${materia._id}-${tipo}`;
     
     return `
-        <div class="materia-expandible">
-            <div class="checkbox-container ${tipo}" style="border-color: ${badgeColor}; background: ${tipo === 'elegible' ? '#f0fdf4' : '#fef2f2'};">
-                <div class="custom-checkbox" style="background: ${badgeColor}; border-color: ${badgeColor};">
-                    <i class="fas ${badgeIcon}" style="color: white; font-size: 12px;"></i>
-                </div>
-                <div class="checkbox-label">
-                    <span class="materia-codigo">${materia.codigo}</span>
-                    <span class="materia-nombre">${materia.nombre}</span>
-                    <span class="materia-creditos">${materia.creditos} créditos</span>
-                    ${materia.semestre?.numero ? `<br><small style="color: #6b7280; font-size: 0.7rem;">Semestre ${materia.semestre.numero}</small>` : ''}
-                </div>
-                <i class="fas fa-chevron-down expand-icon" data-materia-id="${uniqueId}"></i>
-            </div>
-            <div class="materia-detalles" id="${uniqueId}">
-                <div class="materia-descripcion">${materia.descripcion || 'Sin descripción disponible'}</div>
-                <div class="materia-info">
-                    <div class="info-item">
-                        <i class="fas fa-calendar info-icon"></i>
-                        <span class="info-text">Semestre ${materia.semestre?.numero || 'N/A'}</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-users info-icon"></i>
-                        <span class="info-text">Cupo: ${materia.cupoDisponible || 0}/${materia.cupoMaximo || 0}</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-chalkboard-teacher info-icon"></i>
-                        <span class="info-text">${materia.profesor?.nombre || 'Sin asignar'}</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-book info-icon"></i>
-                        <span class="info-text">${materia.creditos} créditos académicos</span>
-                    </div>
-                </div>
-                ${materia.elegibilidad && !materia.elegibilidad.elegible && materia.elegibilidad.requisitosFaltantes ? `
-                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                        <h6 style="color: var(--utec-danger); margin-bottom: 0.5rem;">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            Requisitos faltantes:
-                        </h6>
-                        ${materia.elegibilidad.requisitosFaltantes.map(req => `
-                            <div style="background: #fef2f2; padding: 0.5rem; border-radius: 0.25rem; margin-bottom: 0.5rem; border-left: 3px solid var(--utec-danger);">
-                                <strong>${req.codigo}</strong> - ${req.materia}
-                                <br>
-                                <small style="color: #6b7280;">
-                                    ${req.tipoDescripcion || req.tipo} (Nota mínima: ${req.notaMinima})
-                                </small>
+        <div class="bg-white rounded-2xl border-2 ${bgColor} overflow-hidden hover:shadow-lg transition-all duration-300" data-materia-id="${uniqueId}">
+            <div class="p-6 cursor-pointer hover:bg-opacity-80 transition-all duration-300 materia-header" data-materia-id="${uniqueId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 ${tipo === 'elegible' ? 'bg-green-500' : 'bg-red-500'} rounded-xl flex items-center justify-center">
+                            <i class="fas ${badgeIcon} text-white text-lg"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="text-sm font-mono ${tipo === 'elegible' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'} px-3 py-1 rounded-lg">${materia.codigo}</span>
+                                <span class="text-sm text-gray-500">${materia.creditos} créditos</span>
+                                ${materia.semestre?.numero ? `<span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">Semestre ${materia.semestre.numero}</span>` : ''}
                             </div>
-                        `).join('')}
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">${materia.nombre}</h3>
+                            <p class="text-sm text-gray-600">${materia.descripcion || 'Sin descripción disponible'}</p>
+                        </div>
                     </div>
-                ` : ''}
+                    <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300 expand-icon" data-materia-id="${uniqueId}"></i>
+                </div>
+            </div>
+            <div class="materia-detalles hidden border-t border-gray-200" id="${uniqueId}">
+                <div class="p-6 bg-gray-50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Semestre</p>
+                                <p class="text-sm text-gray-600">${materia.semestre?.numero || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Cupo</p>
+                                <p class="text-sm text-gray-600">${materia.cupoDisponible || 0}/${materia.cupoMaximo || 0}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chalkboard-teacher text-orange-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Profesor</p>
+                                <p class="text-sm text-gray-600">${materia.profesor?.nombre || 'Sin asignar'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-book text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Créditos</p>
+                                <p class="text-sm text-gray-600">${materia.creditos} académicos</p>
+                            </div>
+                        </div>
+                    </div>
+                    ${materia.elegibilidad && !materia.elegibilidad.elegible && materia.elegibilidad.requisitosFaltantes ? `
+                        <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <h6 class="text-red-800 font-semibold mb-3 flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Requisitos faltantes:
+                            </h6>
+                            <div class="space-y-2">
+                                ${materia.elegibilidad.requisitosFaltantes.map(req => `
+                                    <div class="bg-white p-3 rounded-lg border-l-4 border-red-400">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-mono text-sm font-semibold text-red-700">${req.codigo}</span>
+                                            <span class="text-sm text-gray-700">${req.materia}</span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            ${req.tipoDescripcion || req.tipo}
+                                        </p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
             </div>
         </div>
     `;
@@ -686,11 +938,19 @@ function testCheckbox() {
 // Función para asignar eventos a las flechas de expansión
 function asignarEventosExpandibles() {
     const expandIcons = document.querySelectorAll('.expand-icon');
-    console.log('🔗 Asignando eventos a', expandIcons.length, 'íconos de expansión');
+    const materiaHeaders = document.querySelectorAll('.materia-header');
+    console.log('🔗 Asignando eventos a', expandIcons.length, 'íconos de expansión y', materiaHeaders.length, 'headers de materias');
     
+    // Asignar eventos a los íconos
     expandIcons.forEach(icon => {
         const materiaId = icon.getAttribute('data-materia-id');
-        console.log('📌 Asignando evento a materia:', materiaId);
+        
+        if (!materiaId) {
+            console.log('❌ No se encontró data-materia-id para el ícono');
+            return;
+        }
+        
+        console.log('📌 Asignando evento a ícono de materia:', materiaId);
         
         // Remover eventos anteriores para evitar duplicados
         const newIcon = icon.cloneNode(true);
@@ -704,26 +964,58 @@ function asignarEventosExpandibles() {
             toggleMateriaDetalles(materiaId);
         });
     });
+    
+    // Asignar eventos a los headers de las materias
+    materiaHeaders.forEach(header => {
+        const materiaId = header.getAttribute('data-materia-id');
+        
+        if (!materiaId) {
+            console.log('❌ No se encontró data-materia-id para el header');
+            return;
+        }
+        
+        console.log('📌 Asignando evento a header de materia:', materiaId);
+        
+        // Remover eventos anteriores para evitar duplicados
+        const newHeader = header.cloneNode(true);
+        header.parentNode.replaceChild(newHeader, header);
+        
+        // Asignar nuevo event listener
+        newHeader.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Click en header de materia:', materiaId);
+            toggleMateriaDetalles(materiaId);
+        });
+    });
 }
 
 // Función para toggle de detalles de materia
 function toggleMateriaDetalles(materiaId) {
     const detalles = document.getElementById(materiaId);
-    const icon = detalles.previousElementSibling.querySelector('.expand-icon');
+    const icon = document.querySelector(`[data-materia-id="${materiaId}"] .expand-icon`);
     
-    if (detalles.classList.contains('mostrar')) {
-        detalles.classList.remove('mostrar');
-        icon.classList.remove('rotated');
+    if (!detalles || !icon) {
+        console.log('❌ No se encontró detalles o ícono para:', materiaId);
+        return;
+    }
+    
+    if (!detalles.classList.contains('hidden')) {
+        detalles.classList.add('hidden');
+        icon.classList.remove('rotate-180');
         console.log('📤 Cerrando detalles de:', materiaId);
     } else {
         // Cerrar otros detalles abiertos
-        document.querySelectorAll('.materia-detalles.mostrar').forEach(detalle => {
-            detalle.classList.remove('mostrar');
-            detalle.previousElementSibling.querySelector('.expand-icon').classList.remove('rotated');
+        document.querySelectorAll('.materia-detalles:not(.hidden)').forEach(detalle => {
+            detalle.classList.add('hidden');
+            const detalleIcon = document.querySelector(`[data-materia-id="${detalle.id}"] .expand-icon`);
+            if (detalleIcon) {
+                detalleIcon.classList.remove('rotate-180');
+            }
         });
         
-        detalles.classList.add('mostrar');
-        icon.classList.add('rotated');
+        detalles.classList.remove('hidden');
+        icon.classList.add('rotate-180');
         console.log('📥 Abriendo detalles de:', materiaId);
     }
 }

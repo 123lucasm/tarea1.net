@@ -24,82 +24,10 @@ router.get('/api/materias', requireAuth, async (req, res) => {
 
         console.log(`✅ Materias encontradas: ${materias.length}`);
         
-        // Si no hay materias, crear algunas de prueba
+        // Si no hay materias, devolver array vacío
         if (materias.length === 0) {
-            console.log('⚠️ No hay materias en la base de datos, creando materias de prueba...');
-            
-            // Crear semestres de prueba si no existen
-            const Semestre = require('../models/Semestre');
-            let semestre1 = await Semestre.findOne({ numero: 1 });
-            if (!semestre1) {
-                semestre1 = new Semestre({
-                    numero: 1,
-                    nombre: 'Primer Semestre',
-                    orden: 1,
-                    activo: true
-                });
-                await semestre1.save();
-                console.log('✅ Semestre 1 creado');
-            }
-            
-            let semestre2 = await Semestre.findOne({ numero: 2 });
-            if (!semestre2) {
-                semestre2 = new Semestre({
-                    numero: 2,
-                    nombre: 'Segundo Semestre',
-                    orden: 2,
-                    activo: true
-                });
-                await semestre2.save();
-                console.log('✅ Semestre 2 creado');
-            }
-            
-            // Crear materias de prueba
-            const materiasPrueba = [
-                {
-                    codigo: 'PROG101',
-                    nombre: 'Programación I',
-                    descripcion: 'Introducción a la programación',
-                    creditos: 6,
-                    semestre: semestre1._id,
-                    activa: true,
-                    cupoMaximo: 50,
-                    cupoDisponible: 45
-                },
-                {
-                    codigo: 'MAT101',
-                    nombre: 'Matemática I',
-                    descripcion: 'Matemática básica',
-                    creditos: 6,
-                    semestre: semestre1._id,
-                    activa: true,
-                    cupoMaximo: 50,
-                    cupoDisponible: 40
-                },
-                {
-                    codigo: 'PROG201',
-                    nombre: 'Programación II',
-                    descripcion: 'Programación avanzada',
-                    creditos: 6,
-                    semestre: semestre2._id,
-                    activa: true,
-                    cupoMaximo: 40,
-                    cupoDisponible: 35
-                }
-            ];
-            
-            for (const materiaData of materiasPrueba) {
-                const materia = new Materia(materiaData);
-                await materia.save();
-                console.log(`✅ Materia creada: ${materia.codigo}`);
-            }
-            
-            // Recargar las materias
-            const materiasActualizadas = await Materia.find({ activa: true })
-                .populate('semestre', 'nombre numero orden')
-                .sort({ codigo: 1 });
-                
-            return res.json(materiasActualizadas);
+            console.log('⚠️ No hay materias en la base de datos');
+            return res.json([]);
         }
 
         res.json(materias);
@@ -124,6 +52,7 @@ router.post('/api/materias-cursadas', requireAuth, async (req, res) => {
 
         console.log('💾 Guardando materias cursadas:', materiasCursadas.length);
         console.log('📊 Con tipos de aprobación:', materiasConTipos?.length || 0);
+        console.log('📝 Datos de materiasConTipos:', JSON.stringify(materiasConTipos, null, 2));
 
         // Obtener el historial actual del estudiante
         const historialActual = await HistorialAcademico.find({ estudiante: estudianteId });
@@ -157,6 +86,8 @@ router.post('/api/materias-cursadas', requireAuth, async (req, res) => {
 
         // Agregar nuevas materias al historial
         const historialesCreados = [];
+        const ActividadService = require('../services/actividadService');
+        
         for (const materiaId of materiasAAgregar) {
             // Obtener información de la materia para calcular créditos
             const materia = await Materia.findById(materiaId);
@@ -173,7 +104,13 @@ router.post('/api/materias-cursadas', requireAuth, async (req, res) => {
                 notaExamen = tipoInfo.notaExamen || (tipoInfo.tipo === 'cursado' ? 3 : undefined);
             }
             
-            const nota = notas && notas[materiaId] ? notas[materiaId] : (estado === 'aprobado' ? 4 : 3);
+            // Usar la nota del tipoInfo si está disponible, sino no guardar la materia
+            if (!tipoInfo?.notaFinal || isNaN(tipoInfo.notaFinal) || tipoInfo.notaFinal < 1 || tipoInfo.notaFinal > 5) {
+                console.log(`⚠️ Materia ${materiaId} no tiene nota válida (${tipoInfo?.notaFinal}), saltando...`);
+                continue;
+            }
+            const nota = tipoInfo.notaFinal;
+            console.log(`📝 Materia ${materiaId}: notaFinal=${tipoInfo.notaFinal}, nota final calculada=${nota}`);
             
             const historial = new HistorialAcademico({
                 estudiante: estudianteId,
@@ -190,6 +127,17 @@ router.post('/api/materias-cursadas', requireAuth, async (req, res) => {
 
             await historial.save();
             historialesCreados.push(historial);
+
+            // Registrar actividad según el estado
+            try {
+                if (estado === 'aprobado') {
+                    await ActividadService.registrarMateriaAprobada(estudianteId, materiaId, nota, req);
+                } else {
+                    await ActividadService.registrarMateriaRegistrada(estudianteId, materiaId, req);
+                }
+            } catch (error) {
+                console.error('Error registrando actividad para materia:', materiaId, error);
+            }
         }
 
         // Actualizar materias existentes con nuevos tipos si es necesario
@@ -225,6 +173,9 @@ router.post('/api/materias-cursadas', requireAuth, async (req, res) => {
                         }
                         if (tipoInfo.notaExamen !== undefined && tipoInfo.notaExamen !== null) {
                             historialExistente.notaExamen = tipoInfo.notaExamen;
+                        }
+                        if (tipoInfo.notaFinal !== undefined && tipoInfo.notaFinal !== null) {
+                            historialExistente.notaFinal = tipoInfo.notaFinal;
                         }
                         
                         await historialExistente.save();
@@ -323,21 +274,38 @@ router.put('/api/estado-materia', requireAuth, async (req, res) => {
 
         if (historial) {
             // Actualizar existente
+            const estadoAnterior = historial.estado;
             historial.estado = estado;
             if (notaCurso !== undefined) historial.notaCurso = notaCurso;
             if (notaExamen !== undefined) historial.notaExamen = notaExamen;
             await historial.save();
             console.log('✅ Historial actualizado');
+
+            // Registrar actividad si cambió a aprobado
+            if (estadoAnterior !== 'aprobado' && estado === 'aprobado') {
+                const ActividadService = require('../services/actividadService');
+                try {
+                    await ActividadService.registrarMateriaAprobada(estudianteId, materiaId, historial.notaFinal, req);
+                } catch (error) {
+                    console.error('Error registrando actividad de materia aprobada:', error);
+                }
+            }
         } else {
-            // Crear nuevo historial
+            // Crear nuevo historial - solo si se proporciona una nota válida
+            if (!notaCurso && !notaExamen) {
+                return res.status(400).json({ error: 'Se requiere una nota válida para crear el historial' });
+            }
+            
             const materia = await Materia.findById(materiaId);
+            const notaFinal = notaCurso || notaExamen || 0;
+            
             historial = new HistorialAcademico({
                 estudiante: estudianteId,
                 materia: materiaId,
                 estado: estado,
-                notaCurso: notaCurso || (estado === 'aprobado' ? 4 : null),
-                notaExamen: notaExamen || (estado === 'cursado' ? 4 : null),
-                notaFinal: 4,
+                notaCurso: notaCurso || null,
+                notaExamen: notaExamen || null,
+                notaFinal: notaFinal,
                 semestre: materia?.semestre?.numero || 1,
                 anio: new Date().getFullYear(),
                 fechaAprobacion: new Date(),
@@ -345,6 +313,18 @@ router.put('/api/estado-materia', requireAuth, async (req, res) => {
             });
             await historial.save();
             console.log('✅ Nuevo historial creado');
+
+            // Registrar actividad según el estado
+            const ActividadService = require('../services/actividadService');
+            try {
+                if (estado === 'aprobado') {
+                    await ActividadService.registrarMateriaAprobada(estudianteId, materiaId, historial.notaFinal, req);
+                } else {
+                    await ActividadService.registrarMateriaRegistrada(estudianteId, materiaId, req);
+                }
+            } catch (error) {
+                console.error('Error registrando actividad para materia:', materiaId, error);
+            }
         }
 
         res.json({

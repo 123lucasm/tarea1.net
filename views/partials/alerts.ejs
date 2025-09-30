@@ -1,11 +1,34 @@
 <!-- Sistema de Alertas -->
 <% if (typeof alerts !== 'undefined' && alerts.length > 0) { %>
-  <div class="container-fluid">
+  <div class="max-w-4xl mx-auto px-4 py-4 space-y-4">
     <% alerts.forEach(alert => { %>
-      <div class="alert alert-<%= alert.type %> alert-dismissible fade show" role="alert">
-        <i class="fas fa-<%= alert.type === 'success' ? 'check-circle' : alert.type === 'danger' ? 'exclamation-triangle' : alert.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> me-2"></i>
-        <%= alert.message %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200/50 backdrop-blur-sm animate-slideInDown" role="alert">
+        <!-- Fondo con gradiente según tipo -->
+        <div class="absolute inset-0 <%= alert.type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : alert.type === 'danger' ? 'bg-gradient-to-r from-red-500 to-rose-600' : alert.type === 'warning' ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-blue-500 to-indigo-600' %> opacity-90"></div>
+        
+        <!-- Contenido -->
+        <div class="relative bg-white/10 backdrop-blur-sm p-6">
+          <div class="flex items-start space-x-4">
+            <!-- Icono -->
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fas fa-<%= alert.type === 'success' ? 'check-circle' : alert.type === 'danger' ? 'exclamation-triangle' : alert.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> text-white text-xl"></i>
+              </div>
+            </div>
+            
+            <!-- Mensaje -->
+            <div class="flex-1">
+              <p class="text-white font-semibold text-lg leading-relaxed">
+                <%= alert.message %>
+              </p>
+            </div>
+            
+            <!-- Botón cerrar -->
+            <button type="button" class="flex-shrink-0 text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all duration-200" onclick="this.parentElement.parentElement.parentElement.remove()">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
       </div>
     <% }); %>
   </div>
@@ -13,12 +36,35 @@
 
 <!-- Sistema de Mensajes Flash -->
 <% if (typeof messages !== 'undefined' && messages.length > 0) { %>
-  <div class="container-fluid">
+  <div class="max-w-4xl mx-auto px-4 py-4 space-y-4">
     <% messages.forEach(message => { %>
-      <div class="alert alert-<%= message.type || 'info' %> alert-dismissible fade show" role="alert">
-        <i class="fas fa-<%= message.type === 'success' ? 'check-circle' : message.type === 'danger' ? 'exclamation-triangle' : message.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> me-2"></i>
-        <%= message.text %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200/50 backdrop-blur-sm animate-slideInDown" role="alert">
+        <!-- Fondo con gradiente según tipo -->
+        <div class="absolute inset-0 <%= (message.type || 'info') === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : (message.type || 'info') === 'danger' ? 'bg-gradient-to-r from-red-500 to-rose-600' : (message.type || 'info') === 'warning' ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-blue-500 to-indigo-600' %> opacity-90"></div>
+        
+        <!-- Contenido -->
+        <div class="relative bg-white/10 backdrop-blur-sm p-6">
+          <div class="flex items-start space-x-4">
+            <!-- Icono -->
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fas fa-<%= (message.type || 'info') === 'success' ? 'check-circle' : (message.type || 'info') === 'danger' ? 'exclamation-triangle' : (message.type || 'info') === 'warning' ? 'exclamation-triangle' : 'info-circle' %> text-white text-xl"></i>
+              </div>
+            </div>
+            
+            <!-- Mensaje -->
+            <div class="flex-1">
+              <p class="text-white font-semibold text-lg leading-relaxed">
+                <%= message.text %>
+              </p>
+            </div>
+            
+            <!-- Botón cerrar -->
+            <button type="button" class="flex-shrink-0 text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all duration-200" onclick="this.parentElement.parentElement.parentElement.remove()">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
       </div>
     <% }); %>
   </div>
@@ -26,12 +72,35 @@
 
 <!-- Sistema de Notificaciones -->
 <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-  <div class="container-fluid">
+  <div class="max-w-4xl mx-auto px-4 py-4 space-y-4">
     <% notifications.forEach(notification => { %>
-      <div class="alert alert-<%= notification.type || 'info' %> alert-dismissible fade show" role="alert">
-        <i class="fas fa-<%= notification.type === 'success' ? 'check-circle' : notification.type === 'danger' ? 'exclamation-triangle' : notification.type === 'warning' ? 'exclamation-triangle' : 'info-circle' %> me-2"></i>
-        <%= notification.message %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200/50 backdrop-blur-sm animate-slideInDown" role="alert">
+        <!-- Fondo con gradiente según tipo -->
+        <div class="absolute inset-0 <%= (notification.type || 'info') === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : (notification.type || 'info') === 'danger' ? 'bg-gradient-to-r from-red-500 to-rose-600' : (notification.type || 'info') === 'warning' ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-blue-500 to-indigo-600' %> opacity-90"></div>
+        
+        <!-- Contenido -->
+        <div class="relative bg-white/10 backdrop-blur-sm p-6">
+          <div class="flex items-start space-x-4">
+            <!-- Icono -->
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fas fa-<%= (notification.type || 'info') === 'success' ? 'check-circle' : (notification.type || 'info') === 'danger' ? 'exclamation-triangle' : (notification.type || 'info') === 'warning' ? 'exclamation-triangle' : 'info-circle' %> text-white text-xl"></i>
+              </div>
+            </div>
+            
+            <!-- Mensaje -->
+            <div class="flex-1">
+              <p class="text-white font-semibold text-lg leading-relaxed">
+                <%= notification.message %>
+              </p>
+            </div>
+            
+            <!-- Botón cerrar -->
+            <button type="button" class="flex-shrink-0 text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all duration-200" onclick="this.parentElement.parentElement.parentElement.remove()">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
       </div>
     <% }); %>
   </div>
